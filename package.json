@@ -6,7 +6,7 @@
     "vscode": "^1.85.0"
   },
   "description": "Provide usefull features for math in typst",
-  "publisher": "supersurviveur",
+  "publisher": "surv",
   "repository": {
     "type": "git",
     "url": "https://github.com/supersurviveur/typst-math.git"

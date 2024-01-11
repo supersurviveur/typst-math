@@ -15,10 +15,10 @@ By default, the extension will use the monokai theme colors.
 
 - Math snippets, commands and keywords to simplify math writing
 - Math preview directly in the editor :
-  - Render math symbols from :
+  - Render math symbols from : \
     ![Typst math without preview](./github/math-without-preview.png)
-  - To :
-    ![Preview some math symbols directly](./github/math-preview.png)
+  - To : \
+    ![Preview some math symbols directly](./github/math-preview.png) \
     When you edit a line containing math symbols, these symbols will be rendered as text (as in the first image) to allow you to edit them easily.
 
 # TODO
