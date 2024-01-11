@@ -1,0 +1,30 @@
+{
+	"Write a sum": {
+		"prefix": "sum",
+		"body": [
+			"sum_(${1:indice})^(${2:exposant}) ${3}"
+		],
+		"description": "Write a sum"
+	},
+	"Write a product": {
+		"prefix": "prod",
+		"body": [
+			"prod_(${1:indice})^(${2:exposant}) ${3}"
+		],
+		"description": "Write a product"
+	},
+	"Define a math function": {
+		"prefix": "func",
+		"body": [
+			"${1:f} : cases(delim: \"|\", ${2:RR} -> ${3:RR}, ${4:x} -> ${5:x})"
+		],
+		"description": "Define a math function"
+	},
+	"Forall": {
+		"prefix": "all",
+		"body": [
+			"forall ${1:x} in ${2:RR}, ${3}"
+		],
+		"description": "Forall"
+	},
+}
