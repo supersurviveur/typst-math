@@ -4,7 +4,7 @@ A VS Code extension to simplify math writing in [Typst](https://typst.app/home).
 
 # Installation
 
-The extension can be downloaded from the [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=supersurviveur.typst-math).
+The extension can be downloaded from the [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=surv.typst-math).
 
 To preview math symbols, some fonts are needed, you can install them [manually](./fonts/README.md) or let the extension install them automatically on first launch (Works only on Windows).
 

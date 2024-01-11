@@ -43,6 +43,10 @@ export function activate(context: vscode.ExtensionContext) {
 
     // If settings change, update the decorations
     vscode.workspace.onDidChangeConfiguration(() => {
+        // Remove old decorations
+        for (let decoration of decorations) {
+            decoration.decorationType.dispose();
+        }
         decorations = generateDecorations();
     });
 

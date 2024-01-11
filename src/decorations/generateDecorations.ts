@@ -3,7 +3,7 @@ import { DynamicGenerator } from './dynamicGenerator';
 import { createDecorationType, getAllDecorations, staticSimpleRegex } from './helpers';
 
 // Usefull regex
-const wordLimit = /(\b|_|\n|\r)/g;
+const wordLimit = /(?!\.)(\b|_|\n|\r)/g;
 const arrowLimitLow = /[^=\-<>]/g;
 
 // Get colors from settings
@@ -207,11 +207,13 @@ export function generateDecorations(): {
         letterSymbol(/Alpha/g, 'Α'),
         letterSymbol(/beta/g, 'β'),
         letterSymbol(/Beta/g, 'Β'),
+        letterSymbol(/beta\.alt/g, 'ϐ'),
         letterSymbol(/gamma/g, 'γ'),
         letterSymbol(/Gamma/g, 'Γ'),
         letterSymbol(/delta/g, 'δ'),
         letterSymbol(/Delta/g, 'Δ'),
         letterSymbol(/epsilon/g, 'ε'),
+        letterSymbol(/epsilon\.alt/g, 'ϵ'),
         letterSymbol(/Epsilon/g, 'Ε'),
         letterSymbol(/zeta/g, 'ζ'),
         letterSymbol(/Zeta/g, 'Ζ'),
@@ -219,10 +221,12 @@ export function generateDecorations(): {
         letterSymbol(/Eta/g, 'Η'),
         letterSymbol(/theta/g, 'θ'),
         letterSymbol(/Theta/g, 'Θ'),
+        letterSymbol(/theta\.alt/g, 'ϑ'),
         letterSymbol(/iota/g, 'ι'),
         letterSymbol(/Iota/g, 'Ι'),
         letterSymbol(/kappa/g, 'κ'),
         letterSymbol(/Kappa/g, 'Κ'),
+        letterSymbol(/kappa\.alt/g, 'ϰ'),
         letterSymbol(/lambda/g, 'λ'),
         letterSymbol(/Lambda/g, 'Λ'),
         letterSymbol(/mu/g, 'μ'),
@@ -235,16 +239,20 @@ export function generateDecorations(): {
         letterSymbol(/Omicron/g, 'Ο'),
         letterSymbol(/pi/g, 'π'),
         letterSymbol(/Pi/g, 'Π'),
+        letterSymbol(/pi\.alt/g, 'ϖ'),
         letterSymbol(/rho/g, 'ρ'),
         letterSymbol(/Rho/g, 'Ρ'),
+        letterSymbol(/rho\.alt/g, 'ϱ'),
         letterSymbol(/sigma/g, 'σ'),
         letterSymbol(/Sigma/g, 'Σ'),
+        letterSymbol(/sigma\.alt/g, 'ς'),
         letterSymbol(/tau/g, 'τ'),
         letterSymbol(/Tau/g, 'Τ'),
         letterSymbol(/upsilon/g, 'υ'),
         letterSymbol(/Upsilon/g, 'Υ'),
-        letterSymbol(/phi/g, 'φ'),
+        letterSymbol(/phi/g, 'φ'), // phi and phi.alt char are inverted, because Juliafont invert them
         letterSymbol(/Phi/g, 'Φ'),
+        letterSymbol(/phi\.alt/g, 'ϕ'),
         letterSymbol(/chi/g, 'χ'),
         letterSymbol(/Chi/g, 'Χ'),
         letterSymbol(/psi/g, 'ψ'),
