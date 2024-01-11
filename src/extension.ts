@@ -3,7 +3,7 @@ import { dynamicDecorations, generateDecorations } from './decorations/generateD
 import installfont from './installfontLib/installfont.js';
 
 function installFontManually() {
-    vscode.env.openExternal(vscode.Uri.parse("https://github.com/supersurviveur/typst-math/fonts")); // TODO
+    vscode.env.openExternal(vscode.Uri.parse("https://github.com/supersurviveur/typst-math/blob/main/fonts/")); // TODO
 }
 
 export function activate(context: vscode.ExtensionContext) {
