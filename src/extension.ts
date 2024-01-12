@@ -1,9 +1,10 @@
 import * as vscode from 'vscode';
 import { dynamicDecorations, generateDecorations } from './decorations/generateDecorations';
 import installfont from './installfontLib/installfont.js';
+import { matrixCommand } from './commands/matrix';
 
 function installFontManually() {
-    vscode.env.openExternal(vscode.Uri.parse("https://github.com/supersurviveur/typst-math/blob/main/fonts/")); // TODO
+    vscode.env.openExternal(vscode.Uri.parse("https://github.com/supersurviveur/typst-math/blob/main/fonts/"));
 }
 
 export function activate(context: vscode.ExtensionContext) {
@@ -20,11 +21,10 @@ export function activate(context: vscode.ExtensionContext) {
                         if (err) {
                             throw err;
                         } else {
-                            vscode.window.showInformationMessage("Fonts installed successfully");
+                            // Editor needs to be completely restarted to load the fonts
+                            vscode.window.showInformationMessage("Fonts installed successfully, please completely restart the editor to load the fonts");
                         }
                     });
-                    // Editor needs to be completely restarted to load the fonts
-                    vscode.window.showInformationMessage("Please completely restart the editor to load the fonts");
                 } catch (err) {
                     vscode.window.showErrorMessage("Error while installing fonts, please install them manually.", "Install Fonts manually").then((value) => {
                         if (value === "Install Fonts manually") {
@@ -89,57 +89,8 @@ export function activate(context: vscode.ExtensionContext) {
         }
     }, null, context.subscriptions);
 
-
-    let disposable = vscode.commands.registerCommand('typst-math.matrix', async () => {
-        // Get matrix height
-        let value = await vscode.window.showInputBox({
-            prompt: "Matrix height",
-            placeHolder: "3",
-            validateInput: (value: string) => {
-                let height = parseInt(value);
-                if (isNaN(height)) {
-                    return "Invalid height";
-                }
-                return undefined;
-            },
-        });
-        if (value === undefined) { return; }
-        let height = parseInt(value);
-
-        // Get matrix width
-        value = await vscode.window.showInputBox({
-            prompt: "Matrix width",
-            placeHolder: "3"
-        });
-        if (value === undefined) { return; }
-        let width = parseInt(value);
-        if (isNaN(width)) {
-            vscode.window.showErrorMessage("Invalid width");
-            return;
-        }
-
-        // Generate the matrix snippet
-        let snippet = "mat(\n";
-        for (let i = 0; i < height; i++) {
-            for (let j = 0; j < width; j++) {
-                snippet += `\${${i * width + j + 1}:0}`;
-                if (j < width - 1) {
-                    snippet += ", ";
-                }
-            }
-            if (i < height - 1) {
-                snippet += ";\n";
-            }
-        }
-        snippet += ")";
-
-        // Insert the snippet
-        let editor = vscode.window.activeTextEditor;
-        if (editor === undefined) { return; }
-        editor.insertSnippet(new vscode.SnippetString(snippet), editor.selection);
-    });
-
-    context.subscriptions.push(disposable);
+    // Register commands
+    context.subscriptions.push(matrixCommand);
 }
 
 export function deactivate() { }

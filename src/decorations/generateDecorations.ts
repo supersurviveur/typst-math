@@ -4,6 +4,7 @@ import { createDecorationType, getAllDecorations, staticSimpleRegex } from './he
 
 // Usefull regex
 const wordLimit = /(?!\.)(\b|_|\n|\r)/g;
+const startWordLimit = /[^\w\d\.]/g;
 const arrowLimitLow = /[^=\-<>]/g;
 
 // Get colors from settings
@@ -27,102 +28,76 @@ export function generateDecorations(): {
     decorationType: vscode.TextEditorDecorationType,
     getRanges: (document: vscode.TextEditor) => vscode.DecorationOptions[],
 }[] {
-    function comparisonSymbol(reg: RegExp, symbol: string, pre?: RegExp, post?: RegExp) {
+    function helperSymbol(reg: RegExp, symbol: string, options: {
+        color: string,
+        textDecoration: string,
+    }, pre?: RegExp, post?: RegExp) {
         return {
             getRanges: (activeEditor: vscode.TextEditor) =>
                 staticSimpleRegex(activeEditor, reg, pre, post),
             decorationType: createDecorationType({
-                color: getColors().comparison,
-                textDecoration: 'none; font-family: "NewComputerModernMath"; font-weight: bold;',
+                color: options.color,
+                textDecoration: options.textDecoration,
                 contentText: symbol
             })
         };
+    }
+    function comparisonSymbol(reg: RegExp, symbol: string, pre?: RegExp, post?: RegExp) {
+        return helperSymbol(reg, symbol, {
+            color: getColors().comparison,
+            textDecoration: 'none; font-family: "NewComputerModernMath"; font-weight: bold;',
+        }, pre, post);
     }
     function keywordSymbol(reg: RegExp, symbol: string, pre?: RegExp, post?: RegExp) {
-        return {
-            getRanges: (activeEditor: vscode.TextEditor) =>
-                staticSimpleRegex(activeEditor, reg, pre, post),
-            decorationType: createDecorationType({
-                color: getColors().keyword,
-                textDecoration: 'none; font-family: "NewComputerModernMath"; font-weight: bold;',
-                contentText: symbol
-            })
-        };
+        return helperSymbol(reg, symbol, {
+            color: getColors().keyword,
+            textDecoration: 'none; font-family: "NewComputerModernMath"; font-weight: bold;'
+        }, pre, post);
     }
     function letterSymbol(reg: RegExp, symbol: string) {
-        return {
-            getRanges: (activeEditor: vscode.TextEditor) =>
-                staticSimpleRegex(activeEditor, reg, wordLimit, wordLimit),
-            decorationType: createDecorationType({
-                color: getColors().letter,
-                textDecoration: 'none; font-family: "JuliaMono";',
-                contentText: symbol
-            })
-        };
+        return helperSymbol(reg, symbol, {
+            color: getColors().letter,
+            textDecoration: 'none; font-family: "JuliaMono";',
+        });
     }
     function bigLetterSymbol(reg: RegExp, symbol: string) {
-        return {
-            getRanges: (activeEditor: vscode.TextEditor) =>
-                staticSimpleRegex(activeEditor, reg, wordLimit, wordLimit),
-            decorationType: createDecorationType({
-                color: getColors().letter,
-                textDecoration: 'none; font-family: "NewComputerModernMath";',
-                contentText: symbol
-            })
-        };
+        return helperSymbol(reg, symbol, {
+            color: getColors().letter,
+            textDecoration: 'none; font-family: "NewComputerModernMath";',
+        });
     }
 
     function mathSetSymbol(reg: RegExp, symbol: string) {
-        return {
-            getRanges: (activeEditor: vscode.TextEditor) =>
-                staticSimpleRegex(activeEditor, reg, wordLimit, wordLimit),
-            decorationType: createDecorationType({
-                color: getColors().group,
-                textDecoration: `none;
-                font-family: "Fira Math";`,
-                contentText: symbol
-            })
-        };
+        return helperSymbol(reg, symbol, {
+            color: getColors().group,
+            textDecoration: `none;
+            font-family: "Fira Math";`,
+        });
     }
 
     function mathSetVariantsSymbol(reg: RegExp, symbol: string, style: string, pre?: RegExp, post?: RegExp) {
-        return {
-            getRanges: (activeEditor: vscode.TextEditor) =>
-                staticSimpleRegex(activeEditor, reg, pre, post),
-            decorationType: createDecorationType({
-                color: getColors().group,
-                textDecoration: `none;
-                font-family: "JuliaMono";
-                ${style}`,
-                contentText: symbol
-            })
-        };
+        return helperSymbol(reg, symbol, {
+            color: getColors().group,
+            textDecoration: `none;
+            font-family: "JuliaMono";
+            ${style}`,
+        }, pre, post);
     }
 
     function mathExtendSetSymbol(reg: RegExp, symbol: string, pre?: RegExp, post?: RegExp) {
-        return {
-            getRanges: (activeEditor: vscode.TextEditor) =>
-                staticSimpleRegex(activeEditor, reg, pre, post),
-            decorationType: createDecorationType({
-                color: getColors().group,
-                textDecoration: `none;
-                font-family: "Fira Math";`,
-                contentText: symbol
-            })
-        };
+        return helperSymbol(reg, symbol, {
+            color: getColors().group,
+            textDecoration: `none;
+            font-family: "Fira Math";`,
+        }, pre, post);
     }
 
     function operatorSymbol(reg: RegExp, symbol: string, pre?: RegExp, post?: RegExp) {
-        return {
-            getRanges: (activeEditor: vscode.TextEditor) =>
-                staticSimpleRegex(activeEditor, reg, pre, post),
-            decorationType: createDecorationType({
-                color: getColors().operator,
-                textDecoration: `none;
-                font-family: "Fira Math";`,
-                contentText: symbol
-            })
-        };
+        return helperSymbol(reg, symbol, {
+            color: getColors().operator,
+            textDecoration: `none;
+            font-family: "Fira Math";`,
+        }, pre, post);
     }
 
     const signVariants: [RegExp, string][] = [
@@ -333,16 +308,19 @@ export function generateDecorations(): {
         ),
 
         // Operators
-        operatorSymbol(/plus/g, '+', wordLimit, wordLimit),
+        operatorSymbol(/plus/g, '+', startWordLimit, wordLimit),
         operatorSymbol(/\+/g, '+', /[^_]/g),
-        operatorSymbol(/minus/g, '-', wordLimit, wordLimit),
+        operatorSymbol(/minus/g, '-', startWordLimit, wordLimit),
         operatorSymbol(/\-/g, '-', /[^_<\-]/g),
-        operatorSymbol(/times/g, '×', wordLimit, wordLimit),
+        operatorSymbol(/times/g, '×', startWordLimit, wordLimit),
         operatorSymbol(/\*/g, '\u{2217}', /[^\^]/g),
-        operatorSymbol(/div/g, '÷', wordLimit, wordLimit),
+        operatorSymbol(/div/g, '÷', startWordLimit, wordLimit),
 
-        operatorSymbol(/dot/g, '⋅', wordLimit, wordLimit),
-        operatorSymbol(/star/g, '⋆', wordLimit, wordLimit)
+        operatorSymbol(/dot/g, '⋅', startWordLimit, wordLimit),
+        operatorSymbol(/star/g, '⋆', startWordLimit, wordLimit),
+        operatorSymbol(/circle\.tiny/g, '∘', startWordLimit, wordLimit),
+        operatorSymbol(/circle\.small/g, '⚬', startWordLimit, wordLimit),
+        operatorSymbol(/circle/g, '○', startWordLimit, wordLimit),
     ];
 }
 
@@ -356,7 +334,6 @@ export function dynamicDecorations(activeEditor: vscode.TextEditor): dynamicDeco
     const result: dynamicDecorationType[] = [];
 
     // Usefull variables
-    const text = activeEditor.document.getText();
     const generator = new DynamicGenerator(activeEditor);
 
     // Reset decorations ranges
@@ -393,6 +370,30 @@ export function dynamicDecorations(activeEditor: vscode.TextEditor): dynamicDeco
         }
     );
 
+    // Negative powers
+    generator.simpleRegex(
+        /\^\(\-\d+\)/g,
+        "powers",
+        {
+            color: getColors().number,
+            textDecoration: `none;
+            font-family: JuliaMono;
+            letter-spacing: -0.1em;
+            transform: translateX(-0.15em);
+            display: inline-block;`
+        },
+        (match) => {
+            const number = match[0].slice(2);
+            const litNumbers = number.split('').map((n) => parseInt(n));
+            return [
+                number,
+                '⁻' + litNumbers.map((n) => {
+                    return ['⁰', '¹', '²', '³', '⁴', '⁵', '⁶', '⁷', '⁸', '⁹'][n];
+                }).join('')
+            ];
+        }
+    );
+
     // literal powers
     generator.simpleRegex(
         /\^[A-z]/g,
@@ -415,6 +416,28 @@ export function dynamicDecorations(activeEditor: vscode.TextEditor): dynamicDeco
         undefined,
         /\b/g
     );
+    // literal negative powers
+    generator.simpleRegex(
+        /\^\(\-[A-z]\)/g,
+        "powers",
+        {
+            color: getColors().number,
+            textDecoration: `none;
+            font-family: JuliaMono;
+            font-size: 0.8em;
+            transform: translateY(-30%);
+            display: inline-block;`
+        },
+        (match) => {
+            const letter = match[0].slice(2, -1);
+            return [
+                letter,
+                letter
+            ];
+        },
+        undefined,
+        undefined
+    );
 
     // Subscripts
     generator.simpleRegex(
@@ -435,6 +458,30 @@ export function dynamicDecorations(activeEditor: vscode.TextEditor): dynamicDeco
             return [
                 number,
                 litNumbers.map((n) => {
+                    return ['₀', '₁', '₂', '₃', '₄', '₅', '₆', '₇', '₈', '₉'][n];
+                }).join('')
+            ];
+        }
+    );
+    // Negative subscripts
+    generator.simpleRegex(
+        /_\(\-\d+\)/g,
+        "subscripts",
+        {
+            color: getColors().number,
+            textDecoration: `none;
+            font-family: JuliaMono;
+            letter-spacing: -0.1em;
+            transform: translate(-0.05em, 0.2em);
+            display: inline-block;
+            padding-right: 0.1em;`,
+        },
+        (match) => {
+            const number = match[0].slice(3);
+            const litNumbers = number.split('').map((n) => parseInt(n));
+            return [
+                number,
+                '₋' + litNumbers.map((n) => {
                     return ['₀', '₁', '₂', '₃', '₄', '₅', '₆', '₇', '₈', '₉'][n];
                 }).join('')
             ];
@@ -464,6 +511,30 @@ export function dynamicDecorations(activeEditor: vscode.TextEditor): dynamicDeco
         },
         undefined,
         /\b/g
+    );
+    // literal negative subscripts
+    generator.simpleRegex(
+        /_\(\-[A-z]\)/g,
+        "subscripts",
+        {
+            color: getColors().number,
+            textDecoration: `none;
+            font-family: JuliaMono;
+            font-size: 0.8em;
+            letter-spacing: -0.15em;
+            transform: translateY(20%);
+            display: inline-block;
+            padding-right: 0.1em;`,
+        },
+        (match) => {
+            const letter = match[0].slice(2, -1);
+            return [
+                letter,
+                letter
+            ];
+        },
+        undefined,
+        undefined
     );
 
     // Flatten allDecorations into result
