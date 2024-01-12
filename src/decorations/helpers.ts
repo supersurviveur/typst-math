@@ -68,14 +68,6 @@ export function helperSimpleRegex(text: string, activeEditor: vscode.TextEditor,
     }
 }
 
-export function staticSimpleRegex(activeEditor: vscode.TextEditor, reg: RegExp, pre?: RegExp, post?: RegExp, rangeStartOffset = 0, rangeEndOffset = 0) {
-    const result: vscode.DecorationOptions[] = [];
-    helperSimpleRegex(activeEditor.document.getText(), activeEditor, reg, (match, range) => {
-        result.push({ range: range, hoverMessage: match[0] });
-    }, pre, post, rangeStartOffset, rangeEndOffset);
-    return result;
-}
-
 export function createDecorationType(options: vscode.ThemableDecorationAttachmentRenderOptions) {
     return vscode.window.createTextEditorDecorationType({
         textDecoration: 'none; position: absolute; opacity: 0;',

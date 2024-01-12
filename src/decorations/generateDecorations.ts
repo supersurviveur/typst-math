@@ -1,104 +1,21 @@
 import * as vscode from 'vscode';
 import { DynamicGenerator } from './dynamicGenerator';
-import { createDecorationType, getAllDecorations, staticSimpleRegex } from './helpers';
+import { getAllDecorations } from './helpers';
+import { getColors } from './utils';
+import { StaticGenerator } from './staticGenerator';
 
 // Usefull regex
 const wordLimit = /(?!\.)(\b|_|\n|\r)/g;
 const startWordLimit = /[^\w\d\.]/g;
 const arrowLimitLow = /[^=\-<>]/g;
 
-// Get colors from settings
-function getColors() {
-    const config = vscode.workspace.getConfiguration('typst-math');
-    const colors = config.get<{
-        comparison: string,
-        keyword: string,
-        letter: string,
-        group: string,
-        operator: string,
-        number: string,
-    }>('colors');
-    if (!colors) {
-        throw new Error("Invalid colors");
-    }
-    return colors;
-}
 
 export function generateDecorations(): {
     decorationType: vscode.TextEditorDecorationType,
     getRanges: (document: vscode.TextEditor) => vscode.DecorationOptions[],
 }[] {
-    function helperSymbol(reg: RegExp, symbol: string, options: {
-        color: string,
-        textDecoration: string,
-    }, pre?: RegExp, post?: RegExp) {
-        return {
-            getRanges: (activeEditor: vscode.TextEditor) =>
-                staticSimpleRegex(activeEditor, reg, pre, post),
-            decorationType: createDecorationType({
-                color: options.color,
-                textDecoration: options.textDecoration,
-                contentText: symbol
-            })
-        };
-    }
-    function comparisonSymbol(reg: RegExp, symbol: string, pre?: RegExp, post?: RegExp) {
-        return helperSymbol(reg, symbol, {
-            color: getColors().comparison,
-            textDecoration: 'none; font-family: "NewComputerModernMath"; font-weight: bold;',
-        }, pre, post);
-    }
-    function keywordSymbol(reg: RegExp, symbol: string, pre?: RegExp, post?: RegExp) {
-        return helperSymbol(reg, symbol, {
-            color: getColors().keyword,
-            textDecoration: 'none; font-family: "NewComputerModernMath"; font-weight: bold;'
-        }, pre, post);
-    }
-    function letterSymbol(reg: RegExp, symbol: string) {
-        return helperSymbol(reg, symbol, {
-            color: getColors().letter,
-            textDecoration: 'none; font-family: "JuliaMono";',
-        });
-    }
-    function bigLetterSymbol(reg: RegExp, symbol: string) {
-        return helperSymbol(reg, symbol, {
-            color: getColors().letter,
-            textDecoration: 'none; font-family: "NewComputerModernMath";',
-        });
-    }
-
-    function mathSetSymbol(reg: RegExp, symbol: string) {
-        return helperSymbol(reg, symbol, {
-            color: getColors().group,
-            textDecoration: `none;
-            font-family: "Fira Math";`,
-        });
-    }
-
-    function mathSetVariantsSymbol(reg: RegExp, symbol: string, style: string, pre?: RegExp, post?: RegExp) {
-        return helperSymbol(reg, symbol, {
-            color: getColors().group,
-            textDecoration: `none;
-            font-family: "JuliaMono";
-            ${style}`,
-        }, pre, post);
-    }
-
-    function mathExtendSetSymbol(reg: RegExp, symbol: string, pre?: RegExp, post?: RegExp) {
-        return helperSymbol(reg, symbol, {
-            color: getColors().group,
-            textDecoration: `none;
-            font-family: "Fira Math";`,
-        }, pre, post);
-    }
-
-    function operatorSymbol(reg: RegExp, symbol: string, pre?: RegExp, post?: RegExp) {
-        return helperSymbol(reg, symbol, {
-            color: getColors().operator,
-            textDecoration: `none;
-            font-family: "Fira Math";`,
-        }, pre, post);
-    }
+    // Usefull variables
+    const generator = new StaticGenerator();
 
     const signVariants: [RegExp, string][] = [
         [/_\+/g, "₊"],
@@ -110,7 +27,7 @@ export function generateDecorations(): {
 
         for (let variant of signVariants) {
             // Match only signed
-            result.push(mathSetVariantsSymbol(
+            result.push(generator.mathSetVariantsSymbol(
                 variant[0],
                 variant[1],
                 ``,
@@ -118,7 +35,7 @@ export function generateDecorations(): {
                 /(?!\^\*)/g // Don't match non-zero
             ));
             // Match non-zero then signed (for sign)
-            result.push(mathSetVariantsSymbol(
+            result.push(generator.mathSetVariantsSymbol(
                 variant[0],
                 variant[1],
                 `transform: translateX(-0.37em);
@@ -126,7 +43,7 @@ export function generateDecorations(): {
                 /\b([A-Z])\1\^\*/g,
             ));
             // Match signed then non-zero (for sign)
-            result.push(mathSetVariantsSymbol(
+            result.push(generator.mathSetVariantsSymbol(
                 variant[0],
                 variant[1],
                 ``,
@@ -144,137 +61,137 @@ export function generateDecorations(): {
         // pre and post avoid matching multiple times the same text with different decorations
 
         // comparison symbols
-        comparisonSymbol(/=/g, '=', /[^:<>!=]/g, /[^:<>!=]/g), // TODO: avoid replacing char, just add style
-        comparisonSymbol(/</g, '<', arrowLimitLow, arrowLimitLow),
-        comparisonSymbol(/>/g, '>', arrowLimitLow, arrowLimitLow),
-        comparisonSymbol(/eq\.triple/g, '≡', wordLimit, wordLimit),
-        comparisonSymbol(/!=/g, '≠'),
-        comparisonSymbol(/:=/g, '≔'),
-        comparisonSymbol(/=>/g, '⇒', /[^<=]/g),
-        comparisonSymbol(/==>/g, '⟹', /[^<]/g),
-        comparisonSymbol(/<=>/g, '⇔', /[^<]/g),
-        comparisonSymbol(/<==>/g, '⟺', /[^<]/g),
-        comparisonSymbol(/<==/g, '⟸', /[^<]/g, /[^>]/g),
-        comparisonSymbol(/<=/g, '≤', /[^<]/g, /[^>=]/g),
-        comparisonSymbol(/>=/g, '≥', /[^>]/g, /[^>=]/g),
-        comparisonSymbol(/->/g, '→', /[^-><\|]/g),
-        comparisonSymbol(/-->/g, '⟶', /[^-><\|]/g),
-        comparisonSymbol(/\|->/g, '↦'),
-        comparisonSymbol(/<-/g, '←', undefined, /[^-><\|]/g),
-        comparisonSymbol(/<--/g, '⟵', undefined, /[^-><\|]/g),
-        comparisonSymbol(/<->/g, '↔'),
-        comparisonSymbol(/<-->/g, '⟷'),
+        generator.comparisonSymbol(/=/g, '=', /[^:<>!=]/g, /[^:<>!=]/g), // TODO: avoid replacing char, just add style
+        generator.comparisonSymbol(/</g, '<', arrowLimitLow, arrowLimitLow),
+        generator.comparisonSymbol(/>/g, '>', arrowLimitLow, arrowLimitLow),
+        generator.comparisonSymbol(/eq\.triple/g, '≡', wordLimit, wordLimit),
+        generator.comparisonSymbol(/!=/g, '≠'),
+        generator.comparisonSymbol(/:=/g, '≔'),
+        generator.comparisonSymbol(/=>/g, '⇒', /[^<=]/g),
+        generator.comparisonSymbol(/==>/g, '⟹', /[^<]/g),
+        generator.comparisonSymbol(/<=>/g, '⇔', /[^<]/g),
+        generator.comparisonSymbol(/<==>/g, '⟺', /[^<]/g),
+        generator.comparisonSymbol(/<==/g, '⟸', /[^<]/g, /[^>]/g),
+        generator.comparisonSymbol(/<=/g, '≤', /[^<]/g, /[^>=]/g),
+        generator.comparisonSymbol(/>=/g, '≥', /[^>]/g, /[^>=]/g),
+        generator.comparisonSymbol(/->/g, '→', /[^-><\|]/g),
+        generator.comparisonSymbol(/-->/g, '⟶', /[^-><\|]/g),
+        generator.comparisonSymbol(/\|->/g, '↦'),
+        generator.comparisonSymbol(/<-/g, '←', undefined, /[^-><\|]/g),
+        generator.comparisonSymbol(/<--/g, '⟵', undefined, /[^-><\|]/g),
+        generator.comparisonSymbol(/<->/g, '↔'),
+        generator.comparisonSymbol(/<-->/g, '⟷'),
 
-        comparisonSymbol(/dots\.h/g, '…', wordLimit, wordLimit),
-        comparisonSymbol(/dots\.h\.c/g, '⋯', wordLimit, wordLimit),
-        comparisonSymbol(/dots\.v/g, '⋮', wordLimit, wordLimit),
-        comparisonSymbol(/dots\.up/g, '⋰', wordLimit, wordLimit),
-        comparisonSymbol(/dots\.down/g, '⋱', wordLimit, wordLimit),
+        generator.comparisonSymbol(/dots\.h/g, '…', wordLimit, wordLimit),
+        generator.comparisonSymbol(/dots\.h\.c/g, '⋯', wordLimit, wordLimit),
+        generator.comparisonSymbol(/dots\.v/g, '⋮', wordLimit, wordLimit),
+        generator.comparisonSymbol(/dots\.up/g, '⋰', wordLimit, wordLimit),
+        generator.comparisonSymbol(/dots\.down/g, '⋱', wordLimit, wordLimit),
 
         // Keywords
-        keywordSymbol(/forall\b\s?/g, '∀', /\b/g),
-        keywordSymbol(/exists\b\s?/g, '∃', /\b/g),
-        keywordSymbol(/in\b\s?/g, '∈', /\b/g),
-        keywordSymbol(/in\.not\b\s?/g, '∉', /\b/g),
+        generator.keywordSymbol(/forall\b\s?/g, '∀', /\b/g),
+        generator.keywordSymbol(/exists\b\s?/g, '∃', /\b/g),
+        generator.keywordSymbol(/in\b\s?/g, '∈', /\b/g),
+        generator.keywordSymbol(/in\.not\b\s?/g, '∉', /\b/g),
 
         // Greek letters
-        letterSymbol(/alpha/g, 'α'),
-        letterSymbol(/Alpha/g, 'Α'),
-        letterSymbol(/beta/g, 'β'),
-        letterSymbol(/Beta/g, 'Β'),
-        letterSymbol(/beta\.alt/g, 'ϐ'),
-        letterSymbol(/gamma/g, 'γ'),
-        letterSymbol(/Gamma/g, 'Γ'),
-        letterSymbol(/delta/g, 'δ'),
-        letterSymbol(/Delta/g, 'Δ'),
-        letterSymbol(/epsilon/g, 'ε'),
-        letterSymbol(/epsilon\.alt/g, 'ϵ'),
-        letterSymbol(/Epsilon/g, 'Ε'),
-        letterSymbol(/zeta/g, 'ζ'),
-        letterSymbol(/Zeta/g, 'Ζ'),
-        letterSymbol(/eta/g, 'η'),
-        letterSymbol(/Eta/g, 'Η'),
-        letterSymbol(/theta/g, 'θ'),
-        letterSymbol(/Theta/g, 'Θ'),
-        letterSymbol(/theta\.alt/g, 'ϑ'),
-        letterSymbol(/iota/g, 'ι'),
-        letterSymbol(/Iota/g, 'Ι'),
-        letterSymbol(/kappa/g, 'κ'),
-        letterSymbol(/Kappa/g, 'Κ'),
-        letterSymbol(/kappa\.alt/g, 'ϰ'),
-        letterSymbol(/lambda/g, 'λ'),
-        letterSymbol(/Lambda/g, 'Λ'),
-        letterSymbol(/mu/g, 'μ'),
-        letterSymbol(/Mu/g, 'Μ'),
-        letterSymbol(/nu/g, 'ν'),
-        letterSymbol(/Nu/g, 'Ν'),
-        letterSymbol(/xi/g, 'ξ'),
-        letterSymbol(/Xi/g, 'Ξ'),
-        letterSymbol(/omicron/g, 'ο'),
-        letterSymbol(/Omicron/g, 'Ο'),
-        letterSymbol(/pi/g, 'π'),
-        letterSymbol(/Pi/g, 'Π'),
-        letterSymbol(/pi\.alt/g, 'ϖ'),
-        letterSymbol(/rho/g, 'ρ'),
-        letterSymbol(/Rho/g, 'Ρ'),
-        letterSymbol(/rho\.alt/g, 'ϱ'),
-        letterSymbol(/sigma/g, 'σ'),
-        letterSymbol(/Sigma/g, 'Σ'),
-        letterSymbol(/sigma\.alt/g, 'ς'),
-        letterSymbol(/tau/g, 'τ'),
-        letterSymbol(/Tau/g, 'Τ'),
-        letterSymbol(/upsilon/g, 'υ'),
-        letterSymbol(/Upsilon/g, 'Υ'),
-        letterSymbol(/phi/g, 'φ'), // phi and phi.alt char are inverted, because Juliafont invert them
-        letterSymbol(/Phi/g, 'Φ'),
-        letterSymbol(/phi\.alt/g, 'ϕ'),
-        letterSymbol(/chi/g, 'χ'),
-        letterSymbol(/Chi/g, 'Χ'),
-        letterSymbol(/psi/g, 'ψ'),
-        letterSymbol(/Psi/g, 'Ψ'),
-        letterSymbol(/omega/g, 'ω'),
-        letterSymbol(/Omega/g, 'Ω'),
+        generator.letterSymbol(/alpha/g, 'α'),
+        generator.letterSymbol(/Alpha/g, 'Α'),
+        generator.letterSymbol(/beta/g, 'β'),
+        generator.letterSymbol(/Beta/g, 'Β'),
+        generator.letterSymbol(/beta\.alt/g, 'ϐ'),
+        generator.letterSymbol(/gamma/g, 'γ'),
+        generator.letterSymbol(/Gamma/g, 'Γ'),
+        generator.letterSymbol(/delta/g, 'δ'),
+        generator.letterSymbol(/Delta/g, 'Δ'),
+        generator.letterSymbol(/epsilon/g, 'ε'),
+        generator.letterSymbol(/epsilon\.alt/g, 'ϵ'),
+        generator.letterSymbol(/Epsilon/g, 'Ε'),
+        generator.letterSymbol(/zeta/g, 'ζ'),
+        generator.letterSymbol(/Zeta/g, 'Ζ'),
+        generator.letterSymbol(/eta/g, 'η'),
+        generator.letterSymbol(/Eta/g, 'Η'),
+        generator.letterSymbol(/theta/g, 'θ'),
+        generator.letterSymbol(/Theta/g, 'Θ'),
+        generator.letterSymbol(/theta\.alt/g, 'ϑ'),
+        generator.letterSymbol(/iota/g, 'ι'),
+        generator.letterSymbol(/Iota/g, 'Ι'),
+        generator.letterSymbol(/kappa/g, 'κ'),
+        generator.letterSymbol(/Kappa/g, 'Κ'),
+        generator.letterSymbol(/kappa\.alt/g, 'ϰ'),
+        generator.letterSymbol(/lambda/g, 'λ'),
+        generator.letterSymbol(/Lambda/g, 'Λ'),
+        generator.letterSymbol(/mu/g, 'μ'),
+        generator.letterSymbol(/Mu/g, 'Μ'),
+        generator.letterSymbol(/nu/g, 'ν'),
+        generator.letterSymbol(/Nu/g, 'Ν'),
+        generator.letterSymbol(/xi/g, 'ξ'),
+        generator.letterSymbol(/Xi/g, 'Ξ'),
+        generator.letterSymbol(/omicron/g, 'ο'),
+        generator.letterSymbol(/Omicron/g, 'Ο'),
+        generator.letterSymbol(/pi/g, 'π'),
+        generator.letterSymbol(/Pi/g, 'Π'),
+        generator.letterSymbol(/pi\.alt/g, 'ϖ'),
+        generator.letterSymbol(/rho/g, 'ρ'),
+        generator.letterSymbol(/Rho/g, 'Ρ'),
+        generator.letterSymbol(/rho\.alt/g, 'ϱ'),
+        generator.letterSymbol(/sigma/g, 'σ'),
+        generator.letterSymbol(/Sigma/g, 'Σ'),
+        generator.letterSymbol(/sigma\.alt/g, 'ς'),
+        generator.letterSymbol(/tau/g, 'τ'),
+        generator.letterSymbol(/Tau/g, 'Τ'),
+        generator.letterSymbol(/upsilon/g, 'υ'),
+        generator.letterSymbol(/Upsilon/g, 'Υ'),
+        generator.letterSymbol(/phi/g, 'φ'), // phi and phi.alt char are inverted, because Juliafont invert them
+        generator.letterSymbol(/Phi/g, 'Φ'),
+        generator.letterSymbol(/phi\.alt/g, 'ϕ'),
+        generator.letterSymbol(/chi/g, 'χ'),
+        generator.letterSymbol(/Chi/g, 'Χ'),
+        generator.letterSymbol(/psi/g, 'ψ'),
+        generator.letterSymbol(/Psi/g, 'Ψ'),
+        generator.letterSymbol(/omega/g, 'ω'),
+        generator.letterSymbol(/Omega/g, 'Ω'),
 
         // Big letters
-        bigLetterSymbol(/sum/g, '∑'),
-        bigLetterSymbol(/product/g, '∏'),
-        bigLetterSymbol(/integral/g, '∫'),
+        generator.bigLetterSymbol(/sum/g, '∑'),
+        generator.bigLetterSymbol(/product/g, '∏'),
+        generator.bigLetterSymbol(/integral/g, '∫'),
 
         // Sets
-        mathSetSymbol(/emptyset/g, '∅'),
-        mathSetSymbol(/AA/g, '𝔸'),
-        mathSetSymbol(/BB/g, '𝔹'),
-        mathSetSymbol(/CC/g, 'ℂ'),
-        mathSetSymbol(/DD/g, '𝔻'),
-        mathSetSymbol(/EE/g, '𝔼'),
-        mathSetSymbol(/FF/g, '𝔽'),
-        mathSetSymbol(/GG/g, '𝔾'),
-        mathSetSymbol(/HH/g, 'ℍ'),
-        mathSetSymbol(/II/g, '𝕀'),
-        mathSetSymbol(/JJ/g, '𝕁'),
-        mathSetSymbol(/KK/g, '𝕂'),
-        mathSetSymbol(/LL/g, '𝕃'),
-        mathSetSymbol(/MM/g, '𝕄'),
-        mathSetSymbol(/NN/g, 'ℕ'),
-        mathSetSymbol(/OO/g, '𝕆'),
-        mathSetSymbol(/PP/g, 'ℙ'),
-        mathSetSymbol(/QQ/g, 'ℚ'),
-        mathSetSymbol(/RR/g, 'ℝ'),
-        mathSetSymbol(/SS/g, '𝕊'),
-        mathSetSymbol(/TT/g, '𝕋'),
-        mathSetSymbol(/UU/g, '𝕌'),
-        mathSetSymbol(/VV/g, '𝕍'),
-        mathSetSymbol(/WW/g, '𝕎'),
-        mathSetSymbol(/XX/g, '𝕏'),
-        mathSetSymbol(/YY/g, '𝕐'),
-        mathSetSymbol(/ZZ/g, 'ℤ'),
-        mathExtendSetSymbol(/\[/g, '[', undefined, /[^|]/g),
-        mathExtendSetSymbol(/\]/g, ']', /[^|]/g),
-        mathExtendSetSymbol(/\[\|/g, '\u{27E6}'),
-        mathExtendSetSymbol(/\|\]/g, '\u{27E7}'),
+        generator.mathSetSymbol(/emptyset/g, '∅'),
+        generator.mathSetSymbol(/AA/g, '𝔸'),
+        generator.mathSetSymbol(/BB/g, '𝔹'),
+        generator.mathSetSymbol(/CC/g, 'ℂ'),
+        generator.mathSetSymbol(/DD/g, '𝔻'),
+        generator.mathSetSymbol(/EE/g, '𝔼'),
+        generator.mathSetSymbol(/FF/g, '𝔽'),
+        generator.mathSetSymbol(/GG/g, '𝔾'),
+        generator.mathSetSymbol(/HH/g, 'ℍ'),
+        generator.mathSetSymbol(/II/g, '𝕀'),
+        generator.mathSetSymbol(/JJ/g, '𝕁'),
+        generator.mathSetSymbol(/KK/g, '𝕂'),
+        generator.mathSetSymbol(/LL/g, '𝕃'),
+        generator.mathSetSymbol(/MM/g, '𝕄'),
+        generator.mathSetSymbol(/NN/g, 'ℕ'),
+        generator.mathSetSymbol(/OO/g, '𝕆'),
+        generator.mathSetSymbol(/PP/g, 'ℙ'),
+        generator.mathSetSymbol(/QQ/g, 'ℚ'),
+        generator.mathSetSymbol(/RR/g, 'ℝ'),
+        generator.mathSetSymbol(/SS/g, '𝕊'),
+        generator.mathSetSymbol(/TT/g, '𝕋'),
+        generator.mathSetSymbol(/UU/g, '𝕌'),
+        generator.mathSetSymbol(/VV/g, '𝕍'),
+        generator.mathSetSymbol(/WW/g, '𝕎'),
+        generator.mathSetSymbol(/XX/g, '𝕏'),
+        generator.mathSetSymbol(/YY/g, '𝕐'),
+        generator.mathSetSymbol(/ZZ/g, 'ℤ'),
+        generator.mathExtendSetSymbol(/\[/g, '[', undefined, /[^|]/g),
+        generator.mathExtendSetSymbol(/\]/g, ']', /[^|]/g),
+        generator.mathExtendSetSymbol(/\[\|/g, '\u{27E6}'),
+        generator.mathExtendSetSymbol(/\|\]/g, '\u{27E7}'),
         // Set variants
         // Match non-zero
-        mathSetVariantsSymbol(
+        generator.mathSetVariantsSymbol(
             /\^\*/g,
             "*",
             `font-size: 0.6em;
@@ -288,7 +205,7 @@ export function generateDecorations(): {
         // Only positive and negative set, and non-zero and signed (for sign)
         ...generateSignedVariants(),
         // 3. Match non-zero then signed (for non-zero)
-        mathSetVariantsSymbol(
+        generator.mathSetVariantsSymbol(
             /\^\*/g,
             "*",
             `font-size: 0.6em;
@@ -298,7 +215,7 @@ export function generateDecorations(): {
             /_(\+|\-)/g
         ),
         // 4. Match signed then non-zero (for non-zero)
-        mathSetVariantsSymbol(
+        generator.mathSetVariantsSymbol(
             /\^\*/g,
             "*",
             `font-size: 0.6em;
@@ -308,19 +225,23 @@ export function generateDecorations(): {
         ),
 
         // Operators
-        operatorSymbol(/plus/g, '+', startWordLimit, wordLimit),
-        operatorSymbol(/\+/g, '+', /[^_]/g),
-        operatorSymbol(/minus/g, '-', startWordLimit, wordLimit),
-        operatorSymbol(/\-/g, '-', /[^_<\-]/g),
-        operatorSymbol(/times/g, '×', startWordLimit, wordLimit),
-        operatorSymbol(/\*/g, '\u{2217}', /[^\^]/g),
-        operatorSymbol(/div/g, '÷', startWordLimit, wordLimit),
+        generator.operatorSymbol(/plus/g, '+', startWordLimit, wordLimit),
+        generator.operatorSymbol(/\+/g, '+', /[^_]/g),
+        generator.operatorSymbol(/minus/g, '-', startWordLimit, wordLimit),
+        generator.operatorSymbol(/\-/g, '-', /[^_<\-]/g),
+        generator.operatorSymbol(/times/g, '×', startWordLimit, wordLimit),
+        generator.operatorSymbol(/\*/g, '\u{2217}', /[^\^]/g),
+        generator.operatorSymbol(/div/g, '÷', startWordLimit, wordLimit),
 
-        operatorSymbol(/dot/g, '⋅', startWordLimit, wordLimit),
-        operatorSymbol(/star/g, '⋆', startWordLimit, wordLimit),
-        operatorSymbol(/circle\.tiny/g, '∘', startWordLimit, wordLimit),
-        operatorSymbol(/circle\.small/g, '⚬', startWordLimit, wordLimit),
-        operatorSymbol(/circle/g, '○', startWordLimit, wordLimit),
+        generator.operatorSymbol(/dot/g, '⋅', startWordLimit, wordLimit),
+        generator.operatorSymbol(/star/g, '⋆', startWordLimit, wordLimit),
+        generator.operatorSymbol(/circle\.tiny/g, '∘', startWordLimit, wordLimit),
+        generator.operatorSymbol(/circle\.small/g, '⚬', startWordLimit, wordLimit),
+        generator.operatorSymbol(/circle/g, '○', startWordLimit, wordLimit),
+
+        generator.numberSymbol(/oo/g, '∞', startWordLimit, wordLimit),
+        generator.numberSymbol(/dif/g, 'd', startWordLimit, wordLimit),
+        generator.numberSymbol(/diff/g, '∂', startWordLimit, wordLimit),
     ];
 }
 

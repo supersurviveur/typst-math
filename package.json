@@ -69,17 +69,41 @@
     "commands": [
       {
         "command": "typst-math.matrix",
-        "title": "Generate a matrix"
+        "title": "Generate a matrix",
+        "category": "Typst math"
+      },
+      {
+        "command": "typst-math.square-matrix",
+        "title": "Generate a square matrix",
+        "category": "Typst math"
+      },
+      {
+        "command": "typst-math.matrix2",
+        "title": "Generate a square matrix of size 2",
+        "category": "Typst math"
+      },
+      {
+        "command": "typst-math.matrix3",
+        "title": "Generate a square matrix of size 3",
+        "category": "Typst math"
       },
       {
         "command": "typst-math.install-fonts",
-        "title": "Install fonts"
+        "title": "Install fonts",
+        "category": "Typst math"
       }
     ],
     "snippets": [
       {
         "language": "typst",
         "path": "./snippets/snippets.code-snippets"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "typst-math.matrix",
+        "key": "ctrl+alt+m",
+        "when": "editorTextFocus && editorLangId == typst"
       }
     ]
   },

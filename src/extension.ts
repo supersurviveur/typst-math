@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import { dynamicDecorations, generateDecorations } from './decorations/generateDecorations';
-import { matrixCommand } from './commands/matrix';
+import { matrix2Command, matrix3Command, matrixCommand, squareMatrixCommand } from './commands/matrix';
 import { askForFonts, installFontsCommandProvider } from './commands/installFonts';
 
 
@@ -26,7 +26,7 @@ export function activate(context: vscode.ExtensionContext) {
     let activeEditor = vscode.window.activeTextEditor;
 
     function updateDecorations() {
-        // if the current editor is noit a typst editor, return
+        // if the current editor is not a typst editor, return
         if (!activeEditor || activeEditor.document.languageId !== "typst") {
             return;
         }
@@ -64,6 +64,10 @@ export function activate(context: vscode.ExtensionContext) {
 
     // Register commands
     context.subscriptions.push(matrixCommand);
+    context.subscriptions.push(squareMatrixCommand);
+    context.subscriptions.push(matrix2Command);
+    context.subscriptions.push(matrix3Command);
+
     context.subscriptions.push(installFontsCommandProvider(context));
 }
 
