@@ -70,6 +70,10 @@
       {
         "command": "typst-math.matrix",
         "title": "Generate a matrix"
+      },
+      {
+        "command": "typst-math.install-fonts",
+        "title": "Install fonts"
       }
     ],
     "snippets": [
