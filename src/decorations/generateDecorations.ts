@@ -2,12 +2,8 @@ import * as vscode from 'vscode';
 import { DynamicGenerator } from './dynamicGenerator';
 import { getAllDecorations } from './helpers';
 import { getColors } from './utils';
-import { StaticGenerator } from './staticGenerator';
+import { StaticGenerator, arrowLimitLow, startWordLimit, wordLimit } from './staticGenerator';
 
-// Usefull regex
-const wordLimit = /(?!\.)(\b|_|\n|\r)/g;
-const startWordLimit = /[^\w\d\.]/g;
-const arrowLimitLow = /[^=\-<>]/g;
 
 
 export function generateDecorations(): {
@@ -89,10 +85,13 @@ export function generateDecorations(): {
         generator.comparisonSymbol(/dots\.down/g, '⋱', wordLimit, wordLimit),
 
         // Keywords
-        generator.keywordSymbol(/forall\b\s?/g, '∀', /\b/g),
-        generator.keywordSymbol(/exists\b\s?/g, '∃', /\b/g),
-        generator.keywordSymbol(/in\b\s?/g, '∈', /\b/g),
-        generator.keywordSymbol(/in\.not\b\s?/g, '∉', /\b/g),
+        generator.keywordSymbol(/forall\b\s?/g, '∀', startWordLimit),
+        generator.keywordSymbol(/exists\b\s?/g, '∃', startWordLimit),
+        generator.keywordSymbol(/in\b\s?/g, '∈', startWordLimit),
+        generator.keywordSymbol(/in\.not\b\s?/g, '∉', startWordLimit),
+        generator.keywordSymbol(/subset\b\s?/g, '⊂', startWordLimit),
+        generator.keywordSymbol(/subset\.not\b\s?/g, '⊄', startWordLimit),
+        generator.keywordSymbol(/union\b\s?/g, '∪', startWordLimit),
 
         // Greek letters
         generator.letterSymbol(/alpha/g, 'α'),
@@ -230,6 +229,7 @@ export function generateDecorations(): {
         generator.operatorSymbol(/minus/g, '-', startWordLimit, wordLimit),
         generator.operatorSymbol(/\-/g, '-', /[^_<\-]/g),
         generator.operatorSymbol(/times/g, '×', startWordLimit, wordLimit),
+        generator.operatorSymbol(/times\.big/g, '⨉', startWordLimit, wordLimit),
         generator.operatorSymbol(/\*/g, '\u{2217}', /[^\^]/g),
         generator.operatorSymbol(/div/g, '÷', startWordLimit, wordLimit),
 

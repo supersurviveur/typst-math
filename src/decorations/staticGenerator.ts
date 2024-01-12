@@ -2,6 +2,11 @@ import * as vscode from 'vscode';
 import { createDecorationType, helperSimpleRegex } from './helpers';
 import { getColors } from './utils';
 
+// Usefull regex
+export const wordLimit = /(?!\.)(\b|_|\n|\r)/g;
+export const startWordLimit = /[^\w\d\.]/g;
+export const arrowLimitLow = /[^=\-<>]/g;
+
 export class StaticGenerator {
     constructor() { }
 
@@ -48,7 +53,7 @@ export class StaticGenerator {
         return this.helperSymbol(reg, symbol, {
             color: getColors().letter,
             textDecoration: 'none; font-family: "NewComputerModernMath";',
-        });
+        }, startWordLimit, wordLimit);
     }
 
     public mathSetSymbol(reg: RegExp, symbol: string) {
