@@ -60,9 +60,22 @@ export function generateDecorations(): {
         generator.comparisonSymbol(/=/g, '=', /[^:<>!=]/g, /[^:<>!=]/g), // TODO: avoid replacing char, just add style
         generator.comparisonSymbol(/</g, '<', arrowLimitLow, arrowLimitLow),
         generator.comparisonSymbol(/>/g, '>', arrowLimitLow, arrowLimitLow),
+        generator.comparisonSymbol(/<</g, '≪', arrowLimitLow, arrowLimitLow),
+        generator.comparisonSymbol(/>>/g, '≫', arrowLimitLow, arrowLimitLow),
+        generator.comparisonSymbol(/<<</g, '⋘', arrowLimitLow, arrowLimitLow),
+        generator.comparisonSymbol(/>>>/g, '⋙', arrowLimitLow, arrowLimitLow),
+
         generator.comparisonSymbol(/eq\.triple/g, '≡', wordLimit, wordLimit),
+        generator.comparisonSymbol(/equiv/g, '≡', wordLimit, wordLimit),
+        generator.comparisonSymbol(/equiv\.not/g, '≢', wordLimit, wordLimit),
+        generator.comparisonSymbol(/eq\.quad/g, '≣', wordLimit, wordLimit),
+        generator.comparisonSymbol(/approx/g, '≈', wordLimit, wordLimit),
+        generator.comparisonSymbol(/approx\.not/g, '≉', wordLimit, wordLimit),
+        generator.comparisonSymbol(/approx\.eq/g, '≊', wordLimit, wordLimit),
+
         generator.comparisonSymbol(/!=/g, '≠'),
-        generator.comparisonSymbol(/:=/g, '≔'),
+        generator.comparisonSymbol(/:=/g, '≔', /[^:]/g),
+        generator.comparisonSymbol(/::=/g, '⩴'),
         generator.comparisonSymbol(/=>/g, '⇒', /[^<=]/g),
         generator.comparisonSymbol(/==>/g, '⟹', /[^<]/g),
         generator.comparisonSymbol(/<=>/g, '⇔', /[^<]/g),
@@ -89,9 +102,17 @@ export function generateDecorations(): {
         generator.keywordSymbol(/exists\b\s?/g, '∃', startWordLimit),
         generator.keywordSymbol(/in\b\s?/g, '∈', startWordLimit),
         generator.keywordSymbol(/in\.not\b\s?/g, '∉', startWordLimit),
+        generator.keywordSymbol(/in\.small\b\s?/g, '∊', startWordLimit),
         generator.keywordSymbol(/subset\b\s?/g, '⊂', startWordLimit),
         generator.keywordSymbol(/subset\.not\b\s?/g, '⊄', startWordLimit),
+        generator.keywordSymbol(/subset\.eq\b\s?/g, '⊆', startWordLimit),
+        generator.keywordSymbol(/subset\.eq\.not\b\s?/g, '⊈', startWordLimit),
         generator.keywordSymbol(/union\b\s?/g, '∪', startWordLimit),
+        generator.keywordSymbol(/union\.big\b\s?/g, '⋃', startWordLimit),
+        generator.keywordSymbol(/sect\b\s?/g, '∩', startWordLimit),
+        generator.keywordSymbol(/sect\.big\b\s?/g, '⋂', startWordLimit),
+        generator.keywordSymbol(/complement\b\s?/g, '∁', startWordLimit),
+
 
         // Greek letters
         generator.letterSymbol(/alpha/g, 'α'),
@@ -233,6 +254,9 @@ export function generateDecorations(): {
         generator.operatorSymbol(/\*/g, '\u{2217}', /[^\^]/g),
         generator.operatorSymbol(/div/g, '÷', startWordLimit, wordLimit),
 
+        generator.operatorSymbol(/plus\.minus/g, '±', startWordLimit, wordLimit),
+        generator.operatorSymbol(/minus\.plus/g, '∓', startWordLimit, wordLimit),
+
         generator.operatorSymbol(/dot/g, '⋅', startWordLimit, wordLimit),
         generator.operatorSymbol(/star/g, '⋆', startWordLimit, wordLimit),
         generator.operatorSymbol(/circle\.tiny/g, '∘', startWordLimit, wordLimit),
@@ -240,6 +264,7 @@ export function generateDecorations(): {
         generator.operatorSymbol(/circle/g, '○', startWordLimit, wordLimit),
 
         generator.numberSymbol(/oo/g, '∞', startWordLimit, wordLimit),
+        generator.numberSymbol(/infinity/g, '∞', startWordLimit, wordLimit),
         generator.numberSymbol(/dif/g, 'd', startWordLimit, wordLimit),
         generator.numberSymbol(/diff/g, '∂', startWordLimit, wordLimit),
     ];

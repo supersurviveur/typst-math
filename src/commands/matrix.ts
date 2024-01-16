@@ -4,12 +4,11 @@ import { showIntInputBox } from './utils';
 function generateMatrixSnippet(height: number, width: number) {
     let snippet = "mat(\n";
     for (let i = 0; i < height; i++) {
+        let temp = [];
         for (let j = 0; j < width; j++) {
-            snippet += `\${${i * width + j + 1}:0}`;
-            if (j < width - 1) {
-                snippet += ", ";
-            }
+            temp.push(`\${${i * width + j + 1}:0}`);
         }
+        snippet += temp.join(", ");
         if (i < height - 1) {
             snippet += ";\n";
         }

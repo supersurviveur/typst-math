@@ -47,7 +47,7 @@ export class StaticGenerator {
         return this.helperSymbol(reg, symbol, {
             color: getColors("letter"),
             textDecoration: 'none; font-family: "JuliaMono";',
-        });
+        }, wordLimit, wordLimit);
     }
     public bigLetterSymbol(reg: RegExp, symbol: string) {
         return this.helperSymbol(reg, symbol, {
