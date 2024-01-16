@@ -7,7 +7,7 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 ## [v0.0.4]
 - Refactor code
 - Add some math symbols
-- Add comands
+- Add commands
 - Add a default light theme
 
 ## [v0.0.3]
