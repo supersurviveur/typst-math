@@ -8,6 +8,7 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 - Refactor code
 - Add some math symbols
 - Add comands
+- Add a default light theme
 
 ## [v0.0.3]
 - Add some math symbols

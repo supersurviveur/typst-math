@@ -33,32 +33,32 @@ export class StaticGenerator {
     }
     public comparisonSymbol(reg: RegExp, symbol: string, pre?: RegExp, post?: RegExp) {
         return this.helperSymbol(reg, symbol, {
-            color: getColors().comparison,
+            color: getColors("comparison"),
             textDecoration: 'none; font-family: "NewComputerModernMath"; font-weight: bold;',
         }, pre, post);
     }
     public keywordSymbol(reg: RegExp, symbol: string, pre?: RegExp, post?: RegExp) {
         return this.helperSymbol(reg, symbol, {
-            color: getColors().keyword,
+            color: getColors("keyword"),
             textDecoration: 'none; font-family: "NewComputerModernMath"; font-weight: bold;'
         }, pre, post);
     }
     public letterSymbol(reg: RegExp, symbol: string) {
         return this.helperSymbol(reg, symbol, {
-            color: getColors().letter,
+            color: getColors("letter"),
             textDecoration: 'none; font-family: "JuliaMono";',
         });
     }
     public bigLetterSymbol(reg: RegExp, symbol: string) {
         return this.helperSymbol(reg, symbol, {
-            color: getColors().letter,
+            color: getColors("letter"),
             textDecoration: 'none; font-family: "NewComputerModernMath";',
         }, startWordLimit, wordLimit);
     }
 
     public mathSetSymbol(reg: RegExp, symbol: string) {
         return this.helperSymbol(reg, symbol, {
-            color: getColors().group,
+            color: getColors("group"),
             textDecoration: `none;
             font-family: "Fira Math";`,
         });
@@ -66,7 +66,7 @@ export class StaticGenerator {
 
     public mathSetVariantsSymbol(reg: RegExp, symbol: string, style: string, pre?: RegExp, post?: RegExp) {
         return this.helperSymbol(reg, symbol, {
-            color: getColors().group,
+            color: getColors("group"),
             textDecoration: `none;
             font-family: "JuliaMono";
             ${style}`,
@@ -75,7 +75,7 @@ export class StaticGenerator {
 
     public mathExtendSetSymbol(reg: RegExp, symbol: string, pre?: RegExp, post?: RegExp) {
         return this.helperSymbol(reg, symbol, {
-            color: getColors().group,
+            color: getColors("group"),
             textDecoration: `none;
             font-family: "Fira Math";`,
         }, pre, post);
@@ -83,7 +83,7 @@ export class StaticGenerator {
 
     public operatorSymbol(reg: RegExp, symbol: string, pre?: RegExp, post?: RegExp) {
         return this.helperSymbol(reg, symbol, {
-            color: getColors().operator,
+            color: getColors("operator"),
             textDecoration: `none;
             font-family: "Fira Math";`,
         }, pre, post);
@@ -91,7 +91,7 @@ export class StaticGenerator {
 
     public numberSymbol(reg: RegExp, symbol: string, pre?: RegExp, post?: RegExp) {
         return this.helperSymbol(reg, symbol, {
-            color: getColors().number,
+            color: getColors("number"),
             textDecoration: `none;
             font-family: "NewComputerModernMath";`,
         }, pre, post);

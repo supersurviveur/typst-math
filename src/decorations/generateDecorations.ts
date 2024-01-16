@@ -272,7 +272,7 @@ export function dynamicDecorations(activeEditor: vscode.TextEditor): dynamicDeco
         /\^\d+\b/g,
         "powers",
         {
-            color: getColors().number,
+            color: getColors("number"),
             textDecoration: `none;
             font-family: JuliaMono;
             letter-spacing: -0.15em;
@@ -296,7 +296,7 @@ export function dynamicDecorations(activeEditor: vscode.TextEditor): dynamicDeco
         /\^\(\-\d+\)/g,
         "powers",
         {
-            color: getColors().number,
+            color: getColors("number"),
             textDecoration: `none;
             font-family: JuliaMono;
             letter-spacing: -0.1em;
@@ -320,7 +320,7 @@ export function dynamicDecorations(activeEditor: vscode.TextEditor): dynamicDeco
         /\^[A-z]/g,
         "powers",
         {
-            color: getColors().number,
+            color: getColors("number"),
             textDecoration: `none;
             font-family: JuliaMono;
             font-size: 0.8em;
@@ -342,7 +342,7 @@ export function dynamicDecorations(activeEditor: vscode.TextEditor): dynamicDeco
         /\^\(\-[A-z]\)/g,
         "powers",
         {
-            color: getColors().number,
+            color: getColors("number"),
             textDecoration: `none;
             font-family: JuliaMono;
             font-size: 0.8em;
@@ -365,7 +365,7 @@ export function dynamicDecorations(activeEditor: vscode.TextEditor): dynamicDeco
         /_\d+\b/g,
         "subscripts",
         {
-            color: getColors().number,
+            color: getColors("number"),
             textDecoration: `none;
             font-family: JuliaMono;
             letter-spacing: -0.15em;
@@ -389,7 +389,7 @@ export function dynamicDecorations(activeEditor: vscode.TextEditor): dynamicDeco
         /_\(\-\d+\)/g,
         "subscripts",
         {
-            color: getColors().number,
+            color: getColors("number"),
             textDecoration: `none;
             font-family: JuliaMono;
             letter-spacing: -0.1em;
@@ -414,7 +414,7 @@ export function dynamicDecorations(activeEditor: vscode.TextEditor): dynamicDeco
         /_[A-z]/g,
         "subscripts",
         {
-            color: getColors().number,
+            color: getColors("number"),
             textDecoration: `none;
             font-family: JuliaMono;
             font-size: 0.8em;
@@ -438,7 +438,7 @@ export function dynamicDecorations(activeEditor: vscode.TextEditor): dynamicDeco
         /_\(\-[A-z]\)/g,
         "subscripts",
         {
-            color: getColors().number,
+            color: getColors("number"),
             textDecoration: `none;
             font-family: JuliaMono;
             font-size: 0.8em;

@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import { dynamicDecorations, generateDecorations } from './decorations/generateDecorations';
 import { matrix2Command, matrix3Command, matrixCommand, squareMatrixCommand } from './commands/matrix';
 import { askForFonts, installFontsCommandProvider } from './commands/installFonts';
+import { resetAllDecorations } from './decorations/helpers';
 
 
 export function activate(context: vscode.ExtensionContext) {
@@ -14,14 +15,21 @@ export function activate(context: vscode.ExtensionContext) {
 
     let decorations = generateDecorations();
 
-    // If settings change, update the decorations
-    vscode.workspace.onDidChangeConfiguration(() => {
+    const regenerateDecorations = () => {
         // Remove old decorations
         for (let decoration of decorations) {
             decoration.decorationType.dispose();
         }
+        resetAllDecorations();
+        // Generate new decorations
         decorations = generateDecorations();
-    });
+
+        updateDecorations();
+    };
+
+    // If settings or the current theme change, update the decorations
+    vscode.workspace.onDidChangeConfiguration(regenerateDecorations);
+    vscode.window.onDidChangeActiveColorTheme(regenerateDecorations);
 
     let activeEditor = vscode.window.activeTextEditor;
 

@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 
-const allDecorations: {
+let allDecorations: {
     [key: string]: {
         [key: string]: {
             decorationType: vscode.TextEditorDecorationType,
@@ -10,6 +10,16 @@ const allDecorations: {
 } = {
 };
 
+export function resetAllDecorations() {
+    // Clear current decorations
+    for (const key in allDecorations) {
+        for (const subKey in allDecorations[key]) {
+            allDecorations[key][subKey].ranges = [];
+            vscode.window.activeTextEditor?.setDecorations(allDecorations[key][subKey].decorationType, []);
+        }
+    }
+    allDecorations = {};
+}
 export function getAllDecorations() {
     return allDecorations;
 }

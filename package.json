@@ -28,12 +28,12 @@
         "typst-math.colors": {
           "type": "object",
           "default": {
-            "keyword": "#F92672",
-            "number": "#f8f8f2",
-            "comparison": "#AE81FF",
-            "letter": "#A6E22E",
-            "group": "#66D9EF",
-            "operator": "#FD971F"
+            "keyword": "",
+            "number": "",
+            "comparison": "",
+            "letter": "",
+            "group": "",
+            "operator": ""
           },
           "markdownDescription": "The colors used to render math symbols in typst.\nDefault colors are based on the Monokai theme",
           "properties": {
