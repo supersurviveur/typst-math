@@ -6,12 +6,26 @@
 		],
 		"description": "Write a sum"
 	},
+	"Write a double sum": {
+		"prefix": "dsum",
+		"body": [
+			"sum_(${1:indice})^(${2:exposant}) sum_(${3:indice})^(${4:exposant}) ${5}"
+		],
+		"description": "Write a double sum"
+	},
 	"Write a product": {
 		"prefix": "prod",
 		"body": [
-			"prod_(${1:indice})^(${2:exposant}) ${3}"
+			"product_(${1:indice})^(${2:exposant}) ${3}"
 		],
 		"description": "Write a product"
+	},
+	"Write a double product": {
+		"prefix": "dprod",
+		"body": [
+			"product_(${1:indice})^(${2:exposant}) product_(${3:indice})^(${4:exposant}) ${5}"
+		],
+		"description": "Write a double product"
 	},
 	"Define a math function": {
 		"prefix": "func",
@@ -26,5 +40,26 @@
 			"forall ${1:x} in ${2:RR}, ${3}"
 		],
 		"description": "Forall"
+	},
+	"Limit": {
+		"prefix": "lim",
+		"body": [
+			"lim_(${1:to}) ${2}"
+		],
+		"description": "Limit"
+	},
+	"Limit when tends to infinity": {
+		"prefix": "liminf",
+		"body": [
+			"lim_(${1:x}->${2|+oo,-oo|}) ${3}"
+		],
+		"description": "Limit when tends to infinity"
+	},
+	"Limit when tends to a number l": {
+		"prefix": "liml",
+		"body": [
+			"lim_(${1:x}->${2:l}) ${3}"
+		],
+		"description": "Limit when tends to l"
 	},
 }

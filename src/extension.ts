@@ -3,6 +3,7 @@ import { dynamicDecorations, generateDecorations } from './decorations/generateD
 import { matrix2Command, matrix3Command, matrixCommand, squareMatrixCommand } from './commands/matrix';
 import { askForFonts, installFontsCommandProvider } from './commands/installFonts';
 import { resetAllDecorations } from './decorations/helpers';
+import { mathCommand } from './commands/math';
 
 
 export function activate(context: vscode.ExtensionContext) {
@@ -71,6 +72,7 @@ export function activate(context: vscode.ExtensionContext) {
     }, null, context.subscriptions);
 
     // Register commands
+    context.subscriptions.push(mathCommand);
     context.subscriptions.push(matrixCommand);
     context.subscriptions.push(squareMatrixCommand);
     context.subscriptions.push(matrix2Command);

@@ -1,7 +1,7 @@
 {
   "name": "typst-math",
   "displayName": "Typst math",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "engines": {
     "vscode": "^1.85.0"
   },
@@ -91,6 +91,11 @@
         "command": "typst-math.install-fonts",
         "title": "Install fonts",
         "category": "Typst math"
+      },
+      {
+        "command": "typst-math.math",
+        "title": "Insert math equation",
+        "category": "Typst math"
       }
     ],
     "snippets": [
@@ -103,6 +108,11 @@
       {
         "command": "typst-math.matrix",
         "key": "ctrl+alt+m",
+        "when": "editorTextFocus && editorLangId == typst"
+      },
+      {
+        "command": "typst-math.math",
+        "key": "ctrl+m",
         "when": "editorTextFocus && editorLangId == typst"
       }
     ]

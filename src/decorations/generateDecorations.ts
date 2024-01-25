@@ -98,79 +98,79 @@ export function generateDecorations(): {
         generator.comparisonSymbol(/dots\.down/g, '⋱', wordLimit, wordLimit),
 
         // Keywords
-        generator.keywordSymbol(/forall\b\s?/g, '∀', startWordLimit),
-        generator.keywordSymbol(/exists\b\s?/g, '∃', startWordLimit),
-        generator.keywordSymbol(/in\b\s?/g, '∈', startWordLimit),
-        generator.keywordSymbol(/in\.not\b\s?/g, '∉', startWordLimit),
-        generator.keywordSymbol(/in\.small\b\s?/g, '∊', startWordLimit),
-        generator.keywordSymbol(/subset\b\s?/g, '⊂', startWordLimit),
-        generator.keywordSymbol(/subset\.not\b\s?/g, '⊄', startWordLimit),
-        generator.keywordSymbol(/subset\.eq\b\s?/g, '⊆', startWordLimit),
-        generator.keywordSymbol(/subset\.eq\.not\b\s?/g, '⊈', startWordLimit),
-        generator.keywordSymbol(/union\b\s?/g, '∪', startWordLimit),
-        generator.keywordSymbol(/union\.big\b\s?/g, '⋃', startWordLimit),
-        generator.keywordSymbol(/sect\b\s?/g, '∩', startWordLimit),
-        generator.keywordSymbol(/sect\.big\b\s?/g, '⋂', startWordLimit),
-        generator.keywordSymbol(/complement\b\s?/g, '∁', startWordLimit),
+        generator.keywordSymbol(/forall\s?/g, '∀', startWordLimit, wordLimit),
+        generator.keywordSymbol(/exists\s?/g, '∃', startWordLimit, wordLimit),
+        generator.keywordSymbol(/\s?in\s?/g, '∈', startWordLimit, wordLimit),
+        generator.keywordSymbol(/\s?in\.not\s?/g, '∉', startWordLimit, wordLimit),
+        generator.keywordSymbol(/\s?in\.small\s?/g, '∊', startWordLimit, wordLimit),
+        generator.keywordSymbol(/\s?subset\s?/g, '⊂', startWordLimit, wordLimit),
+        generator.keywordSymbol(/\s?subset\.not\s?/g, '⊄', startWordLimit, wordLimit),
+        generator.keywordSymbol(/\s?subset\.eq\s?/g, '⊆', startWordLimit, wordLimit),
+        generator.keywordSymbol(/\s?subset\.eq\.not\s?/g, '⊈', startWordLimit, wordLimit),
+        generator.keywordSymbol(/\s?union\s?/g, '∪', startWordLimit, wordLimit),
+        generator.keywordSymbol(/union\.big\s?/g, '⋃', startWordLimit, wordLimit),
+        generator.keywordSymbol(/\s?sect\s?/g, '∩', startWordLimit, wordLimit),
+        generator.keywordSymbol(/sect\.big\s?/g, '⋂', startWordLimit, wordLimit),
+        generator.keywordSymbol(/complement\s?/g, '∁', startWordLimit, wordLimit),
 
 
         // Greek letters
-        generator.letterSymbol(/alpha/g, 'α'),
-        generator.letterSymbol(/Alpha/g, 'Α'),
-        generator.letterSymbol(/beta/g, 'β'),
-        generator.letterSymbol(/Beta/g, 'Β'),
-        generator.letterSymbol(/beta\.alt/g, 'ϐ'),
-        generator.letterSymbol(/gamma/g, 'γ'),
-        generator.letterSymbol(/Gamma/g, 'Γ'),
-        generator.letterSymbol(/delta/g, 'δ'),
-        generator.letterSymbol(/Delta/g, 'Δ'),
-        generator.letterSymbol(/epsilon/g, 'ε'),
-        generator.letterSymbol(/epsilon\.alt/g, 'ϵ'),
-        generator.letterSymbol(/Epsilon/g, 'Ε'),
-        generator.letterSymbol(/zeta/g, 'ζ'),
-        generator.letterSymbol(/Zeta/g, 'Ζ'),
-        generator.letterSymbol(/eta/g, 'η'),
-        generator.letterSymbol(/Eta/g, 'Η'),
-        generator.letterSymbol(/theta/g, 'θ'),
-        generator.letterSymbol(/Theta/g, 'Θ'),
-        generator.letterSymbol(/theta\.alt/g, 'ϑ'),
-        generator.letterSymbol(/iota/g, 'ι'),
-        generator.letterSymbol(/Iota/g, 'Ι'),
-        generator.letterSymbol(/kappa/g, 'κ'),
-        generator.letterSymbol(/Kappa/g, 'Κ'),
-        generator.letterSymbol(/kappa\.alt/g, 'ϰ'),
-        generator.letterSymbol(/lambda/g, 'λ'),
-        generator.letterSymbol(/Lambda/g, 'Λ'),
-        generator.letterSymbol(/mu/g, 'μ'),
-        generator.letterSymbol(/Mu/g, 'Μ'),
-        generator.letterSymbol(/nu/g, 'ν'),
-        generator.letterSymbol(/Nu/g, 'Ν'),
-        generator.letterSymbol(/xi/g, 'ξ'),
-        generator.letterSymbol(/Xi/g, 'Ξ'),
-        generator.letterSymbol(/omicron/g, 'ο'),
-        generator.letterSymbol(/Omicron/g, 'Ο'),
-        generator.letterSymbol(/pi/g, 'π'),
-        generator.letterSymbol(/Pi/g, 'Π'),
-        generator.letterSymbol(/pi\.alt/g, 'ϖ'),
-        generator.letterSymbol(/rho/g, 'ρ'),
-        generator.letterSymbol(/Rho/g, 'Ρ'),
-        generator.letterSymbol(/rho\.alt/g, 'ϱ'),
-        generator.letterSymbol(/sigma/g, 'σ'),
-        generator.letterSymbol(/Sigma/g, 'Σ'),
-        generator.letterSymbol(/sigma\.alt/g, 'ς'),
-        generator.letterSymbol(/tau/g, 'τ'),
-        generator.letterSymbol(/Tau/g, 'Τ'),
-        generator.letterSymbol(/upsilon/g, 'υ'),
-        generator.letterSymbol(/Upsilon/g, 'Υ'),
-        generator.letterSymbol(/phi/g, 'φ'), // phi and phi.alt char are inverted, because Juliafont invert them
-        generator.letterSymbol(/Phi/g, 'Φ'),
-        generator.letterSymbol(/phi\.alt/g, 'ϕ'),
-        generator.letterSymbol(/chi/g, 'χ'),
-        generator.letterSymbol(/Chi/g, 'Χ'),
-        generator.letterSymbol(/psi/g, 'ψ'),
-        generator.letterSymbol(/Psi/g, 'Ψ'),
-        generator.letterSymbol(/omega/g, 'ω'),
-        generator.letterSymbol(/Omega/g, 'Ω'),
+        ...generator.letterSymbolWithVariants(/alpha/g, 'α'),
+        ...generator.letterSymbolWithVariants(/Alpha/g, 'Α'),
+        ...generator.letterSymbolWithVariants(/beta/g, 'β'),
+        ...generator.letterSymbolWithVariants(/Beta/g, 'Β'),
+        ...generator.letterSymbolWithVariants(/beta\.alt/g, 'ϐ'),
+        ...generator.letterSymbolWithVariants(/gamma/g, 'γ'),
+        ...generator.letterSymbolWithVariants(/Gamma/g, 'Γ'),
+        ...generator.letterSymbolWithVariants(/delta/g, 'δ'),
+        ...generator.letterSymbolWithVariants(/Delta/g, 'Δ'),
+        ...generator.letterSymbolWithVariants(/epsilon/g, 'ε'),
+        ...generator.letterSymbolWithVariants(/epsilon\.alt/g, 'ϵ'),
+        ...generator.letterSymbolWithVariants(/Epsilon/g, 'Ε'),
+        ...generator.letterSymbolWithVariants(/zeta/g, 'ζ'),
+        ...generator.letterSymbolWithVariants(/Zeta/g, 'Ζ'),
+        ...generator.letterSymbolWithVariants(/eta/g, 'η'),
+        ...generator.letterSymbolWithVariants(/Eta/g, 'Η'),
+        ...generator.letterSymbolWithVariants(/theta/g, 'θ'),
+        ...generator.letterSymbolWithVariants(/Theta/g, 'Θ'),
+        ...generator.letterSymbolWithVariants(/theta\.alt/g, 'ϑ'),
+        ...generator.letterSymbolWithVariants(/iota/g, 'ι'),
+        ...generator.letterSymbolWithVariants(/Iota/g, 'Ι'),
+        ...generator.letterSymbolWithVariants(/kappa/g, 'κ'),
+        ...generator.letterSymbolWithVariants(/Kappa/g, 'Κ'),
+        ...generator.letterSymbolWithVariants(/kappa\.alt/g, 'ϰ'),
+        ...generator.letterSymbolWithVariants(/lambda/g, 'λ'),
+        ...generator.letterSymbolWithVariants(/Lambda/g, 'Λ'),
+        ...generator.letterSymbolWithVariants(/mu/g, 'μ'),
+        ...generator.letterSymbolWithVariants(/Mu/g, 'Μ'),
+        ...generator.letterSymbolWithVariants(/nu/g, 'ν'),
+        ...generator.letterSymbolWithVariants(/Nu/g, 'Ν'),
+        ...generator.letterSymbolWithVariants(/xi/g, 'ξ'),
+        ...generator.letterSymbolWithVariants(/Xi/g, 'Ξ'),
+        ...generator.letterSymbolWithVariants(/omicron/g, 'ο'),
+        ...generator.letterSymbolWithVariants(/Omicron/g, 'Ο'),
+        ...generator.letterSymbolWithVariants(/pi/g, 'π'),
+        ...generator.letterSymbolWithVariants(/Pi/g, 'Π'),
+        ...generator.letterSymbolWithVariants(/pi\.alt/g, 'ϖ'),
+        ...generator.letterSymbolWithVariants(/rho/g, 'ρ'),
+        ...generator.letterSymbolWithVariants(/Rho/g, 'Ρ'),
+        ...generator.letterSymbolWithVariants(/rho\.alt/g, 'ϱ'),
+        ...generator.letterSymbolWithVariants(/sigma/g, 'σ'),
+        ...generator.letterSymbolWithVariants(/Sigma/g, 'Σ'),
+        ...generator.letterSymbolWithVariants(/sigma\.alt/g, 'ς'),
+        ...generator.letterSymbolWithVariants(/tau/g, 'τ'),
+        ...generator.letterSymbolWithVariants(/Tau/g, 'Τ'),
+        ...generator.letterSymbolWithVariants(/upsilon/g, 'υ'),
+        ...generator.letterSymbolWithVariants(/Upsilon/g, 'Υ'),
+        ...generator.letterSymbolWithVariants(/phi/g, 'φ'), // phi and phi.alt char are inverted, because Juliafont invert them
+        ...generator.letterSymbolWithVariants(/Phi/g, 'Φ'),
+        ...generator.letterSymbolWithVariants(/phi\.alt/g, 'ϕ'),
+        ...generator.letterSymbolWithVariants(/chi/g, 'χ'),
+        ...generator.letterSymbolWithVariants(/Chi/g, 'Χ'),
+        ...generator.letterSymbolWithVariants(/psi/g, 'ψ'),
+        ...generator.letterSymbolWithVariants(/Psi/g, 'Ψ'),
+        ...generator.letterSymbolWithVariants(/omega/g, 'ω'),
+        ...generator.letterSymbolWithVariants(/Omega/g, 'Ω'),
 
         // Big letters
         generator.bigLetterSymbol(/sum/g, '∑'),
@@ -253,6 +253,11 @@ export function generateDecorations(): {
         generator.operatorSymbol(/times\.big/g, '⨉', startWordLimit, wordLimit),
         generator.operatorSymbol(/\*/g, '\u{2217}', /[^\^]/g),
         generator.operatorSymbol(/div/g, '÷', startWordLimit, wordLimit),
+        generator.operatorSymbol(/and/g, '∧', startWordLimit, wordLimit),
+        generator.operatorSymbol(/and\.big/g, '⋀', startWordLimit, wordLimit),
+        generator.operatorSymbol(/or/g, '∨', startWordLimit, wordLimit),
+        generator.operatorSymbol(/or\.big/g, '⋁', startWordLimit, wordLimit),
+        generator.operatorSymbol(/not/g, '¬', startWordLimit, wordLimit),
 
         generator.operatorSymbol(/plus\.minus/g, '±', startWordLimit, wordLimit),
         generator.operatorSymbol(/minus\.plus/g, '∓', startWordLimit, wordLimit),
@@ -267,6 +272,58 @@ export function generateDecorations(): {
         generator.numberSymbol(/infinity/g, '∞', startWordLimit, wordLimit),
         generator.numberSymbol(/dif/g, 'd', startWordLimit, wordLimit),
         generator.numberSymbol(/diff/g, '∂', startWordLimit, wordLimit),
+        generator.numberSymbol(/cal\(A\)/g, '𝒜', startWordLimit),
+        generator.numberSymbol(/cal\(B\)/g, 'ℬ', startWordLimit),
+        generator.numberSymbol(/cal\(C\)/g, '𝒞', startWordLimit),
+        generator.numberSymbol(/cal\(D\)/g, '𝒟', startWordLimit),
+        generator.numberSymbol(/cal\(E\)/g, 'ℰ', startWordLimit),
+        generator.numberSymbol(/cal\(F\)/g, 'ℱ', startWordLimit),
+        generator.numberSymbol(/cal\(G\)/g, '𝒢', startWordLimit),
+        generator.numberSymbol(/cal\(H\)/g, 'ℋ', startWordLimit),
+        generator.numberSymbol(/cal\(I\)/g, 'ℐ', startWordLimit),
+        generator.numberSymbol(/cal\(J\)/g, '𝒥', startWordLimit),
+        generator.numberSymbol(/cal\(K\)/g, '𝒦', startWordLimit),
+        generator.numberSymbol(/cal\(L\)/g, 'ℒ', startWordLimit),
+        generator.numberSymbol(/cal\(M\)/g, 'ℳ', startWordLimit),
+        generator.numberSymbol(/cal\(N\)/g, '𝒩', startWordLimit),
+        generator.numberSymbol(/cal\(O\)/g, '𝒪', startWordLimit),
+        generator.numberSymbol(/cal\(P\)/g, '𝒫', startWordLimit),
+        generator.numberSymbol(/cal\(Q\)/g, '𝒬', startWordLimit),
+        generator.numberSymbol(/cal\(R\)/g, 'ℛ', startWordLimit),
+        generator.numberSymbol(/cal\(S\)/g, '𝒮', startWordLimit),
+        generator.numberSymbol(/cal\(T\)/g, '𝒯', startWordLimit),
+        generator.numberSymbol(/cal\(U\)/g, '𝒰', startWordLimit),
+        generator.numberSymbol(/cal\(V\)/g, '𝒱', startWordLimit),
+        generator.numberSymbol(/cal\(W\)/g, '𝒲', startWordLimit),
+        generator.numberSymbol(/cal\(X\)/g, '𝒳', startWordLimit),
+        generator.numberSymbol(/cal\(Y\)/g, '𝒴', startWordLimit),
+        generator.numberSymbol(/cal\(Z\)/g, '𝒵', startWordLimit),
+        generator.numberSymbol(/cal\(a\)/g, '𝒶', startWordLimit),
+        generator.numberSymbol(/cal\(b\)/g, '𝒷', startWordLimit),
+        generator.numberSymbol(/cal\(c\)/g, '𝒸', startWordLimit),
+        generator.numberSymbol(/cal\(d\)/g, '𝒹', startWordLimit),
+        generator.numberSymbol(/cal\(e\)/g, 'ℯ', startWordLimit),
+        generator.numberSymbol(/cal\(f\)/g, '𝒻', startWordLimit),
+        generator.numberSymbol(/cal\(g\)/g, 'ℊ', startWordLimit),
+        generator.numberSymbol(/cal\(h\)/g, '𝒽', startWordLimit),
+        generator.numberSymbol(/cal\(i\)/g, '𝒾', startWordLimit),
+        generator.numberSymbol(/cal\(j\)/g, '𝒿', startWordLimit),
+        generator.numberSymbol(/cal\(k\)/g, '𝓀', startWordLimit),
+        generator.numberSymbol(/cal\(l\)/g, '𝓁', startWordLimit),
+        generator.numberSymbol(/cal\(m\)/g, '𝓂', startWordLimit),
+        generator.numberSymbol(/cal\(n\)/g, '𝓃', startWordLimit),
+        generator.numberSymbol(/cal\(o\)/g, 'ℴ', startWordLimit),
+        generator.numberSymbol(/cal\(p\)/g, '𝓅', startWordLimit),
+        generator.numberSymbol(/cal\(q\)/g, '𝓆', startWordLimit),
+        generator.numberSymbol(/cal\(r\)/g, '𝓇', startWordLimit),
+        generator.numberSymbol(/cal\(s\)/g, '𝓈', startWordLimit),
+        generator.numberSymbol(/cal\(t\)/g, '𝓉', startWordLimit),
+        generator.numberSymbol(/cal\(u\)/g, '𝓊', startWordLimit),
+        generator.numberSymbol(/cal\(v\)/g, '𝓋', startWordLimit),
+        generator.numberSymbol(/cal\(w\)/g, '𝓌', startWordLimit),
+        generator.numberSymbol(/cal\(x\)/g, '𝓍', startWordLimit),
+        generator.numberSymbol(/cal\(y\)/g, '𝓎', startWordLimit),
+        generator.numberSymbol(/cal\(z\)/g, '𝓏', startWordLimit),
     ];
 }
 
@@ -294,7 +351,7 @@ export function dynamicDecorations(activeEditor: vscode.TextEditor): dynamicDeco
 
     // Powers
     generator.simpleRegex(
-        /\^\d+\b/g,
+        /\^(\d+\b|\(\d+\))/g,
         "powers",
         {
             color: getColors("number"),
@@ -305,7 +362,11 @@ export function dynamicDecorations(activeEditor: vscode.TextEditor): dynamicDeco
             display: inline-block;`
         },
         (match) => {
-            const number = match[0].slice(1);
+            let number = match[0].slice(1);
+            // Remove paren if there is one'
+            if (number[0] === '(') {
+                number = number.slice(1, -1);
+            }
             const litNumbers = number.split('').map((n) => parseInt(n));
             return [
                 number,
@@ -342,7 +403,7 @@ export function dynamicDecorations(activeEditor: vscode.TextEditor): dynamicDeco
 
     // literal powers
     generator.simpleRegex(
-        /\^[A-z]/g,
+        /\^([A-z]\b|\([A-z]\))/g,
         "powers",
         {
             color: getColors("number"),
@@ -353,14 +414,16 @@ export function dynamicDecorations(activeEditor: vscode.TextEditor): dynamicDeco
             display: inline-block;`
         },
         (match) => {
-            const letter = match[0].slice(1);
+            let letter = match[0].slice(1);
+            // Remove paren if there is one'
+            if (letter[0] === '(') {
+                letter = letter.slice(1, -1);
+            }
             return [
                 letter,
                 letter
             ];
         },
-        undefined,
-        /\b/g
     );
     // literal negative powers
     generator.simpleRegex(
@@ -387,7 +450,7 @@ export function dynamicDecorations(activeEditor: vscode.TextEditor): dynamicDeco
 
     // Subscripts
     generator.simpleRegex(
-        /_\d+\b/g,
+        /_(\d+\b|\(\d+\))/g,
         "subscripts",
         {
             color: getColors("number"),
@@ -399,7 +462,11 @@ export function dynamicDecorations(activeEditor: vscode.TextEditor): dynamicDeco
             padding-right: 0.1em;`,
         },
         (match) => {
-            const number = match[0].slice(1);
+            let number = match[0].slice(1);
+            // Remove paren if there is one'
+            if (number[0] === '(') {
+                number = number.slice(1, -1);
+            }
             const litNumbers = number.split('').map((n) => parseInt(n));
             return [
                 number,
@@ -436,7 +503,7 @@ export function dynamicDecorations(activeEditor: vscode.TextEditor): dynamicDeco
 
     // literal subscripts
     generator.simpleRegex(
-        /_[A-z]/g,
+        /_([A-z]\b|\([A-z]\))/g, // match without or with paren
         "subscripts",
         {
             color: getColors("number"),
@@ -449,14 +516,16 @@ export function dynamicDecorations(activeEditor: vscode.TextEditor): dynamicDeco
             padding-right: 0.1em;`,
         },
         (match) => {
-            const letter = match[0].slice(1);
+            let letter = match[0].slice(1);
+            // Remove paren if there is one'
+            if (letter[0] === '(') {
+                letter = letter.slice(1, -1);
+            }
             return [
                 letter,
                 letter
             ];
         },
-        undefined,
-        /\b/g
     );
     // literal negative subscripts
     generator.simpleRegex(
@@ -479,8 +548,48 @@ export function dynamicDecorations(activeEditor: vscode.TextEditor): dynamicDeco
                 letter
             ];
         },
-        undefined,
-        undefined
+    );
+
+    // Third letters superscripts like k=0, n+1...
+    generator.simpleRegex(
+        /\^\([A-z](\+|\=|\-).\)/g,
+        "powers",
+        {
+            color: getColors("number"),
+            textDecoration: `none;
+            font-family: JuliaMono;
+            font-size: 0.8em;
+            transform: translateY(-30%);
+            display: inline-block;`,
+        },
+        (match) => {
+            const content = match[0].slice(2, -1);
+            return [
+                content,
+                content
+            ];
+        },
+    );
+
+    // Third letters subscripts like k=0, n+1...
+    generator.simpleRegex(
+        /_\([A-z](\+|\=|\-).\)/g,
+        "subscripts",
+        {
+            color: getColors("number"),
+            textDecoration: `none;
+            font-family: JuliaMono;
+            font-size: 0.8em;
+            transform: translateY(20%);
+            display: inline-block;`,
+        },
+        (match) => {
+            const content = match[0].slice(2, -1);
+            return [
+                content,
+                content
+            ];
+        },
     );
 
     // Flatten allDecorations into result

@@ -49,6 +49,31 @@ export class StaticGenerator {
             textDecoration: 'none; font-family: "JuliaMono";',
         }, wordLimit, wordLimit);
     }
+    public letterSymbolWithVariants(reg: RegExp, symbol: string) {
+        return [
+            // Basic version
+            this.helperSymbol(reg, symbol, {
+                color: getColors("letter"),
+                textDecoration: 'none; font-family: "JuliaMono";',
+            }, /(?!\.|\^|[A-z])./g, wordLimit),
+            // Superscript version
+            this.helperSymbol(RegExp(`\\^(${reg.source}\\b|\\(${reg.source}\\))`), symbol, {
+                color: getColors("letter"),
+                textDecoration: `none; font-family: "JuliaMono";
+                font-size: 0.8em;
+                transform: translateY(-30%);
+                display: inline-block;`,
+            }),
+            // Subscript version
+            this.helperSymbol(RegExp(`_(${reg.source}\\b|\\(${reg.source}\\))`), symbol, {
+                color: getColors("letter"),
+                textDecoration: `none; font-family: "JuliaMono";
+                font-size: 0.8em;
+                transform: translateY(20%);
+                display: inline-block;`,
+            })
+        ];
+    }
     public bigLetterSymbol(reg: RegExp, symbol: string) {
         return this.helperSymbol(reg, symbol, {
             color: getColors("letter"),
