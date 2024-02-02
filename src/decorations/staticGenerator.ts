@@ -31,6 +31,45 @@ export class StaticGenerator {
             })
         };
     }
+    public helperWithVariants(reg: RegExp, symbol: string, options: {
+        color: string,
+        textDecoration: string,
+    }, pre?: RegExp, post?: RegExp) {
+        return [
+            // Basic version
+            this.helperSymbol(reg, symbol, options, pre, post),
+            // Variants
+            ...this.helperOnlyVariants(reg, symbol, options, pre, post)
+        ];
+    }
+    public helperOnlyVariants(reg: RegExp, symbol: string, options: {
+        color: string,
+        textDecoration: string,
+    }, pre?: RegExp, post?: RegExp) {
+        return [
+            // Superscript version
+            this.helperSymbol(RegExp(`\\^(${reg.source}\\b|\\(${reg.source}\\))`), symbol,
+                {
+                    ...options,
+                    textDecoration: options.textDecoration + `font-size: 0.8em; transform: translateY(-30%); display: inline-block;`
+                }),
+            // Subscript version
+            this.helperSymbol(RegExp(`_(${reg.source}\\b|\\(${reg.source}\\))`), symbol, {
+                ...options,
+                textDecoration: options.textDecoration + `font-size: 0.8em; transform: translateY(20%); display: inline-block;`
+            }),
+            // Superscrit with minus
+            this.helperSymbol(RegExp(`\\^\\(-${reg.source}\\)`), "-" + symbol, {
+                ...options,
+                textDecoration: options.textDecoration + `font-size: 0.8em; transform: translateY(-30%); display: inline-block;`
+            }),
+            // Subscript with minus
+            this.helperSymbol(RegExp(`_\\(-${reg.source}\\)`), "-" + symbol, {
+                ...options,
+                textDecoration: options.textDecoration + `font-size: 0.8em; transform: translateY(20%); display: inline-block;`
+            })
+        ];
+    }
     public comparisonSymbol(reg: RegExp, symbol: string, pre?: RegExp, post?: RegExp) {
         return this.helperSymbol(reg, symbol, {
             color: getColors("comparison"),
@@ -50,30 +89,13 @@ export class StaticGenerator {
         }, wordLimit, wordLimit);
     }
     public letterSymbolWithVariants(reg: RegExp, symbol: string) {
-        return [
-            // Basic version
-            this.helperSymbol(reg, symbol, {
+        return this.helperWithVariants(reg, symbol,
+            {
                 color: getColors("letter"),
                 textDecoration: 'none; font-family: "JuliaMono";',
-            }, /(?!\.|\^|[A-z])./g, wordLimit),
-            // Superscript version
-            this.helperSymbol(RegExp(`\\^(${reg.source}\\b|\\(${reg.source}\\))`), symbol, {
-                color: getColors("letter"),
-                textDecoration: `none; font-family: "JuliaMono";
-                font-size: 0.8em;
-                transform: translateY(-30%);
-                display: inline-block;`,
-            }),
-            // Subscript version
-            this.helperSymbol(RegExp(`_(${reg.source}\\b|\\(${reg.source}\\))`), symbol, {
-                color: getColors("letter"),
-                textDecoration: `none; font-family: "JuliaMono";
-                font-size: 0.8em;
-                transform: translateY(20%);
-                display: inline-block;`,
-            })
-        ];
+            }, /(?!\.|\^|[A-z])./g, wordLimit);
     }
+
     public bigLetterSymbol(reg: RegExp, symbol: string) {
         return this.helperSymbol(reg, symbol, {
             color: getColors("letter"),
@@ -87,6 +109,13 @@ export class StaticGenerator {
             textDecoration: `none;
             font-family: "Fira Math";`,
         });
+    }
+    public mathSetSymbolWithVariants(reg: RegExp, symbol: string) {
+        return this.helperWithVariants(reg, symbol, {
+            color: getColors("group"),
+            textDecoration: `none;
+            font-family: "Fira Math";`,
+        }, /(?!\.|\^|[A-z])./g);
     }
 
     public mathSetVariantsSymbol(reg: RegExp, symbol: string, style: string, pre?: RegExp, post?: RegExp) {
@@ -119,6 +148,14 @@ export class StaticGenerator {
             color: getColors("number"),
             textDecoration: `none;
             font-family: "NewComputerModernMath";`,
+        }, pre, post);
+    }
+    public numberSymbolOnlyVariantsJulia(reg: RegExp, symbol: string, pre?: RegExp, post?: RegExp) {
+        return this.helperOnlyVariants(reg, symbol, {
+            color: getColors("number"),
+            textDecoration: `none;
+            letter-spacing: -0.1em;
+            font-family: JuliaMono;`,
         }, pre, post);
     }
 }

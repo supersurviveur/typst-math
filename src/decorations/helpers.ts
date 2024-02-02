@@ -53,22 +53,11 @@ export function helperSimpleRegex(text: string, activeEditor: vscode.TextEditor,
 
         // If the cursor is near the match, we don't decorate it
 
-        // reveal 4 chars before and after the match
-        // let revealStartPos = activeEditor.document.positionAt(startIndex + rangeStartOffset - 4);
-        // if (revealStartPos.line !== startPos.line) {
-        //     // Just reveal the current line
-        //     revealStartPos = new vscode.Position(startPos.line, 0);
-        // }
-        // let revealEndPos = activeEditor.document.positionAt(endIndex + rangeEndOffset + 4);
-        // if (revealEndPos.line !== endPos.line) {
-        //     // Just reveal the current line
-        //     revealEndPos = new vscode.Position(endPos.line, activeEditor.document.lineAt(endPos.line).text.length);
-        // }
-        // const revealRange = new vscode.Range(revealStartPos, revealEndPos);
-        
         // Reveal the entire line
         const revealRange = new vscode.Range(new vscode.Position(startPos.line, 0), new vscode.Position(endPos.line, activeEditor.document.lineAt(endPos.line).text.length));
-        if (revealRange.contains(activeEditor.selection)) { continue; }
+        if (activeEditor.selection.intersection(revealRange)) {
+            continue;
+        }
 
         // Check if we are in math mode
         // Get the text before the match, and count if there is an even number of $

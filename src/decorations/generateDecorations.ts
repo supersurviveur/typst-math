@@ -72,6 +72,7 @@ export function generateDecorations(): {
         generator.comparisonSymbol(/approx/g, '≈', wordLimit, wordLimit),
         generator.comparisonSymbol(/approx\.not/g, '≉', wordLimit, wordLimit),
         generator.comparisonSymbol(/approx\.eq/g, '≊', wordLimit, wordLimit),
+        generator.comparisonSymbol(/tilde\.op/g, '∼', wordLimit, wordLimit),
 
         generator.comparisonSymbol(/!=/g, '≠'),
         generator.comparisonSymbol(/:=/g, '≔', /[^:]/g),
@@ -178,33 +179,33 @@ export function generateDecorations(): {
         generator.bigLetterSymbol(/integral/g, '∫'),
 
         // Sets
-        generator.mathSetSymbol(/emptyset/g, '∅'),
-        generator.mathSetSymbol(/AA/g, '𝔸'),
-        generator.mathSetSymbol(/BB/g, '𝔹'),
-        generator.mathSetSymbol(/CC/g, 'ℂ'),
-        generator.mathSetSymbol(/DD/g, '𝔻'),
-        generator.mathSetSymbol(/EE/g, '𝔼'),
-        generator.mathSetSymbol(/FF/g, '𝔽'),
-        generator.mathSetSymbol(/GG/g, '𝔾'),
-        generator.mathSetSymbol(/HH/g, 'ℍ'),
-        generator.mathSetSymbol(/II/g, '𝕀'),
-        generator.mathSetSymbol(/JJ/g, '𝕁'),
-        generator.mathSetSymbol(/KK/g, '𝕂'),
-        generator.mathSetSymbol(/LL/g, '𝕃'),
-        generator.mathSetSymbol(/MM/g, '𝕄'),
-        generator.mathSetSymbol(/NN/g, 'ℕ'),
-        generator.mathSetSymbol(/OO/g, '𝕆'),
-        generator.mathSetSymbol(/PP/g, 'ℙ'),
-        generator.mathSetSymbol(/QQ/g, 'ℚ'),
-        generator.mathSetSymbol(/RR/g, 'ℝ'),
-        generator.mathSetSymbol(/SS/g, '𝕊'),
-        generator.mathSetSymbol(/TT/g, '𝕋'),
-        generator.mathSetSymbol(/UU/g, '𝕌'),
-        generator.mathSetSymbol(/VV/g, '𝕍'),
-        generator.mathSetSymbol(/WW/g, '𝕎'),
-        generator.mathSetSymbol(/XX/g, '𝕏'),
-        generator.mathSetSymbol(/YY/g, '𝕐'),
-        generator.mathSetSymbol(/ZZ/g, 'ℤ'),
+        ...generator.mathSetSymbolWithVariants(/emptyset/g, '∅'),
+        ...generator.mathSetSymbolWithVariants(/AA/g, '𝔸'),
+        ...generator.mathSetSymbolWithVariants(/BB/g, '𝔹'),
+        ...generator.mathSetSymbolWithVariants(/CC/g, 'ℂ'),
+        ...generator.mathSetSymbolWithVariants(/DD/g, '𝔻'),
+        ...generator.mathSetSymbolWithVariants(/EE/g, '𝔼'),
+        ...generator.mathSetSymbolWithVariants(/FF/g, '𝔽'),
+        ...generator.mathSetSymbolWithVariants(/GG/g, '𝔾'),
+        ...generator.mathSetSymbolWithVariants(/HH/g, 'ℍ'),
+        ...generator.mathSetSymbolWithVariants(/II/g, '𝕀'),
+        ...generator.mathSetSymbolWithVariants(/JJ/g, '𝕁'),
+        ...generator.mathSetSymbolWithVariants(/KK/g, '𝕂'),
+        ...generator.mathSetSymbolWithVariants(/LL/g, '𝕃'),
+        ...generator.mathSetSymbolWithVariants(/MM/g, '𝕄'),
+        ...generator.mathSetSymbolWithVariants(/NN/g, 'ℕ'),
+        ...generator.mathSetSymbolWithVariants(/OO/g, '𝕆'),
+        ...generator.mathSetSymbolWithVariants(/PP/g, 'ℙ'),
+        ...generator.mathSetSymbolWithVariants(/QQ/g, 'ℚ'),
+        ...generator.mathSetSymbolWithVariants(/RR/g, 'ℝ'),
+        ...generator.mathSetSymbolWithVariants(/SS/g, '𝕊'),
+        ...generator.mathSetSymbolWithVariants(/TT/g, '𝕋'),
+        ...generator.mathSetSymbolWithVariants(/UU/g, '𝕌'),
+        ...generator.mathSetSymbolWithVariants(/VV/g, '𝕍'),
+        ...generator.mathSetSymbolWithVariants(/WW/g, '𝕎'),
+        ...generator.mathSetSymbolWithVariants(/XX/g, '𝕏'),
+        ...generator.mathSetSymbolWithVariants(/YY/g, '𝕐'),
+        ...generator.mathSetSymbolWithVariants(/ZZ/g, 'ℤ'),
         generator.mathExtendSetSymbol(/\[/g, '[', undefined, /[^|]/g),
         generator.mathExtendSetSymbol(/\]/g, ']', /[^|]/g),
         generator.mathExtendSetSymbol(/\[\|/g, '\u{27E6}'),
@@ -258,13 +259,17 @@ export function generateDecorations(): {
         generator.operatorSymbol(/or/g, '∨', startWordLimit, wordLimit),
         generator.operatorSymbol(/or\.big/g, '⋁', startWordLimit, wordLimit),
         generator.operatorSymbol(/not/g, '¬', startWordLimit, wordLimit),
+        generator.operatorSymbol(/divides/g, '∣', startWordLimit, wordLimit),
+        generator.operatorSymbol(/divides\.not/g, '∤', startWordLimit, wordLimit),
+        generator.operatorSymbol(/without/g, '∖', startWordLimit, wordLimit),
 
         generator.operatorSymbol(/plus\.minus/g, '±', startWordLimit, wordLimit),
         generator.operatorSymbol(/minus\.plus/g, '∓', startWordLimit, wordLimit),
 
-        generator.operatorSymbol(/dot/g, '⋅', startWordLimit, wordLimit),
+        generator.operatorSymbol(/dot/g, '⋅', startWordLimit, /(?!\.)(_|\n|\r|\s|\^)/g),
         generator.operatorSymbol(/star/g, '⋆', startWordLimit, wordLimit),
         generator.operatorSymbol(/circle\.tiny/g, '∘', startWordLimit, wordLimit),
+        generator.operatorSymbol(/circle\.stroked\.tiny/g, '∘', startWordLimit, wordLimit),
         generator.operatorSymbol(/circle\.small/g, '⚬', startWordLimit, wordLimit),
         generator.operatorSymbol(/circle/g, '○', startWordLimit, wordLimit),
 
@@ -272,6 +277,8 @@ export function generateDecorations(): {
         generator.numberSymbol(/infinity/g, '∞', startWordLimit, wordLimit),
         generator.numberSymbol(/dif/g, 'd', startWordLimit, wordLimit),
         generator.numberSymbol(/diff/g, '∂', startWordLimit, wordLimit),
+        generator.numberSymbol(/qed/g, '∎', startWordLimit, wordLimit),
+        // Cal letters
         generator.numberSymbol(/cal\(A\)/g, '𝒜', startWordLimit),
         generator.numberSymbol(/cal\(B\)/g, 'ℬ', startWordLimit),
         generator.numberSymbol(/cal\(C\)/g, '𝒞', startWordLimit),
@@ -324,6 +331,150 @@ export function generateDecorations(): {
         generator.numberSymbol(/cal\(x\)/g, '𝓍', startWordLimit),
         generator.numberSymbol(/cal\(y\)/g, '𝓎', startWordLimit),
         generator.numberSymbol(/cal\(z\)/g, '𝓏', startWordLimit),
+        // Fraktur letters
+        generator.numberSymbol(/frak\(A\)/g, '𝔄', startWordLimit),
+        generator.numberSymbol(/frak\(B\)/g, '𝔅', startWordLimit),
+        generator.numberSymbol(/frak\(C\)/g, 'ℭ', startWordLimit),
+        generator.numberSymbol(/frak\(D\)/g, '𝔇', startWordLimit),
+        generator.numberSymbol(/frak\(E\)/g, '𝔈', startWordLimit),
+        generator.numberSymbol(/frak\(F\)/g, '𝔉', startWordLimit),
+        generator.numberSymbol(/frak\(G\)/g, '𝔊', startWordLimit),
+        generator.numberSymbol(/frak\(H\)/g, 'ℌ', startWordLimit),
+        generator.numberSymbol(/frak\(I\)/g, 'ℑ', startWordLimit),
+        generator.numberSymbol(/frak\(J\)/g, '𝔍', startWordLimit),
+        generator.numberSymbol(/frak\(K\)/g, '𝔎', startWordLimit),
+        generator.numberSymbol(/frak\(L\)/g, '𝔏', startWordLimit),
+        generator.numberSymbol(/frak\(M\)/g, '𝔐', startWordLimit),
+        generator.numberSymbol(/frak\(N\)/g, '𝔑', startWordLimit),
+        generator.numberSymbol(/frak\(O\)/g, '𝔒', startWordLimit),
+        generator.numberSymbol(/frak\(P\)/g, '𝔓', startWordLimit),
+        generator.numberSymbol(/frak\(Q\)/g, '𝔔', startWordLimit),
+        generator.numberSymbol(/frak\(R\)/g, 'ℜ', startWordLimit),
+        generator.numberSymbol(/frak\(S\)/g, '𝔖', startWordLimit),
+        generator.numberSymbol(/frak\(T\)/g, '𝔗', startWordLimit),
+        generator.numberSymbol(/frak\(U\)/g, '𝔘', startWordLimit),
+        generator.numberSymbol(/frak\(V\)/g, '𝔙', startWordLimit),
+        generator.numberSymbol(/frak\(W\)/g, '𝔚', startWordLimit),
+        generator.numberSymbol(/frak\(X\)/g, '𝔛', startWordLimit),
+        generator.numberSymbol(/frak\(Y\)/g, '𝔜', startWordLimit),
+        generator.numberSymbol(/frak\(Z\)/g, 'ℨ', startWordLimit),
+        generator.numberSymbol(/frak\(a\)/g, '𝔞', startWordLimit),
+        generator.numberSymbol(/frak\(b\)/g, '𝔟', startWordLimit),
+        generator.numberSymbol(/frak\(c\)/g, '𝔠', startWordLimit),
+        generator.numberSymbol(/frak\(d\)/g, '𝔡', startWordLimit),
+        generator.numberSymbol(/frak\(e\)/g, '𝔢', startWordLimit),
+        generator.numberSymbol(/frak\(f\)/g, '𝔣', startWordLimit),
+        generator.numberSymbol(/frak\(g\)/g, '𝔤', startWordLimit),
+        generator.numberSymbol(/frak\(h\)/g, '𝔥', startWordLimit),
+        generator.numberSymbol(/frak\(i\)/g, '𝔦', startWordLimit),
+        generator.numberSymbol(/frak\(j\)/g, '𝔧', startWordLimit),
+        generator.numberSymbol(/frak\(k\)/g, '𝔨', startWordLimit),
+        generator.numberSymbol(/frak\(l\)/g, '𝔩', startWordLimit),
+        generator.numberSymbol(/frak\(m\)/g, '𝔪', startWordLimit),
+        generator.numberSymbol(/frak\(n\)/g, '𝔫', startWordLimit),
+        generator.numberSymbol(/frak\(o\)/g, '𝔬', startWordLimit),
+        generator.numberSymbol(/frak\(p\)/g, '𝔭', startWordLimit),
+        generator.numberSymbol(/frak\(q\)/g, '𝔮', startWordLimit),
+        generator.numberSymbol(/frak\(r\)/g, '𝔯', startWordLimit),
+        generator.numberSymbol(/frak\(s\)/g, '𝔰', startWordLimit),
+        generator.numberSymbol(/frak\(t\)/g, '𝔱', startWordLimit),
+        generator.numberSymbol(/frak\(u\)/g, '𝔲', startWordLimit),
+        generator.numberSymbol(/frak\(v\)/g, '𝔳', startWordLimit),
+        generator.numberSymbol(/frak\(w\)/g, '𝔴', startWordLimit),
+        generator.numberSymbol(/frak\(x\)/g, '𝔵', startWordLimit),
+        generator.numberSymbol(/frak\(y\)/g, '𝔶', startWordLimit),
+        generator.numberSymbol(/frak\(z\)/g, '𝔷', startWordLimit),
+        // blackboard bold letters
+        generator.numberSymbol(/bb\(A\)/g, '𝔸', startWordLimit),
+        generator.numberSymbol(/bb\(B\)/g, '𝔹', startWordLimit),
+        generator.numberSymbol(/bb\(C\)/g, 'ℂ', startWordLimit),
+        generator.numberSymbol(/bb\(D\)/g, '𝔻', startWordLimit),
+        generator.numberSymbol(/bb\(E\)/g, '𝔼', startWordLimit),
+        generator.numberSymbol(/bb\(F\)/g, '𝔽', startWordLimit),
+        generator.numberSymbol(/bb\(G\)/g, '𝔾', startWordLimit),
+        generator.numberSymbol(/bb\(H\)/g, 'ℍ', startWordLimit),
+        generator.numberSymbol(/bb\(I\)/g, '𝕀', startWordLimit),
+        generator.numberSymbol(/bb\(J\)/g, '𝕁', startWordLimit),
+        generator.numberSymbol(/bb\(K\)/g, '𝕂', startWordLimit),
+        generator.numberSymbol(/bb\(L\)/g, '𝕃', startWordLimit),
+        generator.numberSymbol(/bb\(M\)/g, '𝕄', startWordLimit),
+        generator.numberSymbol(/bb\(N\)/g, 'ℕ', startWordLimit),
+        generator.numberSymbol(/bb\(O\)/g, '𝕆', startWordLimit),
+        generator.numberSymbol(/bb\(P\)/g, 'ℙ', startWordLimit),
+        generator.numberSymbol(/bb\(Q\)/g, 'ℚ', startWordLimit),
+        generator.numberSymbol(/bb\(R\)/g, 'ℝ', startWordLimit),
+        generator.numberSymbol(/bb\(S\)/g, '𝕊', startWordLimit),
+        generator.numberSymbol(/bb\(T\)/g, '𝕋', startWordLimit),
+        generator.numberSymbol(/bb\(U\)/g, '𝕌', startWordLimit),
+        generator.numberSymbol(/bb\(V\)/g, '𝕍', startWordLimit),
+        generator.numberSymbol(/bb\(W\)/g, '𝕎', startWordLimit),
+        generator.numberSymbol(/bb\(X\)/g, '𝕏', startWordLimit),
+        generator.numberSymbol(/bb\(Y\)/g, '𝕐', startWordLimit),
+        generator.numberSymbol(/bb\(Z\)/g, 'ℤ', startWordLimit),
+        generator.numberSymbol(/bb\(a\)/g, '𝕒', startWordLimit),
+        generator.numberSymbol(/bb\(b\)/g, '𝕓', startWordLimit),
+        generator.numberSymbol(/bb\(c\)/g, '𝕔', startWordLimit),
+        generator.numberSymbol(/bb\(d\)/g, '𝕕', startWordLimit),
+        generator.numberSymbol(/bb\(e\)/g, '𝕖', startWordLimit),
+        generator.numberSymbol(/bb\(f\)/g, '𝕗', startWordLimit),
+        generator.numberSymbol(/bb\(g\)/g, '𝕘', startWordLimit),
+        generator.numberSymbol(/bb\(h\)/g, '𝕙', startWordLimit),
+        generator.numberSymbol(/bb\(i\)/g, '𝕚', startWordLimit),
+        generator.numberSymbol(/bb\(j\)/g, '𝕛', startWordLimit),
+        generator.numberSymbol(/bb\(k\)/g, '𝕜', startWordLimit),
+        generator.numberSymbol(/bb\(l\)/g, '𝕝', startWordLimit),
+        generator.numberSymbol(/bb\(m\)/g, '𝕞', startWordLimit),
+        generator.numberSymbol(/bb\(n\)/g, '𝕟', startWordLimit),
+        generator.numberSymbol(/bb\(o\)/g, '𝕠', startWordLimit),
+        generator.numberSymbol(/bb\(p\)/g, '𝕡', startWordLimit),
+        generator.numberSymbol(/bb\(q\)/g, '𝕢', startWordLimit),
+        generator.numberSymbol(/bb\(r\)/g, '𝕣', startWordLimit),
+        generator.numberSymbol(/bb\(s\)/g, '𝕤', startWordLimit),
+        generator.numberSymbol(/bb\(t\)/g, '𝕥', startWordLimit),
+        generator.numberSymbol(/bb\(u\)/g, '𝕦', startWordLimit),
+        generator.numberSymbol(/bb\(v\)/g, '𝕧', startWordLimit),
+        generator.numberSymbol(/bb\(w\)/g, '𝕨', startWordLimit),
+        generator.numberSymbol(/bb\(x\)/g, '𝕩', startWordLimit),
+        generator.numberSymbol(/bb\(y\)/g, '𝕪', startWordLimit),
+        generator.numberSymbol(/bb\(z\)/g, '𝕫', startWordLimit),
+        generator.numberSymbol(/bb\(0\)/g, '𝟘', startWordLimit),
+        generator.numberSymbol(/bb\(1\)/g, '𝟙', startWordLimit),
+        generator.numberSymbol(/bb\(2\)/g, '𝟚', startWordLimit),
+        generator.numberSymbol(/bb\(3\)/g, '𝟛', startWordLimit),
+        generator.numberSymbol(/bb\(4\)/g, '𝟜', startWordLimit),
+        generator.numberSymbol(/bb\(5\)/g, '𝟝', startWordLimit),
+        generator.numberSymbol(/bb\(6\)/g, '𝟞', startWordLimit),
+        generator.numberSymbol(/bb\(7\)/g, '𝟟', startWordLimit),
+        generator.numberSymbol(/bb\(8\)/g, '𝟠', startWordLimit),
+        generator.numberSymbol(/bb\(9\)/g, '𝟡', startWordLimit),
+
+
+        ...generator.numberSymbolOnlyVariantsJulia(/a/g, 'a'),
+        ...generator.numberSymbolOnlyVariantsJulia(/b/g, 'b'),
+        ...generator.numberSymbolOnlyVariantsJulia(/c/g, 'c'),
+        ...generator.numberSymbolOnlyVariantsJulia(/d/g, 'd'),
+        ...generator.numberSymbolOnlyVariantsJulia(/e/g, 'e'),
+        ...generator.numberSymbolOnlyVariantsJulia(/f/g, 'f'),
+        ...generator.numberSymbolOnlyVariantsJulia(/g/g, 'g'),
+        ...generator.numberSymbolOnlyVariantsJulia(/h/g, 'h'),
+        ...generator.numberSymbolOnlyVariantsJulia(/i/g, 'i'),
+        ...generator.numberSymbolOnlyVariantsJulia(/j/g, 'j'),
+        ...generator.numberSymbolOnlyVariantsJulia(/k/g, 'k'),
+        ...generator.numberSymbolOnlyVariantsJulia(/l/g, 'l'),
+        ...generator.numberSymbolOnlyVariantsJulia(/m/g, 'm'),
+        ...generator.numberSymbolOnlyVariantsJulia(/n/g, 'n'),
+        ...generator.numberSymbolOnlyVariantsJulia(/o/g, 'o'),
+        ...generator.numberSymbolOnlyVariantsJulia(/p/g, 'p'),
+        ...generator.numberSymbolOnlyVariantsJulia(/q/g, 'q'),
+        ...generator.numberSymbolOnlyVariantsJulia(/r/g, 'r'),
+        ...generator.numberSymbolOnlyVariantsJulia(/s/g, 's'),
+        ...generator.numberSymbolOnlyVariantsJulia(/t/g, 't'),
+        ...generator.numberSymbolOnlyVariantsJulia(/u/g, 'u'),
+        ...generator.numberSymbolOnlyVariantsJulia(/v/g, 'v'),
+        ...generator.numberSymbolOnlyVariantsJulia(/w/g, 'w'),
+        ...generator.numberSymbolOnlyVariantsJulia(/x/g, 'x'),
+        ...generator.numberSymbolOnlyVariantsJulia(/y/g, 'y'),
+        ...generator.numberSymbolOnlyVariantsJulia(/z/g, 'z'),
     ];
 }
 
@@ -401,52 +552,7 @@ export function dynamicDecorations(activeEditor: vscode.TextEditor): dynamicDeco
         }
     );
 
-    // literal powers
-    generator.simpleRegex(
-        /\^([A-z]\b|\([A-z]\))/g,
-        "powers",
-        {
-            color: getColors("number"),
-            textDecoration: `none;
-            font-family: JuliaMono;
-            font-size: 0.8em;
-            transform: translateY(-30%);
-            display: inline-block;`
-        },
-        (match) => {
-            let letter = match[0].slice(1);
-            // Remove paren if there is one'
-            if (letter[0] === '(') {
-                letter = letter.slice(1, -1);
-            }
-            return [
-                letter,
-                letter
-            ];
-        },
-    );
-    // literal negative powers
-    generator.simpleRegex(
-        /\^\(\-[A-z]\)/g,
-        "powers",
-        {
-            color: getColors("number"),
-            textDecoration: `none;
-            font-family: JuliaMono;
-            font-size: 0.8em;
-            transform: translateY(-30%);
-            display: inline-block;`
-        },
-        (match) => {
-            const letter = match[0].slice(2, -1);
-            return [
-                letter,
-                letter
-            ];
-        },
-        undefined,
-        undefined
-    );
+
 
     // Subscripts
     generator.simpleRegex(
@@ -501,55 +607,6 @@ export function dynamicDecorations(activeEditor: vscode.TextEditor): dynamicDeco
         }
     );
 
-    // literal subscripts
-    generator.simpleRegex(
-        /_([A-z]\b|\([A-z]\))/g, // match without or with paren
-        "subscripts",
-        {
-            color: getColors("number"),
-            textDecoration: `none;
-            font-family: JuliaMono;
-            font-size: 0.8em;
-            letter-spacing: -0.15em;
-            transform: translateY(20%);
-            display: inline-block;
-            padding-right: 0.1em;`,
-        },
-        (match) => {
-            let letter = match[0].slice(1);
-            // Remove paren if there is one'
-            if (letter[0] === '(') {
-                letter = letter.slice(1, -1);
-            }
-            return [
-                letter,
-                letter
-            ];
-        },
-    );
-    // literal negative subscripts
-    generator.simpleRegex(
-        /_\(\-[A-z]\)/g,
-        "subscripts",
-        {
-            color: getColors("number"),
-            textDecoration: `none;
-            font-family: JuliaMono;
-            font-size: 0.8em;
-            letter-spacing: -0.15em;
-            transform: translateY(20%);
-            display: inline-block;
-            padding-right: 0.1em;`,
-        },
-        (match) => {
-            const letter = match[0].slice(2, -1);
-            return [
-                letter,
-                letter
-            ];
-        },
-    );
-
     // Third letters superscripts like k=0, n+1...
     generator.simpleRegex(
         /\^\([A-z](\+|\=|\-).\)/g,
@@ -590,6 +647,363 @@ export function dynamicDecorations(activeEditor: vscode.TextEditor): dynamicDeco
                 content
             ];
         },
+    );
+
+    // Arrow func on letters
+    generator.simpleRegex(
+        /arrow\([A-z0-9]/g,
+        "combining",
+        {
+            color: getColors("number"),
+            textDecoration: `none;`,
+        },
+        (match) => {
+            const content = match[0].slice(6);
+            return [
+                content,
+                content
+            ];
+        },
+        startWordLimit,
+        /\)/g
+    );
+    generator.simpleRegex(
+        /\)/g,
+        "combining",
+        {
+            color: getColors("number"),
+            textDecoration: `none;
+            font-family: "NewComputerModernMath";
+            transform: translate(-0.84em, -0.9em);
+            font-size: 0.8em;
+            display: inline-block;`,
+        },
+        (match) => {
+            const content = '→';
+            return [
+                content,
+                content
+            ];
+        },
+        /arrow\([A-z0-9]/g
+    );
+    
+    // Tilde func on letters
+    generator.simpleRegex(
+        /tilde\([A-z0-9]/g,
+        "combining",
+        {
+            color: getColors("number"),
+            textDecoration: `none;`,
+        },
+        (match) => {
+            const content = match[0].slice(6);
+            return [
+                content,
+                content
+            ];
+        },
+        startWordLimit,
+        /\)/g
+    );
+    generator.simpleRegex(
+        /\)/g,
+        "combining",
+        {
+            color: getColors("number"),
+            textDecoration: `none;
+            transform: translate(-0.59em, -0.7em);
+            font-size: 0.9em;
+            display: inline-block;`,
+        },
+        (match) => {
+            const content = '~';
+            return [
+                content,
+                content
+            ];
+        },
+        /tilde\([A-z0-9]/g,
+    );
+
+    // Hat func on letters
+    generator.simpleRegex(
+        /hat\([A-z0-9]/g,
+        "combining",
+        {
+            color: getColors("number"),
+            textDecoration: `none;`,
+        },
+        (match) => {
+            const content = match[0].slice(4);
+            return [
+                content,
+                content
+            ];
+        },
+        startWordLimit,
+        /\)/g
+    );
+    generator.simpleRegex(
+        /\)/g,
+        "combining",
+        {
+            color: getColors("number"),
+            textDecoration: `none;
+            transform: translate(-0.6em, -0.5em);
+            font-size: 0.9em;
+            display: inline-block;`,
+        },
+        (match) => {
+            const content = '^';
+            return [
+                content,
+                content
+            ];
+        },
+        /hat\([A-z0-9]/g
+    );
+
+    // Dot func on letters
+    generator.simpleRegex(
+        /dot\([A-z0-9]/g,
+        "combining",
+        {
+            color: getColors("number"),
+            textDecoration: `none;`,
+        },
+        (match) => {
+            const content = match[0].slice(4);
+            return [
+                content,
+                content
+            ];
+        },
+        startWordLimit,
+        /\)/g
+    );
+    generator.simpleRegex(
+        /\)/g,
+        "combining",
+        {
+            color: getColors("number"),
+            textDecoration: `none;
+            transform: translate(-0.43em, -0.52em);
+            display: inline-block;`,
+        },
+        (match) => {
+            const content = '⋅';
+            return [
+                content,
+                content
+            ];
+        },
+        /dot\([A-z0-9]/g
+    );
+
+    // Double dot func on letters
+    generator.simpleRegex(
+        /dot\.double\([A-z0-9]/g,
+        "combining",
+        {
+            color: getColors("number"),
+            textDecoration: `none;`,
+        },
+        (match) => {
+            const content = match[0].slice(11);
+            return [
+                content,
+                content
+            ];
+        },
+        startWordLimit,
+        /\)/g
+    );
+    generator.simpleRegex(
+        /\)/g,
+        "combining",
+        {
+            color: getColors("number"),
+            textDecoration: `none;
+            transform: translate(-0.55em, -0.25em);
+            display: inline-block;`,
+        },
+        (match) => {
+            const content = '¨';
+            return [
+                content,
+                content
+            ];
+        },
+        /dot\.double\([A-z0-9]/g
+    );
+
+    // Triple dot func on letters
+    generator.simpleRegex(
+        /dot\.triple\([A-z0-9]/g,
+        "combining",
+        {
+            color: getColors("number"),
+            textDecoration: `none;`,
+        },
+        (match) => {
+            const content = match[0].slice(11);
+            return [
+                content,
+                content
+            ];
+        },
+        startWordLimit,
+        /\)/g
+    );
+    generator.simpleRegex(
+        /\)/g,
+        "combining",
+        {
+            color: getColors("number"),
+            textDecoration: `none;
+            font-family: JuliaMono;
+            font-size: 1.4em;
+            transform: translate(-0.5em);
+            display: inline-block;`,
+        },
+        (match) => {
+            const content = '\u20DB';
+            return [
+                content,
+                content
+            ];
+        },
+        /dot\.triple\([A-z0-9]/g
+    );
+
+    // Quad dot func on letters
+    generator.simpleRegex(
+        /dot\.quad\([A-z0-9]/g,
+        "combining",
+        {
+            color: getColors("number"),
+            textDecoration: `none;`,
+        },
+        (match) => {
+            const content = match[0].slice(9);
+            return [
+                content,
+                content
+            ];
+        },
+        startWordLimit,
+        /\)/g
+    );
+    generator.simpleRegex(
+        /\)/g,
+        "combining",
+        {
+            color: getColors("number"),
+            textDecoration: `none;
+            font-family: JuliaMono;
+            font-size: 1.4em;
+            transform: translate(-0.52em);
+            display: inline-block;`,
+        },
+        (match) => {
+            const content = '\u20DC';
+            return [
+                content,
+                content
+            ];
+        },
+        /dot\.quad\([A-z0-9]/g
+    );
+
+    // Overline func on letters
+    generator.simpleRegex(
+        /overline\([A-z0-9]/g,
+        "combining",
+        {
+            color: getColors("number"),
+            textDecoration: `none;`,
+        },
+        (match) => {
+            const content = match[0].slice(9);
+            return [
+                content,
+                content
+            ];
+        },
+        startWordLimit,
+        /\)/g
+    );
+    generator.simpleRegex(
+        /\)/g,
+        "combining",
+        {
+            color: getColors("number"),
+            textDecoration: `none;
+            transform: translate(-0.57em, -0.2em);
+            display: inline-block;`,
+        },
+        (match) => {
+            const content = '\u0305';
+            return [
+                content,
+                content
+            ];
+        },
+        /overline\([A-z0-9]/g
+    );
+
+    // Abs func on letters
+    generator.simpleRegex(
+        /a/g,
+        "combining",
+        {
+            color: getColors("number"),
+            textDecoration: `none;`,
+        },
+        (match) => {
+            const content = '|';
+            return [
+                content,
+                content
+            ];
+        },
+        startWordLimit,
+        /bs\([A-z0-9]\)/g
+    );
+    generator.simpleRegex(
+        /bs\([A-z0-9]/g,
+        "combining",
+        {
+            color: getColors("number"),
+            textDecoration: `none;`,
+        },
+        (match) => {
+            const content = match[0].slice(3);
+            return [
+                content,
+                content
+            ];
+        },
+        /a/g,
+        /\)/g
+    );
+    generator.simpleRegex(
+        /\)/g,
+        "combining",
+        {
+            color: getColors("number"),
+            textDecoration: `none;
+            display: inline-block;`,
+        },
+        (match) => {
+            const content = '|';
+            return [
+                content,
+                content
+            ];
+        },
+        /abs\([A-z0-9]/g
     );
 
     // Flatten allDecorations into result
