@@ -23,12 +23,10 @@ By default, the extension will use the monokai theme colors.
 
 # TODO
 
-- [ ] Refactor code, README and add tests
-- [ ] Installing fonts seems to work only on windows, recreate a clean font installation system
-- [ ] Add more features :
-  - [ ] Snippets
-  - [ ] Commands
-  - [ ] Keywords
-- [ ] Better rendering :
-  - [ ] Better subscripts and superscripts
-  - [ ] Move from a lot of regex to a semantic like parsing
+- Refactor README
+- Installing fonts seems to work only on windows, recreate a clean font installation system
+- Add more features :
+  - Snippets
+  - Commands
+  - Keywords
+  - Symbols

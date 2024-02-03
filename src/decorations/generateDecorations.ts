@@ -4,26 +4,26 @@ import { getAllDecorations } from './helpers';
 import { getColors } from './utils';
 import { StaticGenerator, arrowLimitLow, startWordLimit, wordLimit } from './staticGenerator';
 
+let first_generation = true;
 
-
-export function generateDecorations(): {
+export async function generateDecorations(activeEditor: vscode.TextEditor): Promise<{
     decorationType: vscode.TextEditorDecorationType,
     getRanges: (document: vscode.TextEditor) => vscode.DecorationOptions[],
-}[] {
+}[]> {
     // Usefull variables
-    const generator = new StaticGenerator();
+    const generator = new StaticGenerator(activeEditor);
 
     const signVariants: [RegExp, string][] = [
         [/_\+/g, "₊"],
         [/_\-/g, "₋"]
     ];
 
-    function generateSignedVariants() {
+    async function generateSignedVariants() {
         const result = [];
 
         for (let variant of signVariants) {
             // Match only signed
-            result.push(generator.mathSetVariantsSymbol(
+            result.push(await generator.mathSetVariantsSymbol(
                 variant[0],
                 variant[1],
                 ``,
@@ -31,7 +31,7 @@ export function generateDecorations(): {
                 /(?!\^\*)/g // Don't match non-zero
             ));
             // Match non-zero then signed (for sign)
-            result.push(generator.mathSetVariantsSymbol(
+            result.push(await generator.mathSetVariantsSymbol(
                 variant[0],
                 variant[1],
                 `transform: translateX(-0.37em);
@@ -39,7 +39,7 @@ export function generateDecorations(): {
                 /\b([A-Z])\1\^\*/g,
             ));
             // Match signed then non-zero (for sign)
-            result.push(generator.mathSetVariantsSymbol(
+            result.push(await generator.mathSetVariantsSymbol(
                 variant[0],
                 variant[1],
                 ``,
@@ -49,7 +49,8 @@ export function generateDecorations(): {
         }
         return result;
     }
-    return [
+
+    let result = [
         // Three regex are used everywhere:
         // - reg: The main regex, matching the symbol we want to decorate
         // - pre: The regex to match the text before the symbol
@@ -57,162 +58,162 @@ export function generateDecorations(): {
         // pre and post avoid matching multiple times the same text with different decorations
 
         // comparison symbols
-        generator.comparisonSymbol(/=/g, '=', /[^:<>!=]/g, /[^:<>!=]/g), // TODO: avoid replacing char, just add style
-        generator.comparisonSymbol(/</g, '<', arrowLimitLow, arrowLimitLow),
-        generator.comparisonSymbol(/>/g, '>', arrowLimitLow, arrowLimitLow),
-        generator.comparisonSymbol(/<</g, '≪', arrowLimitLow, arrowLimitLow),
-        generator.comparisonSymbol(/>>/g, '≫', arrowLimitLow, arrowLimitLow),
-        generator.comparisonSymbol(/<<</g, '⋘', arrowLimitLow, arrowLimitLow),
-        generator.comparisonSymbol(/>>>/g, '⋙', arrowLimitLow, arrowLimitLow),
+        await generator.comparisonSymbol(/=/g, '=', /[^:<>!=]/g, /[^:<>!=]/g), // TODO: avoid replacing char, just add style
+        await generator.comparisonSymbol(/</g, '<', arrowLimitLow, arrowLimitLow),
+        await generator.comparisonSymbol(/>/g, '>', arrowLimitLow, arrowLimitLow),
+        await generator.comparisonSymbol(/<</g, '≪', arrowLimitLow, arrowLimitLow),
+        await generator.comparisonSymbol(/>>/g, '≫', arrowLimitLow, arrowLimitLow),
+        await generator.comparisonSymbol(/<<</g, '⋘', arrowLimitLow, arrowLimitLow),
+        await generator.comparisonSymbol(/>>>/g, '⋙', arrowLimitLow, arrowLimitLow),
 
-        generator.comparisonSymbol(/eq\.triple/g, '≡', wordLimit, wordLimit),
-        generator.comparisonSymbol(/equiv/g, '≡', wordLimit, wordLimit),
-        generator.comparisonSymbol(/equiv\.not/g, '≢', wordLimit, wordLimit),
-        generator.comparisonSymbol(/eq\.quad/g, '≣', wordLimit, wordLimit),
-        generator.comparisonSymbol(/approx/g, '≈', wordLimit, wordLimit),
-        generator.comparisonSymbol(/approx\.not/g, '≉', wordLimit, wordLimit),
-        generator.comparisonSymbol(/approx\.eq/g, '≊', wordLimit, wordLimit),
-        generator.comparisonSymbol(/tilde\.op/g, '∼', wordLimit, wordLimit),
+        await generator.comparisonSymbol(/eq\.triple/g, '≡', wordLimit, wordLimit),
+        await generator.comparisonSymbol(/equiv/g, '≡', wordLimit, wordLimit),
+        await generator.comparisonSymbol(/equiv\.not/g, '≢', wordLimit, wordLimit),
+        await generator.comparisonSymbol(/eq\.quad/g, '≣', wordLimit, wordLimit),
+        await generator.comparisonSymbol(/approx/g, '≈', wordLimit, wordLimit),
+        await generator.comparisonSymbol(/approx\.not/g, '≉', wordLimit, wordLimit),
+        await generator.comparisonSymbol(/approx\.eq/g, '≊', wordLimit, wordLimit),
+        await generator.comparisonSymbol(/tilde\.op/g, '∼', wordLimit, wordLimit),
 
-        generator.comparisonSymbol(/!=/g, '≠'),
-        generator.comparisonSymbol(/:=/g, '≔', /[^:]/g),
-        generator.comparisonSymbol(/::=/g, '⩴'),
-        generator.comparisonSymbol(/=>/g, '⇒', /[^<=]/g),
-        generator.comparisonSymbol(/==>/g, '⟹', /[^<]/g),
-        generator.comparisonSymbol(/<=>/g, '⇔', /[^<]/g),
-        generator.comparisonSymbol(/<==>/g, '⟺', /[^<]/g),
-        generator.comparisonSymbol(/<==/g, '⟸', /[^<]/g, /[^>]/g),
-        generator.comparisonSymbol(/<=/g, '≤', /[^<]/g, /[^>=]/g),
-        generator.comparisonSymbol(/>=/g, '≥', /[^>]/g, /[^>=]/g),
-        generator.comparisonSymbol(/->/g, '→', /[^-><\|]/g),
-        generator.comparisonSymbol(/-->/g, '⟶', /[^-><\|]/g),
-        generator.comparisonSymbol(/\|->/g, '↦'),
-        generator.comparisonSymbol(/<-/g, '←', undefined, /[^-><\|]/g),
-        generator.comparisonSymbol(/<--/g, '⟵', undefined, /[^-><\|]/g),
-        generator.comparisonSymbol(/<->/g, '↔'),
-        generator.comparisonSymbol(/<-->/g, '⟷'),
+        await generator.comparisonSymbol(/!=/g, '≠'),
+        await generator.comparisonSymbol(/:=/g, '≔', /[^:]/g),
+        await generator.comparisonSymbol(/::=/g, '⩴'),
+        await generator.comparisonSymbol(/=>/g, '⇒', /[^<=]/g),
+        await generator.comparisonSymbol(/==>/g, '⟹', /[^<]/g),
+        await generator.comparisonSymbol(/<=>/g, '⇔', /[^<]/g),
+        await generator.comparisonSymbol(/<==>/g, '⟺', /[^<]/g),
+        await generator.comparisonSymbol(/<==/g, '⟸', /[^<]/g, /[^>]/g),
+        await generator.comparisonSymbol(/<=/g, '≤', /[^<]/g, /[^>=]/g),
+        await generator.comparisonSymbol(/>=/g, '≥', /[^>]/g, /[^>=]/g),
+        await generator.comparisonSymbol(/->/g, '→', /[^-><\|]/g),
+        await generator.comparisonSymbol(/-->/g, '⟶', /[^-><\|]/g),
+        await generator.comparisonSymbol(/\|->/g, '↦'),
+        await generator.comparisonSymbol(/<-/g, '←', undefined, /[^-><\|]/g),
+        await generator.comparisonSymbol(/<--/g, '⟵', undefined, /[^-><\|]/g),
+        await generator.comparisonSymbol(/<->/g, '↔'),
+        await generator.comparisonSymbol(/<-->/g, '⟷'),
 
-        generator.comparisonSymbol(/dots\.h/g, '…', wordLimit, wordLimit),
-        generator.comparisonSymbol(/dots\.h\.c/g, '⋯', wordLimit, wordLimit),
-        generator.comparisonSymbol(/dots\.v/g, '⋮', wordLimit, wordLimit),
-        generator.comparisonSymbol(/dots\.up/g, '⋰', wordLimit, wordLimit),
-        generator.comparisonSymbol(/dots\.down/g, '⋱', wordLimit, wordLimit),
+        await generator.comparisonSymbol(/dots\.h/g, '…', wordLimit, wordLimit),
+        await generator.comparisonSymbol(/dots\.h\.c/g, '⋯', wordLimit, wordLimit),
+        await generator.comparisonSymbol(/dots\.v/g, '⋮', wordLimit, wordLimit),
+        await generator.comparisonSymbol(/dots\.up/g, '⋰', wordLimit, wordLimit),
+        await generator.comparisonSymbol(/dots\.down/g, '⋱', wordLimit, wordLimit),
 
         // Keywords
-        generator.keywordSymbol(/forall\s?/g, '∀', startWordLimit, wordLimit),
-        generator.keywordSymbol(/exists\s?/g, '∃', startWordLimit, wordLimit),
-        generator.keywordSymbol(/\s?in\s?/g, '∈', startWordLimit, wordLimit),
-        generator.keywordSymbol(/\s?in\.not\s?/g, '∉', startWordLimit, wordLimit),
-        generator.keywordSymbol(/\s?in\.small\s?/g, '∊', startWordLimit, wordLimit),
-        generator.keywordSymbol(/\s?subset\s?/g, '⊂', startWordLimit, wordLimit),
-        generator.keywordSymbol(/\s?subset\.not\s?/g, '⊄', startWordLimit, wordLimit),
-        generator.keywordSymbol(/\s?subset\.eq\s?/g, '⊆', startWordLimit, wordLimit),
-        generator.keywordSymbol(/\s?subset\.eq\.not\s?/g, '⊈', startWordLimit, wordLimit),
-        generator.keywordSymbol(/\s?union\s?/g, '∪', startWordLimit, wordLimit),
-        generator.keywordSymbol(/union\.big\s?/g, '⋃', startWordLimit, wordLimit),
-        generator.keywordSymbol(/\s?sect\s?/g, '∩', startWordLimit, wordLimit),
-        generator.keywordSymbol(/sect\.big\s?/g, '⋂', startWordLimit, wordLimit),
-        generator.keywordSymbol(/complement\s?/g, '∁', startWordLimit, wordLimit),
+        await generator.keywordSymbol(/forall\s?/g, '∀', startWordLimit, wordLimit),
+        await generator.keywordSymbol(/exists\s?/g, '∃', startWordLimit, wordLimit),
+        await generator.keywordSymbol(/\s?in\s?/g, '∈', startWordLimit, wordLimit),
+        await generator.keywordSymbol(/\s?in\.not\s?/g, '∉', startWordLimit, wordLimit),
+        await generator.keywordSymbol(/\s?in\.small\s?/g, '∊', startWordLimit, wordLimit),
+        await generator.keywordSymbol(/\s?subset\s?/g, '⊂', startWordLimit, wordLimit),
+        await generator.keywordSymbol(/\s?subset\.not\s?/g, '⊄', startWordLimit, wordLimit),
+        await generator.keywordSymbol(/\s?subset\.eq\s?/g, '⊆', startWordLimit, wordLimit),
+        await generator.keywordSymbol(/\s?subset\.eq\.not\s?/g, '⊈', startWordLimit, wordLimit),
+        await generator.keywordSymbol(/\s?union\s?/g, '∪', startWordLimit, wordLimit),
+        await generator.keywordSymbol(/union\.big\s?/g, '⋃', startWordLimit, wordLimit),
+        await generator.keywordSymbol(/\s?sect\s?/g, '∩', startWordLimit, wordLimit),
+        await generator.keywordSymbol(/sect\.big\s?/g, '⋂', startWordLimit, wordLimit),
+        await generator.keywordSymbol(/complement\s?/g, '∁', startWordLimit, wordLimit),
 
 
         // Greek letters
-        ...generator.letterSymbolWithVariants(/alpha/g, 'α'),
-        ...generator.letterSymbolWithVariants(/Alpha/g, 'Α'),
-        ...generator.letterSymbolWithVariants(/beta/g, 'β'),
-        ...generator.letterSymbolWithVariants(/Beta/g, 'Β'),
-        ...generator.letterSymbolWithVariants(/beta\.alt/g, 'ϐ'),
-        ...generator.letterSymbolWithVariants(/gamma/g, 'γ'),
-        ...generator.letterSymbolWithVariants(/Gamma/g, 'Γ'),
-        ...generator.letterSymbolWithVariants(/delta/g, 'δ'),
-        ...generator.letterSymbolWithVariants(/Delta/g, 'Δ'),
-        ...generator.letterSymbolWithVariants(/epsilon/g, 'ε'),
-        ...generator.letterSymbolWithVariants(/epsilon\.alt/g, 'ϵ'),
-        ...generator.letterSymbolWithVariants(/Epsilon/g, 'Ε'),
-        ...generator.letterSymbolWithVariants(/zeta/g, 'ζ'),
-        ...generator.letterSymbolWithVariants(/Zeta/g, 'Ζ'),
-        ...generator.letterSymbolWithVariants(/eta/g, 'η'),
-        ...generator.letterSymbolWithVariants(/Eta/g, 'Η'),
-        ...generator.letterSymbolWithVariants(/theta/g, 'θ'),
-        ...generator.letterSymbolWithVariants(/Theta/g, 'Θ'),
-        ...generator.letterSymbolWithVariants(/theta\.alt/g, 'ϑ'),
-        ...generator.letterSymbolWithVariants(/iota/g, 'ι'),
-        ...generator.letterSymbolWithVariants(/Iota/g, 'Ι'),
-        ...generator.letterSymbolWithVariants(/kappa/g, 'κ'),
-        ...generator.letterSymbolWithVariants(/Kappa/g, 'Κ'),
-        ...generator.letterSymbolWithVariants(/kappa\.alt/g, 'ϰ'),
-        ...generator.letterSymbolWithVariants(/lambda/g, 'λ'),
-        ...generator.letterSymbolWithVariants(/Lambda/g, 'Λ'),
-        ...generator.letterSymbolWithVariants(/mu/g, 'μ'),
-        ...generator.letterSymbolWithVariants(/Mu/g, 'Μ'),
-        ...generator.letterSymbolWithVariants(/nu/g, 'ν'),
-        ...generator.letterSymbolWithVariants(/Nu/g, 'Ν'),
-        ...generator.letterSymbolWithVariants(/xi/g, 'ξ'),
-        ...generator.letterSymbolWithVariants(/Xi/g, 'Ξ'),
-        ...generator.letterSymbolWithVariants(/omicron/g, 'ο'),
-        ...generator.letterSymbolWithVariants(/Omicron/g, 'Ο'),
-        ...generator.letterSymbolWithVariants(/pi/g, 'π'),
-        ...generator.letterSymbolWithVariants(/Pi/g, 'Π'),
-        ...generator.letterSymbolWithVariants(/pi\.alt/g, 'ϖ'),
-        ...generator.letterSymbolWithVariants(/rho/g, 'ρ'),
-        ...generator.letterSymbolWithVariants(/Rho/g, 'Ρ'),
-        ...generator.letterSymbolWithVariants(/rho\.alt/g, 'ϱ'),
-        ...generator.letterSymbolWithVariants(/sigma/g, 'σ'),
-        ...generator.letterSymbolWithVariants(/Sigma/g, 'Σ'),
-        ...generator.letterSymbolWithVariants(/sigma\.alt/g, 'ς'),
-        ...generator.letterSymbolWithVariants(/tau/g, 'τ'),
-        ...generator.letterSymbolWithVariants(/Tau/g, 'Τ'),
-        ...generator.letterSymbolWithVariants(/upsilon/g, 'υ'),
-        ...generator.letterSymbolWithVariants(/Upsilon/g, 'Υ'),
-        ...generator.letterSymbolWithVariants(/phi/g, 'φ'), // phi and phi.alt char are inverted, because Juliafont invert them
-        ...generator.letterSymbolWithVariants(/Phi/g, 'Φ'),
-        ...generator.letterSymbolWithVariants(/phi\.alt/g, 'ϕ'),
-        ...generator.letterSymbolWithVariants(/chi/g, 'χ'),
-        ...generator.letterSymbolWithVariants(/Chi/g, 'Χ'),
-        ...generator.letterSymbolWithVariants(/psi/g, 'ψ'),
-        ...generator.letterSymbolWithVariants(/Psi/g, 'Ψ'),
-        ...generator.letterSymbolWithVariants(/omega/g, 'ω'),
-        ...generator.letterSymbolWithVariants(/Omega/g, 'Ω'),
+        ...await generator.letterSymbolWithVariants(/alpha/g, 'α'),
+        ...await generator.letterSymbolWithVariants(/Alpha/g, 'Α'),
+        ...await generator.letterSymbolWithVariants(/beta/g, 'β'),
+        ...await generator.letterSymbolWithVariants(/Beta/g, 'Β'),
+        ...await generator.letterSymbolWithVariants(/beta\.alt/g, 'ϐ'),
+        ...await generator.letterSymbolWithVariants(/gamma/g, 'γ'),
+        ...await generator.letterSymbolWithVariants(/Gamma/g, 'Γ'),
+        ...await generator.letterSymbolWithVariants(/delta/g, 'δ'),
+        ...await generator.letterSymbolWithVariants(/Delta/g, 'Δ'),
+        ...await generator.letterSymbolWithVariants(/epsilon/g, 'ε'),
+        ...await generator.letterSymbolWithVariants(/epsilon\.alt/g, 'ϵ'),
+        ...await generator.letterSymbolWithVariants(/Epsilon/g, 'Ε'),
+        ...await generator.letterSymbolWithVariants(/zeta/g, 'ζ'),
+        ...await generator.letterSymbolWithVariants(/Zeta/g, 'Ζ'),
+        ...await generator.letterSymbolWithVariants(/eta/g, 'η'),
+        ...await generator.letterSymbolWithVariants(/Eta/g, 'Η'),
+        ...await generator.letterSymbolWithVariants(/theta/g, 'θ'),
+        ...await generator.letterSymbolWithVariants(/Theta/g, 'Θ'),
+        ...await generator.letterSymbolWithVariants(/theta\.alt/g, 'ϑ'),
+        ...await generator.letterSymbolWithVariants(/iota/g, 'ι'),
+        ...await generator.letterSymbolWithVariants(/Iota/g, 'Ι'),
+        ...await generator.letterSymbolWithVariants(/kappa/g, 'κ'),
+        ...await generator.letterSymbolWithVariants(/Kappa/g, 'Κ'),
+        ...await generator.letterSymbolWithVariants(/kappa\.alt/g, 'ϰ'),
+        ...await generator.letterSymbolWithVariants(/lambda/g, 'λ'),
+        ...await generator.letterSymbolWithVariants(/Lambda/g, 'Λ'),
+        ...await generator.letterSymbolWithVariants(/mu/g, 'μ'),
+        ...await generator.letterSymbolWithVariants(/Mu/g, 'Μ'),
+        ...await generator.letterSymbolWithVariants(/nu/g, 'ν'),
+        ...await generator.letterSymbolWithVariants(/Nu/g, 'Ν'),
+        ...await generator.letterSymbolWithVariants(/xi/g, 'ξ'),
+        ...await generator.letterSymbolWithVariants(/Xi/g, 'Ξ'),
+        ...await generator.letterSymbolWithVariants(/omicron/g, 'ο'),
+        ...await generator.letterSymbolWithVariants(/Omicron/g, 'Ο'),
+        ...await generator.letterSymbolWithVariants(/pi/g, 'π'),
+        ...await generator.letterSymbolWithVariants(/Pi/g, 'Π'),
+        ...await generator.letterSymbolWithVariants(/pi\.alt/g, 'ϖ'),
+        ...await generator.letterSymbolWithVariants(/rho/g, 'ρ'),
+        ...await generator.letterSymbolWithVariants(/Rho/g, 'Ρ'),
+        ...await generator.letterSymbolWithVariants(/rho\.alt/g, 'ϱ'),
+        ...await generator.letterSymbolWithVariants(/sigma/g, 'σ'),
+        ...await generator.letterSymbolWithVariants(/Sigma/g, 'Σ'),
+        ...await generator.letterSymbolWithVariants(/sigma\.alt/g, 'ς'),
+        ...await generator.letterSymbolWithVariants(/tau/g, 'τ'),
+        ...await generator.letterSymbolWithVariants(/Tau/g, 'Τ'),
+        ...await generator.letterSymbolWithVariants(/upsilon/g, 'υ'),
+        ...await generator.letterSymbolWithVariants(/Upsilon/g, 'Υ'),
+        ...await generator.letterSymbolWithVariants(/phi/g, 'φ'), // phi and phi.alt char are inverted, because Juliafont invert them
+        ...await generator.letterSymbolWithVariants(/Phi/g, 'Φ'),
+        ...await generator.letterSymbolWithVariants(/phi\.alt/g, 'ϕ'),
+        ...await generator.letterSymbolWithVariants(/chi/g, 'χ'),
+        ...await generator.letterSymbolWithVariants(/Chi/g, 'Χ'),
+        ...await generator.letterSymbolWithVariants(/psi/g, 'ψ'),
+        ...await generator.letterSymbolWithVariants(/Psi/g, 'Ψ'),
+        ...await generator.letterSymbolWithVariants(/omega/g, 'ω'),
+        ...await generator.letterSymbolWithVariants(/Omega/g, 'Ω'),
 
         // Big letters
-        generator.bigLetterSymbol(/sum/g, '∑'),
-        generator.bigLetterSymbol(/product/g, '∏'),
-        generator.bigLetterSymbol(/integral/g, '∫'),
+        await generator.bigLetterSymbol(/sum/g, '∑'),
+        await generator.bigLetterSymbol(/product/g, '∏'),
+        await generator.bigLetterSymbol(/integral/g, '∫'),
 
         // Sets
-        ...generator.mathSetSymbolWithVariants(/emptyset/g, '∅'),
-        ...generator.mathSetSymbolWithVariants(/AA/g, '𝔸'),
-        ...generator.mathSetSymbolWithVariants(/BB/g, '𝔹'),
-        ...generator.mathSetSymbolWithVariants(/CC/g, 'ℂ'),
-        ...generator.mathSetSymbolWithVariants(/DD/g, '𝔻'),
-        ...generator.mathSetSymbolWithVariants(/EE/g, '𝔼'),
-        ...generator.mathSetSymbolWithVariants(/FF/g, '𝔽'),
-        ...generator.mathSetSymbolWithVariants(/GG/g, '𝔾'),
-        ...generator.mathSetSymbolWithVariants(/HH/g, 'ℍ'),
-        ...generator.mathSetSymbolWithVariants(/II/g, '𝕀'),
-        ...generator.mathSetSymbolWithVariants(/JJ/g, '𝕁'),
-        ...generator.mathSetSymbolWithVariants(/KK/g, '𝕂'),
-        ...generator.mathSetSymbolWithVariants(/LL/g, '𝕃'),
-        ...generator.mathSetSymbolWithVariants(/MM/g, '𝕄'),
-        ...generator.mathSetSymbolWithVariants(/NN/g, 'ℕ'),
-        ...generator.mathSetSymbolWithVariants(/OO/g, '𝕆'),
-        ...generator.mathSetSymbolWithVariants(/PP/g, 'ℙ'),
-        ...generator.mathSetSymbolWithVariants(/QQ/g, 'ℚ'),
-        ...generator.mathSetSymbolWithVariants(/RR/g, 'ℝ'),
-        ...generator.mathSetSymbolWithVariants(/SS/g, '𝕊'),
-        ...generator.mathSetSymbolWithVariants(/TT/g, '𝕋'),
-        ...generator.mathSetSymbolWithVariants(/UU/g, '𝕌'),
-        ...generator.mathSetSymbolWithVariants(/VV/g, '𝕍'),
-        ...generator.mathSetSymbolWithVariants(/WW/g, '𝕎'),
-        ...generator.mathSetSymbolWithVariants(/XX/g, '𝕏'),
-        ...generator.mathSetSymbolWithVariants(/YY/g, '𝕐'),
-        ...generator.mathSetSymbolWithVariants(/ZZ/g, 'ℤ'),
-        generator.mathExtendSetSymbol(/\[/g, '[', undefined, /[^|]/g),
-        generator.mathExtendSetSymbol(/\]/g, ']', /[^|]/g),
-        generator.mathExtendSetSymbol(/\[\|/g, '\u{27E6}'),
-        generator.mathExtendSetSymbol(/\|\]/g, '\u{27E7}'),
+        ...await generator.mathSetSymbolWithVariants(/emptyset/g, '∅'),
+        ...await generator.mathSetSymbolWithVariants(/AA/g, '𝔸'),
+        ...await generator.mathSetSymbolWithVariants(/BB/g, '𝔹'),
+        ...await generator.mathSetSymbolWithVariants(/CC/g, 'ℂ'),
+        ...await generator.mathSetSymbolWithVariants(/DD/g, '𝔻'),
+        ...await generator.mathSetSymbolWithVariants(/EE/g, '𝔼'),
+        ...await generator.mathSetSymbolWithVariants(/FF/g, '𝔽'),
+        ...await generator.mathSetSymbolWithVariants(/GG/g, '𝔾'),
+        ...await generator.mathSetSymbolWithVariants(/HH/g, 'ℍ'),
+        ...await generator.mathSetSymbolWithVariants(/II/g, '𝕀'),
+        ...await generator.mathSetSymbolWithVariants(/JJ/g, '𝕁'),
+        ...await generator.mathSetSymbolWithVariants(/KK/g, '𝕂'),
+        ...await generator.mathSetSymbolWithVariants(/LL/g, '𝕃'),
+        ...await generator.mathSetSymbolWithVariants(/MM/g, '𝕄'),
+        ...await generator.mathSetSymbolWithVariants(/NN/g, 'ℕ'),
+        ...await generator.mathSetSymbolWithVariants(/OO/g, '𝕆'),
+        ...await generator.mathSetSymbolWithVariants(/PP/g, 'ℙ'),
+        ...await generator.mathSetSymbolWithVariants(/QQ/g, 'ℚ'),
+        ...await generator.mathSetSymbolWithVariants(/RR/g, 'ℝ'),
+        ...await generator.mathSetSymbolWithVariants(/SS/g, '𝕊'),
+        ...await generator.mathSetSymbolWithVariants(/TT/g, '𝕋'),
+        ...await generator.mathSetSymbolWithVariants(/UU/g, '𝕌'),
+        ...await generator.mathSetSymbolWithVariants(/VV/g, '𝕍'),
+        ...await generator.mathSetSymbolWithVariants(/WW/g, '𝕎'),
+        ...await generator.mathSetSymbolWithVariants(/XX/g, '𝕏'),
+        ...await generator.mathSetSymbolWithVariants(/YY/g, '𝕐'),
+        ...await generator.mathSetSymbolWithVariants(/ZZ/g, 'ℤ'),
+        await generator.mathExtendSetSymbol(/\[/g, '[', undefined, /[^|]/g),
+        await generator.mathExtendSetSymbol(/\]/g, ']', /[^|]/g),
+        await generator.mathExtendSetSymbol(/\[\|/g, '\u{27E6}'),
+        await generator.mathExtendSetSymbol(/\|\]/g, '\u{27E7}'),
         // Set variants
         // Match non-zero
-        generator.mathSetVariantsSymbol(
+        await generator.mathSetVariantsSymbol(
             /\^\*/g,
             "*",
             `font-size: 0.6em;
@@ -224,9 +225,9 @@ export function generateDecorations(): {
         // Match non-zero signed, using two different decorations, for better styling
         // To cover all cases, we need to do 4 regex
         // Only positive and negative set, and non-zero and signed (for sign)
-        ...generateSignedVariants(),
+        ...await generateSignedVariants(),
         // 3. Match non-zero then signed (for non-zero)
-        generator.mathSetVariantsSymbol(
+        await generator.mathSetVariantsSymbol(
             /\^\*/g,
             "*",
             `font-size: 0.6em;
@@ -236,7 +237,7 @@ export function generateDecorations(): {
             /_(\+|\-)/g
         ),
         // 4. Match signed then non-zero (for non-zero)
-        generator.mathSetVariantsSymbol(
+        await generator.mathSetVariantsSymbol(
             /\^\*/g,
             "*",
             `font-size: 0.6em;
@@ -246,236 +247,279 @@ export function generateDecorations(): {
         ),
 
         // Operators
-        generator.operatorSymbol(/plus/g, '+', startWordLimit, wordLimit),
-        generator.operatorSymbol(/\+/g, '+', /[^_]/g),
-        generator.operatorSymbol(/minus/g, '-', startWordLimit, wordLimit),
-        generator.operatorSymbol(/\-/g, '-', /[^_<\-]/g),
-        generator.operatorSymbol(/times/g, '×', startWordLimit, wordLimit),
-        generator.operatorSymbol(/times\.big/g, '⨉', startWordLimit, wordLimit),
-        generator.operatorSymbol(/\*/g, '\u{2217}', /[^\^]/g),
-        generator.operatorSymbol(/div/g, '÷', startWordLimit, wordLimit),
-        generator.operatorSymbol(/and/g, '∧', startWordLimit, wordLimit),
-        generator.operatorSymbol(/and\.big/g, '⋀', startWordLimit, wordLimit),
-        generator.operatorSymbol(/or/g, '∨', startWordLimit, wordLimit),
-        generator.operatorSymbol(/or\.big/g, '⋁', startWordLimit, wordLimit),
-        generator.operatorSymbol(/not/g, '¬', startWordLimit, wordLimit),
-        generator.operatorSymbol(/divides/g, '∣', startWordLimit, wordLimit),
-        generator.operatorSymbol(/divides\.not/g, '∤', startWordLimit, wordLimit),
-        generator.operatorSymbol(/without/g, '∖', startWordLimit, wordLimit),
+        await generator.operatorSymbol(/plus/g, '+', startWordLimit, wordLimit),
+        await generator.operatorSymbol(/\+/g, '+', /[^_]/g),
+        await generator.operatorSymbol(/minus/g, '-', startWordLimit, wordLimit),
+        await generator.operatorSymbol(/\-/g, '-', /[^_<\-]/g),
+        await generator.operatorSymbol(/times/g, '×', startWordLimit, wordLimit),
+        await generator.operatorSymbol(/times\.big/g, '⨉', startWordLimit, wordLimit),
+        await generator.operatorSymbol(/\*/g, '\u{2217}', /[^\^]/g),
+        await generator.operatorSymbol(/div/g, '÷', startWordLimit, wordLimit),
+        await generator.operatorSymbol(/and/g, '∧', startWordLimit, wordLimit),
+        await generator.operatorSymbol(/and\.big/g, '⋀', startWordLimit, wordLimit),
+        await generator.operatorSymbol(/or/g, '∨', startWordLimit, wordLimit),
+        await generator.operatorSymbol(/or\.big/g, '⋁', startWordLimit, wordLimit),
+        await generator.operatorSymbol(/not/g, '¬', startWordLimit, wordLimit),
+        await generator.operatorSymbol(/divides/g, '∣', startWordLimit, wordLimit),
+        await generator.operatorSymbol(/divides\.not/g, '∤', startWordLimit, wordLimit),
+        await generator.operatorSymbol(/without/g, '∖', startWordLimit, wordLimit),
 
-        generator.operatorSymbol(/plus\.minus/g, '±', startWordLimit, wordLimit),
-        generator.operatorSymbol(/minus\.plus/g, '∓', startWordLimit, wordLimit),
+        await generator.operatorSymbol(/plus\.minus/g, '±', startWordLimit, wordLimit),
+        await generator.operatorSymbol(/minus\.plus/g, '∓', startWordLimit, wordLimit),
 
-        generator.operatorSymbol(/dot/g, '⋅', startWordLimit, /(?!\.)(_|\n|\r|\s|\^)/g),
-        generator.operatorSymbol(/star/g, '⋆', startWordLimit, wordLimit),
-        generator.operatorSymbol(/circle\.tiny/g, '∘', startWordLimit, wordLimit),
-        generator.operatorSymbol(/circle\.stroked\.tiny/g, '∘', startWordLimit, wordLimit),
-        generator.operatorSymbol(/circle\.small/g, '⚬', startWordLimit, wordLimit),
-        generator.operatorSymbol(/circle/g, '○', startWordLimit, wordLimit),
+        await generator.operatorSymbol(/dot/g, '⋅', startWordLimit, /(?!\.)(_|\n|\r|\s|\^)/g),
+        await generator.operatorSymbol(/star/g, '⋆', startWordLimit, wordLimit),
+        await generator.operatorSymbol(/circle\.tiny/g, '∘', startWordLimit, wordLimit),
+        await generator.operatorSymbol(/circle\.stroked\.tiny/g, '∘', startWordLimit, wordLimit),
+        await generator.operatorSymbol(/circle\.small/g, '⚬', startWordLimit, wordLimit),
+        await generator.operatorSymbol(/circle/g, '○', startWordLimit, wordLimit),
 
-        generator.numberSymbol(/oo/g, '∞', startWordLimit, wordLimit),
-        generator.numberSymbol(/infinity/g, '∞', startWordLimit, wordLimit),
-        generator.numberSymbol(/dif/g, 'd', startWordLimit, wordLimit),
-        generator.numberSymbol(/diff/g, '∂', startWordLimit, wordLimit),
-        generator.numberSymbol(/qed/g, '∎', startWordLimit, wordLimit),
+        await generator.numberSymbol(/oo/g, '∞', startWordLimit, wordLimit),
+        await generator.numberSymbol(/infinity/g, '∞', startWordLimit, wordLimit),
+        await generator.numberSymbol(/dif/g, 'd', startWordLimit, wordLimit),
+        await generator.numberSymbol(/diff/g, '∂', startWordLimit, wordLimit),
+        await generator.numberSymbol(/qed/g, '∎', startWordLimit, wordLimit),
         // Cal letters
-        generator.numberSymbol(/cal\(A\)/g, '𝒜', startWordLimit),
-        generator.numberSymbol(/cal\(B\)/g, 'ℬ', startWordLimit),
-        generator.numberSymbol(/cal\(C\)/g, '𝒞', startWordLimit),
-        generator.numberSymbol(/cal\(D\)/g, '𝒟', startWordLimit),
-        generator.numberSymbol(/cal\(E\)/g, 'ℰ', startWordLimit),
-        generator.numberSymbol(/cal\(F\)/g, 'ℱ', startWordLimit),
-        generator.numberSymbol(/cal\(G\)/g, '𝒢', startWordLimit),
-        generator.numberSymbol(/cal\(H\)/g, 'ℋ', startWordLimit),
-        generator.numberSymbol(/cal\(I\)/g, 'ℐ', startWordLimit),
-        generator.numberSymbol(/cal\(J\)/g, '𝒥', startWordLimit),
-        generator.numberSymbol(/cal\(K\)/g, '𝒦', startWordLimit),
-        generator.numberSymbol(/cal\(L\)/g, 'ℒ', startWordLimit),
-        generator.numberSymbol(/cal\(M\)/g, 'ℳ', startWordLimit),
-        generator.numberSymbol(/cal\(N\)/g, '𝒩', startWordLimit),
-        generator.numberSymbol(/cal\(O\)/g, '𝒪', startWordLimit),
-        generator.numberSymbol(/cal\(P\)/g, '𝒫', startWordLimit),
-        generator.numberSymbol(/cal\(Q\)/g, '𝒬', startWordLimit),
-        generator.numberSymbol(/cal\(R\)/g, 'ℛ', startWordLimit),
-        generator.numberSymbol(/cal\(S\)/g, '𝒮', startWordLimit),
-        generator.numberSymbol(/cal\(T\)/g, '𝒯', startWordLimit),
-        generator.numberSymbol(/cal\(U\)/g, '𝒰', startWordLimit),
-        generator.numberSymbol(/cal\(V\)/g, '𝒱', startWordLimit),
-        generator.numberSymbol(/cal\(W\)/g, '𝒲', startWordLimit),
-        generator.numberSymbol(/cal\(X\)/g, '𝒳', startWordLimit),
-        generator.numberSymbol(/cal\(Y\)/g, '𝒴', startWordLimit),
-        generator.numberSymbol(/cal\(Z\)/g, '𝒵', startWordLimit),
-        generator.numberSymbol(/cal\(a\)/g, '𝒶', startWordLimit),
-        generator.numberSymbol(/cal\(b\)/g, '𝒷', startWordLimit),
-        generator.numberSymbol(/cal\(c\)/g, '𝒸', startWordLimit),
-        generator.numberSymbol(/cal\(d\)/g, '𝒹', startWordLimit),
-        generator.numberSymbol(/cal\(e\)/g, 'ℯ', startWordLimit),
-        generator.numberSymbol(/cal\(f\)/g, '𝒻', startWordLimit),
-        generator.numberSymbol(/cal\(g\)/g, 'ℊ', startWordLimit),
-        generator.numberSymbol(/cal\(h\)/g, '𝒽', startWordLimit),
-        generator.numberSymbol(/cal\(i\)/g, '𝒾', startWordLimit),
-        generator.numberSymbol(/cal\(j\)/g, '𝒿', startWordLimit),
-        generator.numberSymbol(/cal\(k\)/g, '𝓀', startWordLimit),
-        generator.numberSymbol(/cal\(l\)/g, '𝓁', startWordLimit),
-        generator.numberSymbol(/cal\(m\)/g, '𝓂', startWordLimit),
-        generator.numberSymbol(/cal\(n\)/g, '𝓃', startWordLimit),
-        generator.numberSymbol(/cal\(o\)/g, 'ℴ', startWordLimit),
-        generator.numberSymbol(/cal\(p\)/g, '𝓅', startWordLimit),
-        generator.numberSymbol(/cal\(q\)/g, '𝓆', startWordLimit),
-        generator.numberSymbol(/cal\(r\)/g, '𝓇', startWordLimit),
-        generator.numberSymbol(/cal\(s\)/g, '𝓈', startWordLimit),
-        generator.numberSymbol(/cal\(t\)/g, '𝓉', startWordLimit),
-        generator.numberSymbol(/cal\(u\)/g, '𝓊', startWordLimit),
-        generator.numberSymbol(/cal\(v\)/g, '𝓋', startWordLimit),
-        generator.numberSymbol(/cal\(w\)/g, '𝓌', startWordLimit),
-        generator.numberSymbol(/cal\(x\)/g, '𝓍', startWordLimit),
-        generator.numberSymbol(/cal\(y\)/g, '𝓎', startWordLimit),
-        generator.numberSymbol(/cal\(z\)/g, '𝓏', startWordLimit),
+        await generator.numberSymbol(/cal\(A\)/g, '𝒜', startWordLimit),
+        await generator.numberSymbol(/cal\(B\)/g, 'ℬ', startWordLimit),
+        await generator.numberSymbol(/cal\(C\)/g, '𝒞', startWordLimit),
+        await generator.numberSymbol(/cal\(D\)/g, '𝒟', startWordLimit),
+        await generator.numberSymbol(/cal\(E\)/g, 'ℰ', startWordLimit),
+        await generator.numberSymbol(/cal\(F\)/g, 'ℱ', startWordLimit),
+        await generator.numberSymbol(/cal\(G\)/g, '𝒢', startWordLimit),
+        await generator.numberSymbol(/cal\(H\)/g, 'ℋ', startWordLimit),
+        await generator.numberSymbol(/cal\(I\)/g, 'ℐ', startWordLimit),
+        await generator.numberSymbol(/cal\(J\)/g, '𝒥', startWordLimit),
+        await generator.numberSymbol(/cal\(K\)/g, '𝒦', startWordLimit),
+        await generator.numberSymbol(/cal\(L\)/g, 'ℒ', startWordLimit),
+        await generator.numberSymbol(/cal\(M\)/g, 'ℳ', startWordLimit),
+        await generator.numberSymbol(/cal\(N\)/g, '𝒩', startWordLimit),
+        await generator.numberSymbol(/cal\(O\)/g, '𝒪', startWordLimit),
+        await generator.numberSymbol(/cal\(P\)/g, '𝒫', startWordLimit),
+        await generator.numberSymbol(/cal\(Q\)/g, '𝒬', startWordLimit),
+        await generator.numberSymbol(/cal\(R\)/g, 'ℛ', startWordLimit),
+        await generator.numberSymbol(/cal\(S\)/g, '𝒮', startWordLimit),
+        await generator.numberSymbol(/cal\(T\)/g, '𝒯', startWordLimit),
+        await generator.numberSymbol(/cal\(U\)/g, '𝒰', startWordLimit),
+        await generator.numberSymbol(/cal\(V\)/g, '𝒱', startWordLimit),
+        await generator.numberSymbol(/cal\(W\)/g, '𝒲', startWordLimit),
+        await generator.numberSymbol(/cal\(X\)/g, '𝒳', startWordLimit),
+        await generator.numberSymbol(/cal\(Y\)/g, '𝒴', startWordLimit),
+        await generator.numberSymbol(/cal\(Z\)/g, '𝒵', startWordLimit),
+        await generator.numberSymbol(/cal\(a\)/g, '𝒶', startWordLimit),
+        await generator.numberSymbol(/cal\(b\)/g, '𝒷', startWordLimit),
+        await generator.numberSymbol(/cal\(c\)/g, '𝒸', startWordLimit),
+        await generator.numberSymbol(/cal\(d\)/g, '𝒹', startWordLimit),
+        await generator.numberSymbol(/cal\(e\)/g, 'ℯ', startWordLimit),
+        await generator.numberSymbol(/cal\(f\)/g, '𝒻', startWordLimit),
+        await generator.numberSymbol(/cal\(g\)/g, 'ℊ', startWordLimit),
+        await generator.numberSymbol(/cal\(h\)/g, '𝒽', startWordLimit),
+        await generator.numberSymbol(/cal\(i\)/g, '𝒾', startWordLimit),
+        await generator.numberSymbol(/cal\(j\)/g, '𝒿', startWordLimit),
+        await generator.numberSymbol(/cal\(k\)/g, '𝓀', startWordLimit),
+        await generator.numberSymbol(/cal\(l\)/g, '𝓁', startWordLimit),
+        await generator.numberSymbol(/cal\(m\)/g, '𝓂', startWordLimit),
+        await generator.numberSymbol(/cal\(n\)/g, '𝓃', startWordLimit),
+        await generator.numberSymbol(/cal\(o\)/g, 'ℴ', startWordLimit),
+        await generator.numberSymbol(/cal\(p\)/g, '𝓅', startWordLimit),
+        await generator.numberSymbol(/cal\(q\)/g, '𝓆', startWordLimit),
+        await generator.numberSymbol(/cal\(r\)/g, '𝓇', startWordLimit),
+        await generator.numberSymbol(/cal\(s\)/g, '𝓈', startWordLimit),
+        await generator.numberSymbol(/cal\(t\)/g, '𝓉', startWordLimit),
+        await generator.numberSymbol(/cal\(u\)/g, '𝓊', startWordLimit),
+        await generator.numberSymbol(/cal\(v\)/g, '𝓋', startWordLimit),
+        await generator.numberSymbol(/cal\(w\)/g, '𝓌', startWordLimit),
+        await generator.numberSymbol(/cal\(x\)/g, '𝓍', startWordLimit),
+        await generator.numberSymbol(/cal\(y\)/g, '𝓎', startWordLimit),
+        await generator.numberSymbol(/cal\(z\)/g, '𝓏', startWordLimit),
         // Fraktur letters
-        generator.numberSymbol(/frak\(A\)/g, '𝔄', startWordLimit),
-        generator.numberSymbol(/frak\(B\)/g, '𝔅', startWordLimit),
-        generator.numberSymbol(/frak\(C\)/g, 'ℭ', startWordLimit),
-        generator.numberSymbol(/frak\(D\)/g, '𝔇', startWordLimit),
-        generator.numberSymbol(/frak\(E\)/g, '𝔈', startWordLimit),
-        generator.numberSymbol(/frak\(F\)/g, '𝔉', startWordLimit),
-        generator.numberSymbol(/frak\(G\)/g, '𝔊', startWordLimit),
-        generator.numberSymbol(/frak\(H\)/g, 'ℌ', startWordLimit),
-        generator.numberSymbol(/frak\(I\)/g, 'ℑ', startWordLimit),
-        generator.numberSymbol(/frak\(J\)/g, '𝔍', startWordLimit),
-        generator.numberSymbol(/frak\(K\)/g, '𝔎', startWordLimit),
-        generator.numberSymbol(/frak\(L\)/g, '𝔏', startWordLimit),
-        generator.numberSymbol(/frak\(M\)/g, '𝔐', startWordLimit),
-        generator.numberSymbol(/frak\(N\)/g, '𝔑', startWordLimit),
-        generator.numberSymbol(/frak\(O\)/g, '𝔒', startWordLimit),
-        generator.numberSymbol(/frak\(P\)/g, '𝔓', startWordLimit),
-        generator.numberSymbol(/frak\(Q\)/g, '𝔔', startWordLimit),
-        generator.numberSymbol(/frak\(R\)/g, 'ℜ', startWordLimit),
-        generator.numberSymbol(/frak\(S\)/g, '𝔖', startWordLimit),
-        generator.numberSymbol(/frak\(T\)/g, '𝔗', startWordLimit),
-        generator.numberSymbol(/frak\(U\)/g, '𝔘', startWordLimit),
-        generator.numberSymbol(/frak\(V\)/g, '𝔙', startWordLimit),
-        generator.numberSymbol(/frak\(W\)/g, '𝔚', startWordLimit),
-        generator.numberSymbol(/frak\(X\)/g, '𝔛', startWordLimit),
-        generator.numberSymbol(/frak\(Y\)/g, '𝔜', startWordLimit),
-        generator.numberSymbol(/frak\(Z\)/g, 'ℨ', startWordLimit),
-        generator.numberSymbol(/frak\(a\)/g, '𝔞', startWordLimit),
-        generator.numberSymbol(/frak\(b\)/g, '𝔟', startWordLimit),
-        generator.numberSymbol(/frak\(c\)/g, '𝔠', startWordLimit),
-        generator.numberSymbol(/frak\(d\)/g, '𝔡', startWordLimit),
-        generator.numberSymbol(/frak\(e\)/g, '𝔢', startWordLimit),
-        generator.numberSymbol(/frak\(f\)/g, '𝔣', startWordLimit),
-        generator.numberSymbol(/frak\(g\)/g, '𝔤', startWordLimit),
-        generator.numberSymbol(/frak\(h\)/g, '𝔥', startWordLimit),
-        generator.numberSymbol(/frak\(i\)/g, '𝔦', startWordLimit),
-        generator.numberSymbol(/frak\(j\)/g, '𝔧', startWordLimit),
-        generator.numberSymbol(/frak\(k\)/g, '𝔨', startWordLimit),
-        generator.numberSymbol(/frak\(l\)/g, '𝔩', startWordLimit),
-        generator.numberSymbol(/frak\(m\)/g, '𝔪', startWordLimit),
-        generator.numberSymbol(/frak\(n\)/g, '𝔫', startWordLimit),
-        generator.numberSymbol(/frak\(o\)/g, '𝔬', startWordLimit),
-        generator.numberSymbol(/frak\(p\)/g, '𝔭', startWordLimit),
-        generator.numberSymbol(/frak\(q\)/g, '𝔮', startWordLimit),
-        generator.numberSymbol(/frak\(r\)/g, '𝔯', startWordLimit),
-        generator.numberSymbol(/frak\(s\)/g, '𝔰', startWordLimit),
-        generator.numberSymbol(/frak\(t\)/g, '𝔱', startWordLimit),
-        generator.numberSymbol(/frak\(u\)/g, '𝔲', startWordLimit),
-        generator.numberSymbol(/frak\(v\)/g, '𝔳', startWordLimit),
-        generator.numberSymbol(/frak\(w\)/g, '𝔴', startWordLimit),
-        generator.numberSymbol(/frak\(x\)/g, '𝔵', startWordLimit),
-        generator.numberSymbol(/frak\(y\)/g, '𝔶', startWordLimit),
-        generator.numberSymbol(/frak\(z\)/g, '𝔷', startWordLimit),
+        await generator.numberSymbol(/frak\(A\)/g, '𝔄', startWordLimit),
+        await generator.numberSymbol(/frak\(B\)/g, '𝔅', startWordLimit),
+        await generator.numberSymbol(/frak\(C\)/g, 'ℭ', startWordLimit),
+        await generator.numberSymbol(/frak\(D\)/g, '𝔇', startWordLimit),
+        await generator.numberSymbol(/frak\(E\)/g, '𝔈', startWordLimit),
+        await generator.numberSymbol(/frak\(F\)/g, '𝔉', startWordLimit),
+        await generator.numberSymbol(/frak\(G\)/g, '𝔊', startWordLimit),
+        await generator.numberSymbol(/frak\(H\)/g, 'ℌ', startWordLimit),
+        await generator.numberSymbol(/frak\(I\)/g, 'ℑ', startWordLimit),
+        await generator.numberSymbol(/frak\(J\)/g, '𝔍', startWordLimit),
+        await generator.numberSymbol(/frak\(K\)/g, '𝔎', startWordLimit),
+        await generator.numberSymbol(/frak\(L\)/g, '𝔏', startWordLimit),
+        await generator.numberSymbol(/frak\(M\)/g, '𝔐', startWordLimit),
+        await generator.numberSymbol(/frak\(N\)/g, '𝔑', startWordLimit),
+        await generator.numberSymbol(/frak\(O\)/g, '𝔒', startWordLimit),
+        await generator.numberSymbol(/frak\(P\)/g, '𝔓', startWordLimit),
+        await generator.numberSymbol(/frak\(Q\)/g, '𝔔', startWordLimit),
+        await generator.numberSymbol(/frak\(R\)/g, 'ℜ', startWordLimit),
+        await generator.numberSymbol(/frak\(S\)/g, '𝔖', startWordLimit),
+        await generator.numberSymbol(/frak\(T\)/g, '𝔗', startWordLimit),
+        await generator.numberSymbol(/frak\(U\)/g, '𝔘', startWordLimit),
+        await generator.numberSymbol(/frak\(V\)/g, '𝔙', startWordLimit),
+        await generator.numberSymbol(/frak\(W\)/g, '𝔚', startWordLimit),
+        await generator.numberSymbol(/frak\(X\)/g, '𝔛', startWordLimit),
+        await generator.numberSymbol(/frak\(Y\)/g, '𝔜', startWordLimit),
+        await generator.numberSymbol(/frak\(Z\)/g, 'ℨ', startWordLimit),
+        await generator.numberSymbol(/frak\(a\)/g, '𝔞', startWordLimit),
+        await generator.numberSymbol(/frak\(b\)/g, '𝔟', startWordLimit),
+        await generator.numberSymbol(/frak\(c\)/g, '𝔠', startWordLimit),
+        await generator.numberSymbol(/frak\(d\)/g, '𝔡', startWordLimit),
+        await generator.numberSymbol(/frak\(e\)/g, '𝔢', startWordLimit),
+        await generator.numberSymbol(/frak\(f\)/g, '𝔣', startWordLimit),
+        await generator.numberSymbol(/frak\(g\)/g, '𝔤', startWordLimit),
+        await generator.numberSymbol(/frak\(h\)/g, '𝔥', startWordLimit),
+        await generator.numberSymbol(/frak\(i\)/g, '𝔦', startWordLimit),
+        await generator.numberSymbol(/frak\(j\)/g, '𝔧', startWordLimit),
+        await generator.numberSymbol(/frak\(k\)/g, '𝔨', startWordLimit),
+        await generator.numberSymbol(/frak\(l\)/g, '𝔩', startWordLimit),
+        await generator.numberSymbol(/frak\(m\)/g, '𝔪', startWordLimit),
+        await generator.numberSymbol(/frak\(n\)/g, '𝔫', startWordLimit),
+        await generator.numberSymbol(/frak\(o\)/g, '𝔬', startWordLimit),
+        await generator.numberSymbol(/frak\(p\)/g, '𝔭', startWordLimit),
+        await generator.numberSymbol(/frak\(q\)/g, '𝔮', startWordLimit),
+        await generator.numberSymbol(/frak\(r\)/g, '𝔯', startWordLimit),
+        await generator.numberSymbol(/frak\(s\)/g, '𝔰', startWordLimit),
+        await generator.numberSymbol(/frak\(t\)/g, '𝔱', startWordLimit),
+        await generator.numberSymbol(/frak\(u\)/g, '𝔲', startWordLimit),
+        await generator.numberSymbol(/frak\(v\)/g, '𝔳', startWordLimit),
+        await generator.numberSymbol(/frak\(w\)/g, '𝔴', startWordLimit),
+        await generator.numberSymbol(/frak\(x\)/g, '𝔵', startWordLimit),
+        await generator.numberSymbol(/frak\(y\)/g, '𝔶', startWordLimit),
+        await generator.numberSymbol(/frak\(z\)/g, '𝔷', startWordLimit),
         // blackboard bold letters
-        generator.numberSymbol(/bb\(A\)/g, '𝔸', startWordLimit),
-        generator.numberSymbol(/bb\(B\)/g, '𝔹', startWordLimit),
-        generator.numberSymbol(/bb\(C\)/g, 'ℂ', startWordLimit),
-        generator.numberSymbol(/bb\(D\)/g, '𝔻', startWordLimit),
-        generator.numberSymbol(/bb\(E\)/g, '𝔼', startWordLimit),
-        generator.numberSymbol(/bb\(F\)/g, '𝔽', startWordLimit),
-        generator.numberSymbol(/bb\(G\)/g, '𝔾', startWordLimit),
-        generator.numberSymbol(/bb\(H\)/g, 'ℍ', startWordLimit),
-        generator.numberSymbol(/bb\(I\)/g, '𝕀', startWordLimit),
-        generator.numberSymbol(/bb\(J\)/g, '𝕁', startWordLimit),
-        generator.numberSymbol(/bb\(K\)/g, '𝕂', startWordLimit),
-        generator.numberSymbol(/bb\(L\)/g, '𝕃', startWordLimit),
-        generator.numberSymbol(/bb\(M\)/g, '𝕄', startWordLimit),
-        generator.numberSymbol(/bb\(N\)/g, 'ℕ', startWordLimit),
-        generator.numberSymbol(/bb\(O\)/g, '𝕆', startWordLimit),
-        generator.numberSymbol(/bb\(P\)/g, 'ℙ', startWordLimit),
-        generator.numberSymbol(/bb\(Q\)/g, 'ℚ', startWordLimit),
-        generator.numberSymbol(/bb\(R\)/g, 'ℝ', startWordLimit),
-        generator.numberSymbol(/bb\(S\)/g, '𝕊', startWordLimit),
-        generator.numberSymbol(/bb\(T\)/g, '𝕋', startWordLimit),
-        generator.numberSymbol(/bb\(U\)/g, '𝕌', startWordLimit),
-        generator.numberSymbol(/bb\(V\)/g, '𝕍', startWordLimit),
-        generator.numberSymbol(/bb\(W\)/g, '𝕎', startWordLimit),
-        generator.numberSymbol(/bb\(X\)/g, '𝕏', startWordLimit),
-        generator.numberSymbol(/bb\(Y\)/g, '𝕐', startWordLimit),
-        generator.numberSymbol(/bb\(Z\)/g, 'ℤ', startWordLimit),
-        generator.numberSymbol(/bb\(a\)/g, '𝕒', startWordLimit),
-        generator.numberSymbol(/bb\(b\)/g, '𝕓', startWordLimit),
-        generator.numberSymbol(/bb\(c\)/g, '𝕔', startWordLimit),
-        generator.numberSymbol(/bb\(d\)/g, '𝕕', startWordLimit),
-        generator.numberSymbol(/bb\(e\)/g, '𝕖', startWordLimit),
-        generator.numberSymbol(/bb\(f\)/g, '𝕗', startWordLimit),
-        generator.numberSymbol(/bb\(g\)/g, '𝕘', startWordLimit),
-        generator.numberSymbol(/bb\(h\)/g, '𝕙', startWordLimit),
-        generator.numberSymbol(/bb\(i\)/g, '𝕚', startWordLimit),
-        generator.numberSymbol(/bb\(j\)/g, '𝕛', startWordLimit),
-        generator.numberSymbol(/bb\(k\)/g, '𝕜', startWordLimit),
-        generator.numberSymbol(/bb\(l\)/g, '𝕝', startWordLimit),
-        generator.numberSymbol(/bb\(m\)/g, '𝕞', startWordLimit),
-        generator.numberSymbol(/bb\(n\)/g, '𝕟', startWordLimit),
-        generator.numberSymbol(/bb\(o\)/g, '𝕠', startWordLimit),
-        generator.numberSymbol(/bb\(p\)/g, '𝕡', startWordLimit),
-        generator.numberSymbol(/bb\(q\)/g, '𝕢', startWordLimit),
-        generator.numberSymbol(/bb\(r\)/g, '𝕣', startWordLimit),
-        generator.numberSymbol(/bb\(s\)/g, '𝕤', startWordLimit),
-        generator.numberSymbol(/bb\(t\)/g, '𝕥', startWordLimit),
-        generator.numberSymbol(/bb\(u\)/g, '𝕦', startWordLimit),
-        generator.numberSymbol(/bb\(v\)/g, '𝕧', startWordLimit),
-        generator.numberSymbol(/bb\(w\)/g, '𝕨', startWordLimit),
-        generator.numberSymbol(/bb\(x\)/g, '𝕩', startWordLimit),
-        generator.numberSymbol(/bb\(y\)/g, '𝕪', startWordLimit),
-        generator.numberSymbol(/bb\(z\)/g, '𝕫', startWordLimit),
-        generator.numberSymbol(/bb\(0\)/g, '𝟘', startWordLimit),
-        generator.numberSymbol(/bb\(1\)/g, '𝟙', startWordLimit),
-        generator.numberSymbol(/bb\(2\)/g, '𝟚', startWordLimit),
-        generator.numberSymbol(/bb\(3\)/g, '𝟛', startWordLimit),
-        generator.numberSymbol(/bb\(4\)/g, '𝟜', startWordLimit),
-        generator.numberSymbol(/bb\(5\)/g, '𝟝', startWordLimit),
-        generator.numberSymbol(/bb\(6\)/g, '𝟞', startWordLimit),
-        generator.numberSymbol(/bb\(7\)/g, '𝟟', startWordLimit),
-        generator.numberSymbol(/bb\(8\)/g, '𝟠', startWordLimit),
-        generator.numberSymbol(/bb\(9\)/g, '𝟡', startWordLimit),
+        await generator.numberSymbol(/bb\(A\)/g, '𝔸', startWordLimit),
+        await generator.numberSymbol(/bb\(B\)/g, '𝔹', startWordLimit),
+        await generator.numberSymbol(/bb\(C\)/g, 'ℂ', startWordLimit),
+        await generator.numberSymbol(/bb\(D\)/g, '𝔻', startWordLimit),
+        await generator.numberSymbol(/bb\(E\)/g, '𝔼', startWordLimit),
+        await generator.numberSymbol(/bb\(F\)/g, '𝔽', startWordLimit),
+        await generator.numberSymbol(/bb\(G\)/g, '𝔾', startWordLimit),
+        await generator.numberSymbol(/bb\(H\)/g, 'ℍ', startWordLimit),
+        await generator.numberSymbol(/bb\(I\)/g, '𝕀', startWordLimit),
+        await generator.numberSymbol(/bb\(J\)/g, '𝕁', startWordLimit),
+        await generator.numberSymbol(/bb\(K\)/g, '𝕂', startWordLimit),
+        await generator.numberSymbol(/bb\(L\)/g, '𝕃', startWordLimit),
+        await generator.numberSymbol(/bb\(M\)/g, '𝕄', startWordLimit),
+        await generator.numberSymbol(/bb\(N\)/g, 'ℕ', startWordLimit),
+        await generator.numberSymbol(/bb\(O\)/g, '𝕆', startWordLimit),
+        await generator.numberSymbol(/bb\(P\)/g, 'ℙ', startWordLimit),
+        await generator.numberSymbol(/bb\(Q\)/g, 'ℚ', startWordLimit),
+        await generator.numberSymbol(/bb\(R\)/g, 'ℝ', startWordLimit),
+        await generator.numberSymbol(/bb\(S\)/g, '𝕊', startWordLimit),
+        await generator.numberSymbol(/bb\(T\)/g, '𝕋', startWordLimit),
+        await generator.numberSymbol(/bb\(U\)/g, '𝕌', startWordLimit),
+        await generator.numberSymbol(/bb\(V\)/g, '𝕍', startWordLimit),
+        await generator.numberSymbol(/bb\(W\)/g, '𝕎', startWordLimit),
+        await generator.numberSymbol(/bb\(X\)/g, '𝕏', startWordLimit),
+        await generator.numberSymbol(/bb\(Y\)/g, '𝕐', startWordLimit),
+        await generator.numberSymbol(/bb\(Z\)/g, 'ℤ', startWordLimit),
+        await generator.numberSymbol(/bb\(a\)/g, '𝕒', startWordLimit),
+        await generator.numberSymbol(/bb\(b\)/g, '𝕓', startWordLimit),
+        await generator.numberSymbol(/bb\(c\)/g, '𝕔', startWordLimit),
+        await generator.numberSymbol(/bb\(d\)/g, '𝕕', startWordLimit),
+        await generator.numberSymbol(/bb\(e\)/g, '𝕖', startWordLimit),
+        await generator.numberSymbol(/bb\(f\)/g, '𝕗', startWordLimit),
+        await generator.numberSymbol(/bb\(g\)/g, '𝕘', startWordLimit),
+        await generator.numberSymbol(/bb\(h\)/g, '𝕙', startWordLimit),
+        await generator.numberSymbol(/bb\(i\)/g, '𝕚', startWordLimit),
+        await generator.numberSymbol(/bb\(j\)/g, '𝕛', startWordLimit),
+        await generator.numberSymbol(/bb\(k\)/g, '𝕜', startWordLimit),
+        await generator.numberSymbol(/bb\(l\)/g, '𝕝', startWordLimit),
+        await generator.numberSymbol(/bb\(m\)/g, '𝕞', startWordLimit),
+        await generator.numberSymbol(/bb\(n\)/g, '𝕟', startWordLimit),
+        await generator.numberSymbol(/bb\(o\)/g, '𝕠', startWordLimit),
+        await generator.numberSymbol(/bb\(p\)/g, '𝕡', startWordLimit),
+        await generator.numberSymbol(/bb\(q\)/g, '𝕢', startWordLimit),
+        await generator.numberSymbol(/bb\(r\)/g, '𝕣', startWordLimit),
+        await generator.numberSymbol(/bb\(s\)/g, '𝕤', startWordLimit),
+        await generator.numberSymbol(/bb\(t\)/g, '𝕥', startWordLimit),
+        await generator.numberSymbol(/bb\(u\)/g, '𝕦', startWordLimit),
+        await generator.numberSymbol(/bb\(v\)/g, '𝕧', startWordLimit),
+        await generator.numberSymbol(/bb\(w\)/g, '𝕨', startWordLimit),
+        await generator.numberSymbol(/bb\(x\)/g, '𝕩', startWordLimit),
+        await generator.numberSymbol(/bb\(y\)/g, '𝕪', startWordLimit),
+        await generator.numberSymbol(/bb\(z\)/g, '𝕫', startWordLimit),
+        await generator.numberSymbol(/bb\(0\)/g, '𝟘', startWordLimit),
+        await generator.numberSymbol(/bb\(1\)/g, '𝟙', startWordLimit),
+        await generator.numberSymbol(/bb\(2\)/g, '𝟚', startWordLimit),
+        await generator.numberSymbol(/bb\(3\)/g, '𝟛', startWordLimit),
+        await generator.numberSymbol(/bb\(4\)/g, '𝟜', startWordLimit),
+        await generator.numberSymbol(/bb\(5\)/g, '𝟝', startWordLimit),
+        await generator.numberSymbol(/bb\(6\)/g, '𝟞', startWordLimit),
+        await generator.numberSymbol(/bb\(7\)/g, '𝟟', startWordLimit),
+        await generator.numberSymbol(/bb\(8\)/g, '𝟠', startWordLimit),
+        await generator.numberSymbol(/bb\(9\)/g, '𝟡', startWordLimit),
 
 
-        ...generator.numberSymbolOnlyVariantsJulia(/a/g, 'a'),
-        ...generator.numberSymbolOnlyVariantsJulia(/b/g, 'b'),
-        ...generator.numberSymbolOnlyVariantsJulia(/c/g, 'c'),
-        ...generator.numberSymbolOnlyVariantsJulia(/d/g, 'd'),
-        ...generator.numberSymbolOnlyVariantsJulia(/e/g, 'e'),
-        ...generator.numberSymbolOnlyVariantsJulia(/f/g, 'f'),
-        ...generator.numberSymbolOnlyVariantsJulia(/g/g, 'g'),
-        ...generator.numberSymbolOnlyVariantsJulia(/h/g, 'h'),
-        ...generator.numberSymbolOnlyVariantsJulia(/i/g, 'i'),
-        ...generator.numberSymbolOnlyVariantsJulia(/j/g, 'j'),
-        ...generator.numberSymbolOnlyVariantsJulia(/k/g, 'k'),
-        ...generator.numberSymbolOnlyVariantsJulia(/l/g, 'l'),
-        ...generator.numberSymbolOnlyVariantsJulia(/m/g, 'm'),
-        ...generator.numberSymbolOnlyVariantsJulia(/n/g, 'n'),
-        ...generator.numberSymbolOnlyVariantsJulia(/o/g, 'o'),
-        ...generator.numberSymbolOnlyVariantsJulia(/p/g, 'p'),
-        ...generator.numberSymbolOnlyVariantsJulia(/q/g, 'q'),
-        ...generator.numberSymbolOnlyVariantsJulia(/r/g, 'r'),
-        ...generator.numberSymbolOnlyVariantsJulia(/s/g, 's'),
-        ...generator.numberSymbolOnlyVariantsJulia(/t/g, 't'),
-        ...generator.numberSymbolOnlyVariantsJulia(/u/g, 'u'),
-        ...generator.numberSymbolOnlyVariantsJulia(/v/g, 'v'),
-        ...generator.numberSymbolOnlyVariantsJulia(/w/g, 'w'),
-        ...generator.numberSymbolOnlyVariantsJulia(/x/g, 'x'),
-        ...generator.numberSymbolOnlyVariantsJulia(/y/g, 'y'),
-        ...generator.numberSymbolOnlyVariantsJulia(/z/g, 'z'),
+        ...await generator.numberSymbolOnlyVariantsJulia(/A/g, 'A'),
+        ...await generator.numberSymbolOnlyVariantsJulia(/B/g, 'B'),
+        ...await generator.numberSymbolOnlyVariantsJulia(/C/g, 'C'),
+        ...await generator.numberSymbolOnlyVariantsJulia(/D/g, 'D'),
+        ...await generator.numberSymbolOnlyVariantsJulia(/E/g, 'E'),
+        ...await generator.numberSymbolOnlyVariantsJulia(/F/g, 'F'),
+        ...await generator.numberSymbolOnlyVariantsJulia(/G/g, 'G'),
+        ...await generator.numberSymbolOnlyVariantsJulia(/H/g, 'H'),
+        ...await generator.numberSymbolOnlyVariantsJulia(/I/g, 'I'),
+        ...await generator.numberSymbolOnlyVariantsJulia(/J/g, 'J'),
+        ...await generator.numberSymbolOnlyVariantsJulia(/K/g, 'K'),
+        ...await generator.numberSymbolOnlyVariantsJulia(/L/g, 'L'),
+        ...await generator.numberSymbolOnlyVariantsJulia(/M/g, 'M'),
+        ...await generator.numberSymbolOnlyVariantsJulia(/N/g, 'N'),
+        ...await generator.numberSymbolOnlyVariantsJulia(/O/g, 'O'),
+        ...await generator.numberSymbolOnlyVariantsJulia(/P/g, 'P'),
+        ...await generator.numberSymbolOnlyVariantsJulia(/Q/g, 'Q'),
+        ...await generator.numberSymbolOnlyVariantsJulia(/R/g, 'R'),
+        ...await generator.numberSymbolOnlyVariantsJulia(/S/g, 'S'),
+        ...await generator.numberSymbolOnlyVariantsJulia(/T/g, 'T'),
+        ...await generator.numberSymbolOnlyVariantsJulia(/U/g, 'U'),
+        ...await generator.numberSymbolOnlyVariantsJulia(/V/g, 'V'),
+        ...await generator.numberSymbolOnlyVariantsJulia(/W/g, 'W'),
+        ...await generator.numberSymbolOnlyVariantsJulia(/X/g, 'X'),
+        ...await generator.numberSymbolOnlyVariantsJulia(/Y/g, 'Y'),
+        ...await generator.numberSymbolOnlyVariantsJulia(/Z/g, 'Z'),
+        ...await generator.numberSymbolOnlyVariantsJulia(/a/g, 'a'),
+        ...await generator.numberSymbolOnlyVariantsJulia(/b/g, 'b'),
+        ...await generator.numberSymbolOnlyVariantsJulia(/c/g, 'c'),
+        ...await generator.numberSymbolOnlyVariantsJulia(/d/g, 'd'),
+        ...await generator.numberSymbolOnlyVariantsJulia(/e/g, 'e'),
+        ...await generator.numberSymbolOnlyVariantsJulia(/f/g, 'f'),
+        ...await generator.numberSymbolOnlyVariantsJulia(/g/g, 'g'),
+        ...await generator.numberSymbolOnlyVariantsJulia(/h/g, 'h'),
+        ...await generator.numberSymbolOnlyVariantsJulia(/i/g, 'i'),
+        ...await generator.numberSymbolOnlyVariantsJulia(/j/g, 'j'),
+        ...await generator.numberSymbolOnlyVariantsJulia(/k/g, 'k'),
+        ...await generator.numberSymbolOnlyVariantsJulia(/l/g, 'l'),
+        ...await generator.numberSymbolOnlyVariantsJulia(/m/g, 'm'),
+        ...await generator.numberSymbolOnlyVariantsJulia(/n/g, 'n'),
+        ...await generator.numberSymbolOnlyVariantsJulia(/o/g, 'o'),
+        ...await generator.numberSymbolOnlyVariantsJulia(/p/g, 'p'),
+        ...await generator.numberSymbolOnlyVariantsJulia(/q/g, 'q'),
+        ...await generator.numberSymbolOnlyVariantsJulia(/r/g, 'r'),
+        ...await generator.numberSymbolOnlyVariantsJulia(/s/g, 's'),
+        ...await generator.numberSymbolOnlyVariantsJulia(/t/g, 't'),
+        ...await generator.numberSymbolOnlyVariantsJulia(/u/g, 'u'),
+        ...await generator.numberSymbolOnlyVariantsJulia(/v/g, 'v'),
+        ...await generator.numberSymbolOnlyVariantsJulia(/w/g, 'w'),
+        ...await generator.numberSymbolOnlyVariantsJulia(/x/g, 'x'),
+        ...await generator.numberSymbolOnlyVariantsJulia(/y/g, 'y'),
+        ...await generator.numberSymbolOnlyVariantsJulia(/z/g, 'z'),
+        ...await generator.numberSymbolOnlyVariantsJulia(/0/g, '0', undefined, undefined, true),
+        ...await generator.numberSymbolOnlyVariantsJulia(/1/g, '1', undefined, undefined, true),
+        ...await generator.numberSymbolOnlyVariantsJulia(/2/g, '2', undefined, undefined, true),
+        ...await generator.numberSymbolOnlyVariantsJulia(/3/g, '3', undefined, undefined, true),
+        ...await generator.numberSymbolOnlyVariantsJulia(/4/g, '4', undefined, undefined, true),
+        ...await generator.numberSymbolOnlyVariantsJulia(/5/g, '5', undefined, undefined, true),
+        ...await generator.numberSymbolOnlyVariantsJulia(/6/g, '6', undefined, undefined, true),
+        ...await generator.numberSymbolOnlyVariantsJulia(/7/g, '7', undefined, undefined, true),
+        ...await generator.numberSymbolOnlyVariantsJulia(/8/g, '8', undefined, undefined, true),
+        ...await generator.numberSymbolOnlyVariantsJulia(/9/g, '9', undefined, undefined, true),
+
     ];
+    if (first_generation) {
+        first_generation = false;
+        result = result.concat(await generator.generateFunctionVariants());
+    }
+    // Return result without null
+    return result.filter((x) => x !== null) as any;
 }
 
 
@@ -484,7 +528,7 @@ type dynamicDecorationType = {
     ranges: vscode.DecorationOptions[],
 };
 
-export function dynamicDecorations(activeEditor: vscode.TextEditor): dynamicDecorationType[] {
+export async function dynamicDecorations(activeEditor: vscode.TextEditor): Promise<dynamicDecorationType[]> {
     const result: dynamicDecorationType[] = [];
 
     // Usefull variables
@@ -501,7 +545,7 @@ export function dynamicDecorations(activeEditor: vscode.TextEditor): dynamicDeco
     // Per type decorations
 
     // Powers
-    generator.simpleRegex(
+    await generator.simpleRegex(
         /\^(\d+\b|\(\d+\))/g,
         "powers",
         {
@@ -529,7 +573,7 @@ export function dynamicDecorations(activeEditor: vscode.TextEditor): dynamicDeco
     );
 
     // Negative powers
-    generator.simpleRegex(
+    await generator.simpleRegex(
         /\^\(\-\d+\)/g,
         "powers",
         {
@@ -555,7 +599,7 @@ export function dynamicDecorations(activeEditor: vscode.TextEditor): dynamicDeco
 
 
     // Subscripts
-    generator.simpleRegex(
+    await generator.simpleRegex(
         /_(\d+\b|\(\d+\))/g,
         "subscripts",
         {
@@ -583,7 +627,7 @@ export function dynamicDecorations(activeEditor: vscode.TextEditor): dynamicDeco
         }
     );
     // Negative subscripts
-    generator.simpleRegex(
+    await generator.simpleRegex(
         /_\(\-\d+\)/g,
         "subscripts",
         {
@@ -608,7 +652,7 @@ export function dynamicDecorations(activeEditor: vscode.TextEditor): dynamicDeco
     );
 
     // Third letters superscripts like k=0, n+1...
-    generator.simpleRegex(
+    await generator.simpleRegex(
         /\^\([A-z](\+|\=|\-).\)/g,
         "powers",
         {
@@ -629,7 +673,7 @@ export function dynamicDecorations(activeEditor: vscode.TextEditor): dynamicDeco
     );
 
     // Third letters subscripts like k=0, n+1...
-    generator.simpleRegex(
+    await generator.simpleRegex(
         /_\([A-z](\+|\=|\-).\)/g,
         "subscripts",
         {
@@ -648,362 +692,39 @@ export function dynamicDecorations(activeEditor: vscode.TextEditor): dynamicDeco
             ];
         },
     );
-
-    // Arrow func on letters
+    // Abs function for numbers
     generator.simpleRegex(
-        /arrow\([A-z0-9]/g,
-        "combining",
+        /abs\(/g,
+        "abs",
         {
-            color: getColors("number"),
+            color: getColors("operator"),
             textDecoration: `none;`,
         },
         (match) => {
-            const content = match[0].slice(6);
+            const number = match[0].slice(3);
             return [
-                content,
-                content
+                number,
+                "|"
             ];
         },
         startWordLimit,
-        /\)/g
+        /-?\d+\)/g
     );
     generator.simpleRegex(
         /\)/g,
-        "combining",
+        "abs",
         {
-            color: getColors("number"),
-            textDecoration: `none;
-            font-family: "NewComputerModernMath";
-            transform: translate(-0.84em, -0.9em);
-            font-size: 0.8em;
-            display: inline-block;`,
-        },
-        (match) => {
-            const content = '→';
-            return [
-                content,
-                content
-            ];
-        },
-        /arrow\([A-z0-9]/g
-    );
-    
-    // Tilde func on letters
-    generator.simpleRegex(
-        /tilde\([A-z0-9]/g,
-        "combining",
-        {
-            color: getColors("number"),
+            color: getColors("operator"),
             textDecoration: `none;`,
         },
         (match) => {
-            const content = match[0].slice(6);
+            const number = match[0].slice(0, -1);
             return [
-                content,
-                content
+                number,
+                "|"
             ];
         },
-        startWordLimit,
-        /\)/g
-    );
-    generator.simpleRegex(
-        /\)/g,
-        "combining",
-        {
-            color: getColors("number"),
-            textDecoration: `none;
-            transform: translate(-0.59em, -0.7em);
-            font-size: 0.9em;
-            display: inline-block;`,
-        },
-        (match) => {
-            const content = '~';
-            return [
-                content,
-                content
-            ];
-        },
-        /tilde\([A-z0-9]/g,
-    );
-
-    // Hat func on letters
-    generator.simpleRegex(
-        /hat\([A-z0-9]/g,
-        "combining",
-        {
-            color: getColors("number"),
-            textDecoration: `none;`,
-        },
-        (match) => {
-            const content = match[0].slice(4);
-            return [
-                content,
-                content
-            ];
-        },
-        startWordLimit,
-        /\)/g
-    );
-    generator.simpleRegex(
-        /\)/g,
-        "combining",
-        {
-            color: getColors("number"),
-            textDecoration: `none;
-            transform: translate(-0.6em, -0.5em);
-            font-size: 0.9em;
-            display: inline-block;`,
-        },
-        (match) => {
-            const content = '^';
-            return [
-                content,
-                content
-            ];
-        },
-        /hat\([A-z0-9]/g
-    );
-
-    // Dot func on letters
-    generator.simpleRegex(
-        /dot\([A-z0-9]/g,
-        "combining",
-        {
-            color: getColors("number"),
-            textDecoration: `none;`,
-        },
-        (match) => {
-            const content = match[0].slice(4);
-            return [
-                content,
-                content
-            ];
-        },
-        startWordLimit,
-        /\)/g
-    );
-    generator.simpleRegex(
-        /\)/g,
-        "combining",
-        {
-            color: getColors("number"),
-            textDecoration: `none;
-            transform: translate(-0.43em, -0.52em);
-            display: inline-block;`,
-        },
-        (match) => {
-            const content = '⋅';
-            return [
-                content,
-                content
-            ];
-        },
-        /dot\([A-z0-9]/g
-    );
-
-    // Double dot func on letters
-    generator.simpleRegex(
-        /dot\.double\([A-z0-9]/g,
-        "combining",
-        {
-            color: getColors("number"),
-            textDecoration: `none;`,
-        },
-        (match) => {
-            const content = match[0].slice(11);
-            return [
-                content,
-                content
-            ];
-        },
-        startWordLimit,
-        /\)/g
-    );
-    generator.simpleRegex(
-        /\)/g,
-        "combining",
-        {
-            color: getColors("number"),
-            textDecoration: `none;
-            transform: translate(-0.55em, -0.25em);
-            display: inline-block;`,
-        },
-        (match) => {
-            const content = '¨';
-            return [
-                content,
-                content
-            ];
-        },
-        /dot\.double\([A-z0-9]/g
-    );
-
-    // Triple dot func on letters
-    generator.simpleRegex(
-        /dot\.triple\([A-z0-9]/g,
-        "combining",
-        {
-            color: getColors("number"),
-            textDecoration: `none;`,
-        },
-        (match) => {
-            const content = match[0].slice(11);
-            return [
-                content,
-                content
-            ];
-        },
-        startWordLimit,
-        /\)/g
-    );
-    generator.simpleRegex(
-        /\)/g,
-        "combining",
-        {
-            color: getColors("number"),
-            textDecoration: `none;
-            font-family: JuliaMono;
-            font-size: 1.4em;
-            transform: translate(-0.5em);
-            display: inline-block;`,
-        },
-        (match) => {
-            const content = '\u20DB';
-            return [
-                content,
-                content
-            ];
-        },
-        /dot\.triple\([A-z0-9]/g
-    );
-
-    // Quad dot func on letters
-    generator.simpleRegex(
-        /dot\.quad\([A-z0-9]/g,
-        "combining",
-        {
-            color: getColors("number"),
-            textDecoration: `none;`,
-        },
-        (match) => {
-            const content = match[0].slice(9);
-            return [
-                content,
-                content
-            ];
-        },
-        startWordLimit,
-        /\)/g
-    );
-    generator.simpleRegex(
-        /\)/g,
-        "combining",
-        {
-            color: getColors("number"),
-            textDecoration: `none;
-            font-family: JuliaMono;
-            font-size: 1.4em;
-            transform: translate(-0.52em);
-            display: inline-block;`,
-        },
-        (match) => {
-            const content = '\u20DC';
-            return [
-                content,
-                content
-            ];
-        },
-        /dot\.quad\([A-z0-9]/g
-    );
-
-    // Overline func on letters
-    generator.simpleRegex(
-        /overline\([A-z0-9]/g,
-        "combining",
-        {
-            color: getColors("number"),
-            textDecoration: `none;`,
-        },
-        (match) => {
-            const content = match[0].slice(9);
-            return [
-                content,
-                content
-            ];
-        },
-        startWordLimit,
-        /\)/g
-    );
-    generator.simpleRegex(
-        /\)/g,
-        "combining",
-        {
-            color: getColors("number"),
-            textDecoration: `none;
-            transform: translate(-0.57em, -0.2em);
-            display: inline-block;`,
-        },
-        (match) => {
-            const content = '\u0305';
-            return [
-                content,
-                content
-            ];
-        },
-        /overline\([A-z0-9]/g
-    );
-
-    // Abs func on letters
-    generator.simpleRegex(
-        /a/g,
-        "combining",
-        {
-            color: getColors("number"),
-            textDecoration: `none;`,
-        },
-        (match) => {
-            const content = '|';
-            return [
-                content,
-                content
-            ];
-        },
-        startWordLimit,
-        /bs\([A-z0-9]\)/g
-    );
-    generator.simpleRegex(
-        /bs\([A-z0-9]/g,
-        "combining",
-        {
-            color: getColors("number"),
-            textDecoration: `none;`,
-        },
-        (match) => {
-            const content = match[0].slice(3);
-            return [
-                content,
-                content
-            ];
-        },
-        /a/g,
-        /\)/g
-    );
-    generator.simpleRegex(
-        /\)/g,
-        "combining",
-        {
-            color: getColors("number"),
-            textDecoration: `none;
-            display: inline-block;`,
-        },
-        (match) => {
-            const content = '|';
-            return [
-                content,
-                content
-            ];
-        },
-        /abs\([A-z0-9]/g
+        /abs\(-?\d+/g
     );
 
     // Flatten allDecorations into result

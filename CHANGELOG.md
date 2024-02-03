@@ -4,6 +4,11 @@ All notable changes to the "typst-math" extension will be documented in this fil
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## [v0.0.6]
+- Add symbols
+- Add functions like `arrow()` in easy cases
+- Fix some rendering bugs
+
 ## [v0.0.5]
 - Add symbols
 - Add a math command to add a math equation
