@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import { renderSymbolsOutsideMath } from './utils';
 
 let allDecorations: {
     [key: string]: {
@@ -28,7 +29,9 @@ export function getAllDecorations() {
 }
 
 export function helperSimpleRegex(text: string, activeEditor: vscode.TextEditor, reg: RegExp, onMatch: (match: RegExpExecArray, range: vscode.Range) => void, pre?: RegExp, post?: RegExp, rangeStartOffset = 0, rangeEndOffset = 0) {
-    const completeReg = new RegExp((pre ? pre.source : '') + reg.source + (post ? post.source : ''), 'g');
+    // Add "#sym." to match also symbols outisde maths
+    // Replace \1 with \2 because we create another group who replace the first one
+    const completeReg = new RegExp(`(${(pre ? pre.source.replace("\\1", "\\2") : '')}|#sym\\.)` + reg.source + (post ? post.source : ''), 'g');
     let match;
     while ((match = completeReg.exec(text))) {
         let newMatch;
@@ -59,13 +62,24 @@ export function helperSimpleRegex(text: string, activeEditor: vscode.TextEditor,
             continue;
         }
 
+        let flag = false;
         // Check if we are in math mode
         // Get the text before the match, and count if there is an even number of $
         const before = activeEditor.document.getText(new vscode.Range(new vscode.Position(0, 0), startPos.translate(0, 1)));
         let count = (before.match(/\$/g) || []).length; // Count all $
         count -= (before.match(/\\\$/g) || []).length; // Remove escaped $
-        if (count % 2 === 0) { continue; }
+        if (count % 2 === 1) { flag = true; }
 
+        // Check if there is the "#sym." prefix, if the user wants to match also symbols outside math mode
+        if (renderSymbolsOutsideMath()) {
+            try { // Try and catch to avoid errors if the match is at the beginning of the file (refactor needed)
+                const before2 = activeEditor.document.getText(new vscode.Range(startPos.translate(0, -5), startPos));
+                if (before2 === '#sym.') { flag = true; }
+            } catch (e) { }
+        }
+
+
+        if (!flag) { continue; }
         onMatch(newMatch, range);
     }
 }

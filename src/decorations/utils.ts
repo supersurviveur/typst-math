@@ -48,3 +48,26 @@ export function getColors(colorType: keyof Colors) {
         return colors[colorType];
     }
 }
+
+// Retreive the settings for decorations outside math mode
+export function renderSymbolsOutsideMath() {
+    const config = vscode.workspace.getConfiguration('typst-math');
+    return config.get<boolean>('renderSymbolsOutsideMath');
+}
+
+// Get the rendering mode
+export function renderingMode() {
+    const config = vscode.workspace.getConfiguration('typst-math');
+    let mode = config.get<string>('renderingMode');
+    if (mode === "nothing") {
+        return 0;
+    } else if (mode === "basic") {
+        return 1;
+    } else if (mode === "medium") {
+        return 2;
+    } else if (mode === "complex") {
+        return 3;
+    } else {
+        return 1;
+    }
+}

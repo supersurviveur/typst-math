@@ -1,15 +1,23 @@
 import * as vscode from 'vscode';
 import { DynamicGenerator } from './dynamicGenerator';
 import { getAllDecorations } from './helpers';
-import { getColors } from './utils';
-import { StaticGenerator, arrowLimitLow, startWordLimit, wordLimit } from './staticGenerator';
+import { getColors, renderingMode } from './utils';
+import { StaticGenerator, arrowLimitLow, resetDecorationMap, startWordLimit, wordLimit } from './staticGenerator';
 
 let first_generation = true;
+
+export function resetGeneration() {
+    first_generation = true;
+    resetDecorationMap();
+}
 
 export async function generateDecorations(activeEditor: vscode.TextEditor): Promise<{
     decorationType: vscode.TextEditorDecorationType,
     getRanges: (document: vscode.TextEditor) => vscode.DecorationOptions[],
 }[]> {
+    if (renderingMode() === 0) {
+        return [];
+    }
     // Usefull variables
     const generator = new StaticGenerator(activeEditor);
 
@@ -178,7 +186,26 @@ export async function generateDecorations(activeEditor: vscode.TextEditor): Prom
         await generator.bigLetterSymbol(/sum/g, '∑'),
         await generator.bigLetterSymbol(/product/g, '∏'),
         await generator.bigLetterSymbol(/integral/g, '∫'),
-
+        await generator.bigLetterSymbol(/sum\.integral/g, '⨋'),
+        await generator.bigLetterSymbol(/product\.co/g, '∐'),
+        await generator.bigLetterSymbol(/integral(\.arrow)?\.hook/g, '⨗'),
+        await generator.bigLetterSymbol(/integral\.ccw/g, '⨑'),
+        await generator.bigLetterSymbol(/integral\.cont/g, '∮'),
+        await generator.bigLetterSymbol(/integral\.cont\.cw/g, '∲'),
+        await generator.bigLetterSymbol(/integral\.cont\.ccw/g, '∳'),
+        await generator.bigLetterSymbol(/integral\.cw/g, '∱'),
+        await generator.bigLetterSymbol(/integral\.dash/g, '⨍'),
+        await generator.bigLetterSymbol(/integral\.dash\.double/g, '⨎'),
+        await generator.bigLetterSymbol(/integral\.double/g, '∬'),
+        await generator.bigLetterSymbol(/integral\.triple/g, '∭'),
+        await generator.bigLetterSymbol(/integral\.quad/g, '⨌'),
+        await generator.bigLetterSymbol(/integral\.sect/g, '⨙'),
+        await generator.bigLetterSymbol(/integral\.slash/g, '⨏'),
+        await generator.bigLetterSymbol(/integral\.square/g, '⨖'),
+        await generator.bigLetterSymbol(/integral\.surf/g, '∯'),
+        await generator.bigLetterSymbol(/integral\.times/g, '⨘'),
+        await generator.bigLetterSymbol(/integral\.union/g, '⨚'),
+        await generator.bigLetterSymbol(/integral\.vol/g, '∰'),
         // Sets
         ...await generator.mathSetSymbolWithVariants(/emptyset/g, '∅'),
         ...await generator.mathSetSymbolWithVariants(/AA/g, '𝔸'),
@@ -278,6 +305,7 @@ export async function generateDecorations(activeEditor: vscode.TextEditor): Prom
         await generator.numberSymbol(/infinity/g, '∞', startWordLimit, wordLimit),
         await generator.numberSymbol(/dif/g, 'd', startWordLimit, wordLimit),
         await generator.numberSymbol(/diff/g, '∂', startWordLimit, wordLimit),
+        await generator.numberSymbol(/nabla/g, '∇', startWordLimit, wordLimit),
         await generator.numberSymbol(/qed/g, '∎', startWordLimit, wordLimit),
         // Cal letters
         await generator.numberSymbol(/cal\(A\)/g, '𝒜', startWordLimit),
@@ -514,7 +542,7 @@ export async function generateDecorations(activeEditor: vscode.TextEditor): Prom
         ...await generator.numberSymbolOnlyVariantsJulia(/9/g, '9', undefined, undefined, true),
 
     ];
-    if (first_generation) {
+    if (first_generation && renderingMode() === 3) {
         first_generation = false;
         result = result.concat(await generator.generateFunctionVariants());
     }
@@ -530,6 +558,9 @@ type dynamicDecorationType = {
 
 export async function dynamicDecorations(activeEditor: vscode.TextEditor): Promise<dynamicDecorationType[]> {
     const result: dynamicDecorationType[] = [];
+    if (renderingMode() === 0) {
+        return result;
+    }
 
     // Usefull variables
     const generator = new DynamicGenerator(activeEditor);

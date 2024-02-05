@@ -1,18 +1,29 @@
 import * as vscode from 'vscode';
-import { createDecorationType, helperSimpleRegex } from './helpers';
-import { getColors } from './utils';
+import { createDecorationType, helperSimpleRegex, resetAllDecorations } from './helpers';
+import { getColors, renderingMode } from './utils';
 import { STYLES } from './styles';
 
 // Usefull regex
 export const wordLimit = /(?!\.)(\b|_|\n|\r)/g;
-export const startWordLimit = /[^\w\d\.]/g;
+export const startWordLimit = /(?!\w|\d|\.)(\n|..|.)/g;
 export const arrowLimitLow = /[^=\-<>]/g;
 
 // Map to store the already existing decorations, to avoid duplicates
 let already_existing_map: Map<string, boolean> = new Map();
 // This variable is used to keep all regex who support functions variants
-let minimal_variant_list: string[] = [];
-let variant_list: string[] = [];
+let minimal_variant_list: string[] = [
+    "[A-z0-9]_[A-z0-9]",
+];
+let variant_list: string[] = [
+];
+
+export function resetDecorationMap() {
+    already_existing_map = new Map();
+    minimal_variant_list = [
+        "[A-z0-9]_[A-z0-9]",
+    ];
+    variant_list = [];
+}
 
 export class StaticGenerator {
     text: string;
@@ -103,6 +114,7 @@ export class StaticGenerator {
         }, pre, post);
     }
     public async keywordSymbol(reg: RegExp, symbol: string, pre?: RegExp, post?: RegExp) {
+        if (renderingMode() < 2) { return null; }
         return await this.helperSymbol(reg, symbol, {
             color: getColors("keyword"),
             textDecoration: 'none; font-family: "NewComputerModernMath"; font-weight: bold;'
@@ -123,6 +135,7 @@ export class StaticGenerator {
     }
 
     public async bigLetterSymbol(reg: RegExp, symbol: string) {
+        if (renderingMode() < 2) { return null; }
         return await this.helperSymbol(reg, symbol, {
             color: getColors("letter"),
             textDecoration: 'none; font-family: "NewComputerModernMath";',
@@ -130,6 +143,7 @@ export class StaticGenerator {
     }
 
     public async mathSetSymbol(reg: RegExp, symbol: string) {
+        if (renderingMode() < 2) { return null; }
         return await this.helperSymbol(reg, symbol, {
             color: getColors("group"),
             textDecoration: `none;
@@ -137,6 +151,7 @@ export class StaticGenerator {
         });
     }
     public async mathSetSymbolWithVariants(reg: RegExp, symbol: string) {
+        if (renderingMode() < 2) { return []; }
         return await this.helperWithVariants(reg, symbol, {
             color: getColors("group"),
             textDecoration: `none;
@@ -145,6 +160,7 @@ export class StaticGenerator {
     }
 
     public async mathSetVariantsSymbol(reg: RegExp, symbol: string, style: string, pre?: RegExp, post?: RegExp) {
+        if (renderingMode() < 2) { return null; }
         return await this.helperSymbol(reg, symbol, {
             color: getColors("group"),
             textDecoration: `none;
@@ -170,6 +186,7 @@ export class StaticGenerator {
     }
 
     public async numberSymbol(reg: RegExp, symbol: string, pre?: RegExp, post?: RegExp) {
+        if (renderingMode() < 2) { return null; }
         return await this.helperSymbol(reg, symbol, {
             color: getColors("number"),
             textDecoration: `none;
@@ -186,6 +203,10 @@ export class StaticGenerator {
     }
     public async generateFunctionVariants() {
         // create a massive or to match all variants in the minimal_variant_list variable
+        // Generate complex variants
+        let subsuper = "(" + minimal_variant_list.join("|") + ")_?\\^?(" + minimal_variant_list.join("|") + ")";
+        minimal_variant_list.push(subsuper);
+        variant_list.push(subsuper);
         let big_reg = new RegExp(`(${minimal_variant_list.join("|")})`);
         let big_reg_notminimal = new RegExp(`(${variant_list.join("|")})`);
         let result = [

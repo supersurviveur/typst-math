@@ -64,6 +64,28 @@
             }
           },
           "additionalProperties": false
+        },
+        "typst-math.renderSymbolsOutsideMath": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "If true, symbols will be rendered also outside math blocks."
+        },
+        "typst-math.renderingMode": {
+          "markdownDescription": "This mode let you select if you want to render complex symbols and combinations, or just simple ones like powers (Experimental)",
+          "type": "string",
+          "default": "complex",
+          "enum": [
+            "nothing",
+            "basic",
+            "medium",
+            "complex"
+          ],
+          "enumDescriptions": [
+            "Do not render any math symbol",
+            "Render only simple symbols like powers, subscripts...",
+            "Render more symbols, like integrals, sets...",
+            "Render a maximum of symbols, including some functions like arrow()..."
+          ]
         }
       }
     },

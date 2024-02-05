@@ -1,9 +1,9 @@
 import * as vscode from 'vscode';
-import { dynamicDecorations, generateDecorations } from './decorations/generateDecorations';
-import { matrix2Command, matrix3Command, matrixCommand, squareMatrixCommand } from './commands/matrix';
 import { askForFonts, installFontsCommandProvider } from './commands/installFonts';
-import { resetAllDecorations } from './decorations/helpers';
 import { mathCommand } from './commands/math';
+import { matrix2Command, matrix3Command, matrixCommand, squareMatrixCommand } from './commands/matrix';
+import { dynamicDecorations, generateDecorations, resetGeneration } from './decorations/generateDecorations';
+import { resetAllDecorations } from './decorations/helpers';
 
 
 export async function activate(context: vscode.ExtensionContext) {
@@ -25,6 +25,9 @@ export async function activate(context: vscode.ExtensionContext) {
             decoration.decorationType.dispose();
         }
         resetAllDecorations();
+        resetGeneration();
+        decorations = [];
+        
         // Generate new decorations
         if (activeEditor) {
             decorations = decorations.concat(await generateDecorations(activeEditor));
