@@ -5,6 +5,11 @@ import { getColors, renderingMode } from './utils';
 import { StaticGenerator, arrowLimitLow, resetDecorationMap, startWordLimit, wordLimit } from './staticGenerator';
 
 let first_generation = true;
+let showSymbols = true;
+
+export function toggleSymbols() {
+    showSymbols = !showSymbols;
+}
 
 export function resetGeneration() {
     first_generation = true;
@@ -15,7 +20,7 @@ export async function generateDecorations(activeEditor: vscode.TextEditor): Prom
     decorationType: vscode.TextEditorDecorationType,
     getRanges: (document: vscode.TextEditor) => vscode.DecorationOptions[],
 }[]> {
-    if (renderingMode() === 0) {
+    if (renderingMode() === 0 || !showSymbols) {
         return [];
     }
     // Usefull variables
@@ -558,7 +563,7 @@ type dynamicDecorationType = {
 
 export async function dynamicDecorations(activeEditor: vscode.TextEditor): Promise<dynamicDecorationType[]> {
     const result: dynamicDecorationType[] = [];
-    if (renderingMode() === 0) {
+    if (renderingMode() === 0 || !showSymbols) {
         return result;
     }
 

@@ -91,6 +91,16 @@
     },
     "commands": [
       {
+        "command": "typst-math.math",
+        "title": "Insert math equation",
+        "category": "Typst math"
+      },
+      {
+        "command": "typst-math.toggle-symbols",
+        "title": "Toggle symbols rendering",
+        "category": "Typst math"
+      },
+      {
         "command": "typst-math.matrix",
         "title": "Generate a matrix",
         "category": "Typst math"
@@ -114,11 +124,6 @@
         "command": "typst-math.install-fonts",
         "title": "Install fonts",
         "category": "Typst math"
-      },
-      {
-        "command": "typst-math.math",
-        "title": "Insert math equation",
-        "category": "Typst math"
       }
     ],
     "snippets": [
@@ -136,6 +141,11 @@
       {
         "command": "typst-math.math",
         "key": "ctrl+m",
+        "when": "editorTextFocus && editorLangId == typst"
+      },
+      {
+        "command": "typst-math.toggle-symbols",
+        "key": "ctrl+alt+s",
         "when": "editorTextFocus && editorLangId == typst"
       }
     ]
