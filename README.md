@@ -21,6 +21,12 @@ By default, the extension will use the monokai theme colors.
     ![Preview some math symbols directly](./github/math-preview.png) \
     When you edit a line containing math symbols, these symbols will be rendered as text (as in the first image) to allow you to edit them easily.
 
+# Settings
+
+- **Colors**: Select your theme colors.
+- **RenderSymbolsOutsideMath**: If set to true, the extension will render symbols everywhere in the document, not only in math equations.
+- **RenderingMode**: Choose if you want to render just simple symbols or complex equations too.
+
 # TODO
 
 - Refactor README

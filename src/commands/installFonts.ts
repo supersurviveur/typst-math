@@ -6,7 +6,13 @@ function installFontManually() {
 }
 
 export function askForFonts(context: vscode.ExtensionContext) {
-    vscode.window.showInformationMessage("Welcome to Typst Math! To correctly render math symbols, please install the fonts.", "Install Fonts with bundled program", "Install Fonts manually").then((value) => {
+    // show the automatic installion prompt only on windows
+    let buttons = [];
+    if (process.platform === "win32") {
+        buttons.push("Install Fonts with bundled program");
+    }
+    buttons.push("Install Fonts manually");
+    vscode.window.showInformationMessage("Welcome to Typst Math! To correctly render math symbols, please install the fonts.", ...buttons).then((value) => {
         if (value === "Install Fonts with bundled program") {
             // Get font directory from extension directory
             let fontDir = context.asAbsolutePath("fonts");
