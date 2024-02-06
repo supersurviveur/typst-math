@@ -5,6 +5,7 @@ import { matrix2Command, matrix3Command, matrixCommand, squareMatrixCommand } fr
 import { dynamicDecorations, generateDecorations, resetGeneration } from './decorations/generateDecorations';
 import { resetAllDecorations } from './decorations/helpers';
 import { toggleSymbolsCommand } from './commands/toggleSymbols';
+import { Logger } from './logger';
 
 let decorations: {
     decorationType: vscode.TextEditorDecorationType;
@@ -15,6 +16,7 @@ let activeEditor = vscode.window.activeTextEditor;
 
 
 export const regenerateDecorations = async () => {
+    Logger.debug("Regenerating decorations");
     // Remove old decorations
     for (let decoration of decorations) {
         decoration.decorationType.dispose();
@@ -32,6 +34,7 @@ export const regenerateDecorations = async () => {
 };
 
 async function updateDecorations(needReload = false) {
+    Logger.debug("Updating decorations");
     // if the current editor is not a typst editor, return
     if (!activeEditor || activeEditor.document.languageId !== "typst") {
         return;
@@ -39,7 +42,7 @@ async function updateDecorations(needReload = false) {
     let updateDecorations = await dynamicDecorations(activeEditor);
     if (needReload) {
         decorations = decorations.concat(await generateDecorations(activeEditor));
-        console.log("Length", decorations.length + updateDecorations.length);
+        Logger.info("Loaded " + decorations.length + " decorations");
     }
     for (let decoration of decorations) {
         activeEditor.setDecorations(decoration.decorationType, decoration.getRanges(activeEditor));
@@ -50,6 +53,7 @@ async function updateDecorations(needReload = false) {
 }
 
 export async function activate(context: vscode.ExtensionContext) {
+    Logger.info("Activating extension");
     // Only on the first launch
     // context.globalState.update("firstLaunch", undefined);
     if (context.globalState.get("firstLaunch") === undefined) {
@@ -73,9 +77,25 @@ export async function activate(context: vscode.ExtensionContext) {
         }
     }, null, context.subscriptions);
 
+    let change_timeout: NodeJS.Timeout | undefined = undefined;
     vscode.workspace.onDidChangeTextDocument(event => {
         if (activeEditor && event.document === activeEditor.document) {
-            updateDecorations(true);
+            // if there is no carriage return, do not update the decorations
+            let flag = false;
+            if (event.contentChanges.length === 0) { return; }
+            for (let change of event.contentChanges) {
+                if (change.text.includes("\n") || change.text.includes("\r")) {
+                    flag = true;
+                    break;
+                }
+            }
+            if (!flag) { return; }
+            if (change_timeout) {
+                clearTimeout(change_timeout);
+            }
+            change_timeout = setTimeout(() => {
+                updateDecorations(true);
+            }, 100);
         }
     }, null, context.subscriptions);
 

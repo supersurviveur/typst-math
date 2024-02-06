@@ -29,7 +29,6 @@ By default, the extension will use the monokai theme colors.
 
 # TODO
 
-- Refactor README
 - Installing fonts seems to work only on windows, recreate a clean font installation system
 - Add more features :
   - Snippets
