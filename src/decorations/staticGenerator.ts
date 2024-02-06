@@ -4,8 +4,9 @@ import { getColors, renderingMode } from './utils';
 import { STYLES } from './styles';
 
 // Usefull regex
-export const wordLimit = /(?!\.)(\b|_|\n|\r)/g;
-export const startWordLimit = /(?!\w|\d|\.)(\n|..|.)/g;
+export const wordLimit = /(?!\.|\()(\b|_|\n|\r)/g; // Can probably be improved
+export const startWordLimit = /(\s|(?!.[A-Za-z]|[A-Za-z]\.)(\n|..|\n.))/g; // Seems to work
+export const startWordLimitNoVariants = /(\s|(?!.[A-Za-z]|[A-Za-z]\.|._|.\^)(\n|..|\n.))/g;
 export const arrowLimitLow = /[^=\-<>]/g;
 
 // Map to store the already existing decorations, to avoid duplicates
@@ -124,31 +125,31 @@ export class StaticGenerator {
         return await this.helperSymbol(reg, symbol, {
             color: getColors("letter"),
             textDecoration: 'none; font-family: "JuliaMono";',
-        }, wordLimit, wordLimit);
+        }, startWordLimit, wordLimit);
     }
     public async letterSymbolWithVariants(reg: RegExp, symbol: string) {
         return this.helperWithVariants(reg, symbol,
             {
                 color: getColors("letter"),
                 textDecoration: 'none; font-family: "JuliaMono";',
-            }, /(?!\.|\^|[A-z])./g, wordLimit);
+            }, startWordLimitNoVariants, wordLimit);
     }
 
-    public async bigLetterSymbol(reg: RegExp, symbol: string) {
+    public async bigLetterSymbol(reg: RegExp, symbol: string, pre?: RegExp, post?: RegExp) {
         if (renderingMode() < 2) { return null; }
         return await this.helperSymbol(reg, symbol, {
             color: getColors("letter"),
             textDecoration: 'none; font-family: "NewComputerModernMath";',
-        }, startWordLimit, wordLimit);
+        }, pre, post);
     }
 
-    public async mathSetSymbol(reg: RegExp, symbol: string) {
+    public async mathSetSymbol(reg: RegExp, symbol: string, pre?: RegExp, post?: RegExp) {
         if (renderingMode() < 2) { return null; }
         return await this.helperSymbol(reg, symbol, {
             color: getColors("group"),
             textDecoration: `none;
         font-family: "Fira Math"; `,
-        });
+        }, pre, post);
     }
     public async mathSetSymbolWithVariants(reg: RegExp, symbol: string) {
         if (renderingMode() < 2) { return []; }
@@ -156,7 +157,7 @@ export class StaticGenerator {
             color: getColors("group"),
             textDecoration: `none;
         font-family: "Fira Math"; `,
-        }, /(?!\.|\^|[A-z])./g);
+        }, /(?!\^|[A-z])./g, wordLimit);
     }
 
     public async mathSetVariantsSymbol(reg: RegExp, symbol: string, style: string, pre?: RegExp, post?: RegExp) {

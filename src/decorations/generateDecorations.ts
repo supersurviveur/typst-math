@@ -3,6 +3,8 @@ import { DynamicGenerator } from './dynamicGenerator';
 import { getAllDecorations } from './helpers';
 import { getColors, renderingMode } from './utils';
 import { StaticGenerator, arrowLimitLow, resetDecorationMap, startWordLimit, wordLimit } from './staticGenerator';
+import fs from 'fs/promises';
+import path from 'path';
 
 let first_generation = true;
 let showSymbols = true;
@@ -16,6 +18,22 @@ export function resetGeneration() {
     resetDecorationMap();
 }
 
+function stringToRegex(str: string) {
+    return new RegExp(str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+}
+
+interface JsonData {
+    comparison: { [x: string]: string },
+    arrows: { [x: string]: string },
+    operators: { [x: string]: string },
+    basics: { [x: string]: string },
+    bigLetters: { [x: string]: string },
+    keywords: { [x: string]: string },
+    sets: { [x: string]: string },
+    setsVariants: { [x: string]: string },
+    greekLetters: { [x: string]: string },
+}
+
 export async function generateDecorations(activeEditor: vscode.TextEditor): Promise<{
     decorationType: vscode.TextEditorDecorationType,
     getRanges: (document: vscode.TextEditor) => vscode.DecorationOptions[],
@@ -25,6 +43,10 @@ export async function generateDecorations(activeEditor: vscode.TextEditor): Prom
     }
     // Usefull variables
     const generator = new StaticGenerator(activeEditor);
+
+    // open the symbols file
+    let file = await fs.readFile(path.join(__dirname, 'symbols.json'));
+    let data: JsonData = JSON.parse(file.toString());
 
     const signVariants: [RegExp, string][] = [
         [/_\+/g, "₊"],
@@ -79,14 +101,6 @@ export async function generateDecorations(activeEditor: vscode.TextEditor): Prom
         await generator.comparisonSymbol(/<<</g, '⋘', arrowLimitLow, arrowLimitLow),
         await generator.comparisonSymbol(/>>>/g, '⋙', arrowLimitLow, arrowLimitLow),
 
-        await generator.comparisonSymbol(/eq\.triple/g, '≡', wordLimit, wordLimit),
-        await generator.comparisonSymbol(/equiv/g, '≡', wordLimit, wordLimit),
-        await generator.comparisonSymbol(/equiv\.not/g, '≢', wordLimit, wordLimit),
-        await generator.comparisonSymbol(/eq\.quad/g, '≣', wordLimit, wordLimit),
-        await generator.comparisonSymbol(/approx/g, '≈', wordLimit, wordLimit),
-        await generator.comparisonSymbol(/approx\.not/g, '≉', wordLimit, wordLimit),
-        await generator.comparisonSymbol(/approx\.eq/g, '≊', wordLimit, wordLimit),
-        await generator.comparisonSymbol(/tilde\.op/g, '∼', wordLimit, wordLimit),
 
         await generator.comparisonSymbol(/!=/g, '≠'),
         await generator.comparisonSymbol(/:=/g, '≔', /[^:]/g),
@@ -105,140 +119,75 @@ export async function generateDecorations(activeEditor: vscode.TextEditor): Prom
         await generator.comparisonSymbol(/<--/g, '⟵', undefined, /[^-><\|]/g),
         await generator.comparisonSymbol(/<->/g, '↔'),
         await generator.comparisonSymbol(/<-->/g, '⟷'),
+    ];
 
-        await generator.comparisonSymbol(/dots\.h/g, '…', wordLimit, wordLimit),
-        await generator.comparisonSymbol(/dots\.h\.c/g, '⋯', wordLimit, wordLimit),
-        await generator.comparisonSymbol(/dots\.v/g, '⋮', wordLimit, wordLimit),
-        await generator.comparisonSymbol(/dots\.up/g, '⋰', wordLimit, wordLimit),
-        await generator.comparisonSymbol(/dots\.down/g, '⋱', wordLimit, wordLimit),
+    let compare = data["comparison"];
+    for (let value in compare) {
+        let reg = stringToRegex(value);
+        result.push(
+            await generator.comparisonSymbol(reg, compare[value], startWordLimit, wordLimit)
+        );
+    }
 
-        // Keywords
-        await generator.keywordSymbol(/forall\s?/g, '∀', startWordLimit, wordLimit),
-        await generator.keywordSymbol(/exists\s?/g, '∃', startWordLimit, wordLimit),
-        await generator.keywordSymbol(/\s?in\s?/g, '∈', startWordLimit, wordLimit),
-        await generator.keywordSymbol(/\s?in\.not\s?/g, '∉', startWordLimit, wordLimit),
-        await generator.keywordSymbol(/\s?in\.small\s?/g, '∊', startWordLimit, wordLimit),
-        await generator.keywordSymbol(/\s?subset\s?/g, '⊂', startWordLimit, wordLimit),
-        await generator.keywordSymbol(/\s?subset\.not\s?/g, '⊄', startWordLimit, wordLimit),
-        await generator.keywordSymbol(/\s?subset\.eq\s?/g, '⊆', startWordLimit, wordLimit),
-        await generator.keywordSymbol(/\s?subset\.eq\.not\s?/g, '⊈', startWordLimit, wordLimit),
-        await generator.keywordSymbol(/\s?union\s?/g, '∪', startWordLimit, wordLimit),
-        await generator.keywordSymbol(/union\.big\s?/g, '⋃', startWordLimit, wordLimit),
-        await generator.keywordSymbol(/\s?sect\s?/g, '∩', startWordLimit, wordLimit),
-        await generator.keywordSymbol(/sect\.big\s?/g, '⋂', startWordLimit, wordLimit),
-        await generator.keywordSymbol(/complement\s?/g, '∁', startWordLimit, wordLimit),
+    let arrows = data["arrows"];
+    for (let value in arrows) {
+        let reg = stringToRegex(value);
+        result.push(
+            await generator.comparisonSymbol(reg, arrows[value], startWordLimit, wordLimit)
+        );
+    }
+    let operators = data["operators"];
+    for (let value in operators) {
+        let reg = stringToRegex(value);
+        result.push(
+            await generator.operatorSymbol(reg, operators[value], startWordLimit, wordLimit)
+        );
+    }
+    let basics = data["basics"];
+    for (let value in basics) {
+        let reg = stringToRegex(value);
+        result.push(
+            await generator.numberSymbol(reg, basics[value], startWordLimit, wordLimit)
+        );
+    }
+    let bigLetters = data["bigLetters"];
+    for (let value in bigLetters) {
+        let reg = stringToRegex(value);
+        result.push(
+            await generator.bigLetterSymbol(reg, bigLetters[value], startWordLimit, wordLimit)
+        );
+    }
+    let keywords = data["keywords"];
+    for (let value in keywords) {
+        let reg = stringToRegex(value);
+        result.push(
+            await generator.keywordSymbol(reg, keywords[value], startWordLimit, wordLimit)
+        );
+    }
+    let sets = data["sets"];
+    for (let value in sets) {
+        let reg = stringToRegex(value);
+        result.push(
+            await generator.mathSetSymbol(reg, sets[value], startWordLimit, wordLimit)
+        );
+    }
+    let setsVariants = data["setsVariants"];
+    for (let value in setsVariants) {
+        let reg = stringToRegex(value);
+        result = result.concat(
+            ...await generator.mathSetSymbolWithVariants(reg, setsVariants[value])
+        );
+    }
+    let greekLetters = data["greekLetters"];
+    for (let value in greekLetters) {
+        let reg = stringToRegex(value);
+        result = result.concat(
+            ...await generator.letterSymbolWithVariants(reg, greekLetters[value])
+        );
+    }
 
-
-        // Greek letters
-        ...await generator.letterSymbolWithVariants(/alpha/g, 'α'),
-        ...await generator.letterSymbolWithVariants(/Alpha/g, 'Α'),
-        ...await generator.letterSymbolWithVariants(/beta/g, 'β'),
-        ...await generator.letterSymbolWithVariants(/Beta/g, 'Β'),
-        ...await generator.letterSymbolWithVariants(/beta\.alt/g, 'ϐ'),
-        ...await generator.letterSymbolWithVariants(/gamma/g, 'γ'),
-        ...await generator.letterSymbolWithVariants(/Gamma/g, 'Γ'),
-        ...await generator.letterSymbolWithVariants(/delta/g, 'δ'),
-        ...await generator.letterSymbolWithVariants(/Delta/g, 'Δ'),
-        ...await generator.letterSymbolWithVariants(/epsilon/g, 'ε'),
-        ...await generator.letterSymbolWithVariants(/epsilon\.alt/g, 'ϵ'),
-        ...await generator.letterSymbolWithVariants(/Epsilon/g, 'Ε'),
-        ...await generator.letterSymbolWithVariants(/zeta/g, 'ζ'),
-        ...await generator.letterSymbolWithVariants(/Zeta/g, 'Ζ'),
-        ...await generator.letterSymbolWithVariants(/eta/g, 'η'),
-        ...await generator.letterSymbolWithVariants(/Eta/g, 'Η'),
-        ...await generator.letterSymbolWithVariants(/theta/g, 'θ'),
-        ...await generator.letterSymbolWithVariants(/Theta/g, 'Θ'),
-        ...await generator.letterSymbolWithVariants(/theta\.alt/g, 'ϑ'),
-        ...await generator.letterSymbolWithVariants(/iota/g, 'ι'),
-        ...await generator.letterSymbolWithVariants(/Iota/g, 'Ι'),
-        ...await generator.letterSymbolWithVariants(/kappa/g, 'κ'),
-        ...await generator.letterSymbolWithVariants(/Kappa/g, 'Κ'),
-        ...await generator.letterSymbolWithVariants(/kappa\.alt/g, 'ϰ'),
-        ...await generator.letterSymbolWithVariants(/lambda/g, 'λ'),
-        ...await generator.letterSymbolWithVariants(/Lambda/g, 'Λ'),
-        ...await generator.letterSymbolWithVariants(/mu/g, 'μ'),
-        ...await generator.letterSymbolWithVariants(/Mu/g, 'Μ'),
-        ...await generator.letterSymbolWithVariants(/nu/g, 'ν'),
-        ...await generator.letterSymbolWithVariants(/Nu/g, 'Ν'),
-        ...await generator.letterSymbolWithVariants(/xi/g, 'ξ'),
-        ...await generator.letterSymbolWithVariants(/Xi/g, 'Ξ'),
-        ...await generator.letterSymbolWithVariants(/omicron/g, 'ο'),
-        ...await generator.letterSymbolWithVariants(/Omicron/g, 'Ο'),
-        ...await generator.letterSymbolWithVariants(/pi/g, 'π'),
-        ...await generator.letterSymbolWithVariants(/Pi/g, 'Π'),
-        ...await generator.letterSymbolWithVariants(/pi\.alt/g, 'ϖ'),
-        ...await generator.letterSymbolWithVariants(/rho/g, 'ρ'),
-        ...await generator.letterSymbolWithVariants(/Rho/g, 'Ρ'),
-        ...await generator.letterSymbolWithVariants(/rho\.alt/g, 'ϱ'),
-        ...await generator.letterSymbolWithVariants(/sigma/g, 'σ'),
-        ...await generator.letterSymbolWithVariants(/Sigma/g, 'Σ'),
-        ...await generator.letterSymbolWithVariants(/sigma\.alt/g, 'ς'),
-        ...await generator.letterSymbolWithVariants(/tau/g, 'τ'),
-        ...await generator.letterSymbolWithVariants(/Tau/g, 'Τ'),
-        ...await generator.letterSymbolWithVariants(/upsilon/g, 'υ'),
-        ...await generator.letterSymbolWithVariants(/Upsilon/g, 'Υ'),
-        ...await generator.letterSymbolWithVariants(/phi/g, 'φ'), // phi and phi.alt char are inverted, because Juliafont invert them
-        ...await generator.letterSymbolWithVariants(/Phi/g, 'Φ'),
-        ...await generator.letterSymbolWithVariants(/phi\.alt/g, 'ϕ'),
-        ...await generator.letterSymbolWithVariants(/chi/g, 'χ'),
-        ...await generator.letterSymbolWithVariants(/Chi/g, 'Χ'),
-        ...await generator.letterSymbolWithVariants(/psi/g, 'ψ'),
-        ...await generator.letterSymbolWithVariants(/Psi/g, 'Ψ'),
-        ...await generator.letterSymbolWithVariants(/omega/g, 'ω'),
-        ...await generator.letterSymbolWithVariants(/Omega/g, 'Ω'),
-
-        // Big letters
-        await generator.bigLetterSymbol(/sum/g, '∑'),
-        await generator.bigLetterSymbol(/product/g, '∏'),
-        await generator.bigLetterSymbol(/integral/g, '∫'),
-        await generator.bigLetterSymbol(/sum\.integral/g, '⨋'),
-        await generator.bigLetterSymbol(/product\.co/g, '∐'),
-        await generator.bigLetterSymbol(/integral(\.arrow)?\.hook/g, '⨗'),
-        await generator.bigLetterSymbol(/integral\.ccw/g, '⨑'),
-        await generator.bigLetterSymbol(/integral\.cont/g, '∮'),
-        await generator.bigLetterSymbol(/integral\.cont\.cw/g, '∲'),
-        await generator.bigLetterSymbol(/integral\.cont\.ccw/g, '∳'),
-        await generator.bigLetterSymbol(/integral\.cw/g, '∱'),
-        await generator.bigLetterSymbol(/integral\.dash/g, '⨍'),
-        await generator.bigLetterSymbol(/integral\.dash\.double/g, '⨎'),
-        await generator.bigLetterSymbol(/integral\.double/g, '∬'),
-        await generator.bigLetterSymbol(/integral\.triple/g, '∭'),
-        await generator.bigLetterSymbol(/integral\.quad/g, '⨌'),
-        await generator.bigLetterSymbol(/integral\.sect/g, '⨙'),
-        await generator.bigLetterSymbol(/integral\.slash/g, '⨏'),
-        await generator.bigLetterSymbol(/integral\.square/g, '⨖'),
-        await generator.bigLetterSymbol(/integral\.surf/g, '∯'),
-        await generator.bigLetterSymbol(/integral\.times/g, '⨘'),
-        await generator.bigLetterSymbol(/integral\.union/g, '⨚'),
-        await generator.bigLetterSymbol(/integral\.vol/g, '∰'),
+    result = result.concat([
         // Sets
-        ...await generator.mathSetSymbolWithVariants(/emptyset/g, '∅'),
-        ...await generator.mathSetSymbolWithVariants(/AA/g, '𝔸'),
-        ...await generator.mathSetSymbolWithVariants(/BB/g, '𝔹'),
-        ...await generator.mathSetSymbolWithVariants(/CC/g, 'ℂ'),
-        ...await generator.mathSetSymbolWithVariants(/DD/g, '𝔻'),
-        ...await generator.mathSetSymbolWithVariants(/EE/g, '𝔼'),
-        ...await generator.mathSetSymbolWithVariants(/FF/g, '𝔽'),
-        ...await generator.mathSetSymbolWithVariants(/GG/g, '𝔾'),
-        ...await generator.mathSetSymbolWithVariants(/HH/g, 'ℍ'),
-        ...await generator.mathSetSymbolWithVariants(/II/g, '𝕀'),
-        ...await generator.mathSetSymbolWithVariants(/JJ/g, '𝕁'),
-        ...await generator.mathSetSymbolWithVariants(/KK/g, '𝕂'),
-        ...await generator.mathSetSymbolWithVariants(/LL/g, '𝕃'),
-        ...await generator.mathSetSymbolWithVariants(/MM/g, '𝕄'),
-        ...await generator.mathSetSymbolWithVariants(/NN/g, 'ℕ'),
-        ...await generator.mathSetSymbolWithVariants(/OO/g, '𝕆'),
-        ...await generator.mathSetSymbolWithVariants(/PP/g, 'ℙ'),
-        ...await generator.mathSetSymbolWithVariants(/QQ/g, 'ℚ'),
-        ...await generator.mathSetSymbolWithVariants(/RR/g, 'ℝ'),
-        ...await generator.mathSetSymbolWithVariants(/SS/g, '𝕊'),
-        ...await generator.mathSetSymbolWithVariants(/TT/g, '𝕋'),
-        ...await generator.mathSetSymbolWithVariants(/UU/g, '𝕌'),
-        ...await generator.mathSetSymbolWithVariants(/VV/g, '𝕍'),
-        ...await generator.mathSetSymbolWithVariants(/WW/g, '𝕎'),
-        ...await generator.mathSetSymbolWithVariants(/XX/g, '𝕏'),
-        ...await generator.mathSetSymbolWithVariants(/YY/g, '𝕐'),
-        ...await generator.mathSetSymbolWithVariants(/ZZ/g, 'ℤ'),
         await generator.mathExtendSetSymbol(/\[/g, '[', undefined, /[^|]/g),
         await generator.mathExtendSetSymbol(/\]/g, ']', /[^|]/g),
         await generator.mathExtendSetSymbol(/\[\|/g, '\u{27E6}'),
@@ -278,40 +227,12 @@ export async function generateDecorations(activeEditor: vscode.TextEditor): Prom
             /\b([A-Z])\1_(\+|\-)/g
         ),
 
-        // Operators
-        await generator.operatorSymbol(/plus/g, '+', startWordLimit, wordLimit),
-        await generator.operatorSymbol(/\+/g, '+', /[^_]/g),
-        await generator.operatorSymbol(/minus/g, '-', startWordLimit, wordLimit),
-        await generator.operatorSymbol(/\-/g, '-', /[^_<\-]/g),
-        await generator.operatorSymbol(/times/g, '×', startWordLimit, wordLimit),
-        await generator.operatorSymbol(/times\.big/g, '⨉', startWordLimit, wordLimit),
-        await generator.operatorSymbol(/\*/g, '\u{2217}', /[^\^]/g),
-        await generator.operatorSymbol(/div/g, '÷', startWordLimit, wordLimit),
-        await generator.operatorSymbol(/and/g, '∧', startWordLimit, wordLimit),
-        await generator.operatorSymbol(/and\.big/g, '⋀', startWordLimit, wordLimit),
-        await generator.operatorSymbol(/or/g, '∨', startWordLimit, wordLimit),
-        await generator.operatorSymbol(/or\.big/g, '⋁', startWordLimit, wordLimit),
-        await generator.operatorSymbol(/not/g, '¬', startWordLimit, wordLimit),
-        await generator.operatorSymbol(/divides/g, '∣', startWordLimit, wordLimit),
-        await generator.operatorSymbol(/divides\.not/g, '∤', startWordLimit, wordLimit),
-        await generator.operatorSymbol(/without/g, '∖', startWordLimit, wordLimit),
-
-        await generator.operatorSymbol(/plus\.minus/g, '±', startWordLimit, wordLimit),
-        await generator.operatorSymbol(/minus\.plus/g, '∓', startWordLimit, wordLimit),
-
-        await generator.operatorSymbol(/dot/g, '⋅', startWordLimit, /(?!\.)(_|\n|\r|\s|\^)/g),
-        await generator.operatorSymbol(/star/g, '⋆', startWordLimit, wordLimit),
-        await generator.operatorSymbol(/circle\.tiny/g, '∘', startWordLimit, wordLimit),
-        await generator.operatorSymbol(/circle\.stroked\.tiny/g, '∘', startWordLimit, wordLimit),
-        await generator.operatorSymbol(/circle\.small/g, '⚬', startWordLimit, wordLimit),
-        await generator.operatorSymbol(/circle/g, '○', startWordLimit, wordLimit),
-
-        await generator.numberSymbol(/oo/g, '∞', startWordLimit, wordLimit),
-        await generator.numberSymbol(/infinity/g, '∞', startWordLimit, wordLimit),
-        await generator.numberSymbol(/dif/g, 'd', startWordLimit, wordLimit),
-        await generator.numberSymbol(/diff/g, '∂', startWordLimit, wordLimit),
-        await generator.numberSymbol(/nabla/g, '∇', startWordLimit, wordLimit),
-        await generator.numberSymbol(/qed/g, '∎', startWordLimit, wordLimit),
+        // await generator.numberSymbol(/oo/g, '∞', startWordLimit, wordLimit),
+        // await generator.numberSymbol(/infinity/g, '∞', startWordLimit, wordLimit),
+        // await generator.numberSymbol(/dif/g, 'd', startWordLimit, wordLimit),
+        // await generator.numberSymbol(/diff/g, '∂', startWordLimit, wordLimit),
+        // await generator.numberSymbol(/nabla/g, '∇', startWordLimit, wordLimit),
+        // await generator.numberSymbol(/qed/g, '∎', startWordLimit, wordLimit),
         // Cal letters
         await generator.numberSymbol(/cal\(A\)/g, '𝒜', startWordLimit),
         await generator.numberSymbol(/cal\(B\)/g, 'ℬ', startWordLimit),
@@ -546,7 +467,7 @@ export async function generateDecorations(activeEditor: vscode.TextEditor): Prom
         ...await generator.numberSymbolOnlyVariantsJulia(/8/g, '8', undefined, undefined, true),
         ...await generator.numberSymbolOnlyVariantsJulia(/9/g, '9', undefined, undefined, true),
 
-    ];
+    ]);
     if (first_generation && renderingMode() === 3) {
         first_generation = false;
         result = result.concat(await generator.generateFunctionVariants());
