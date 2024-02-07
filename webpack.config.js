@@ -71,6 +71,10 @@ const extensionConfig = {
         {
           from: "symbols.json",
           to: ""
+        },
+        {
+          from: "othersymbols.json",
+          to: ""
         }
       ]
     })
