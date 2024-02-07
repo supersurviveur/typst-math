@@ -10,18 +10,18 @@ const empty = {
 };
 
 export const STYLES = {
-    arrow_func_start: empty,
-    arrow_func_end: { // place the arrow above the letter
+    arrow_func_start:{ // place the arrow above the letter
         symbol: '→',
         options: {
             color: getColors("number"),
             textDecoration: `none;
                 font-family: "NewComputerModernMath";
-                transform: translate(-0.84em, -0.9em);
+                transform: translate(0.84em, -0.9em);
                 font-size: 0.8em;
                 display: inline-block; `
         }
     },
+    arrow_func_end: empty,
     abs_func: { // display the bar
         symbol: '|',
         options: {
@@ -29,82 +29,82 @@ export const STYLES = {
             textDecoration: `none;`
         }
     },
-    overline_func_start: empty,
-    overline_func_end: { // place the overline above the letter
+    overline_func_start: { // place the overline above the letter
         symbol: '\u0305',
         options: {
             color: getColors("number"),
             textDecoration: `none;
-            transform: translate(-0.57em, -0.2em);
+            transform: translate(0em, -0.2em);
             display: inline-block;`
         }
     },
-    dot_func_start: empty,
-    dot_func_end: { // place the dot above the letter
+    overline_func_end: empty,
+    dot_func_start: { // place the dot above the letter
         symbol: '⋅',
         options: {
             color: getColors("number"),
             textDecoration: `none;
-            transform: translate(-0.43em, -0.52em);
+            transform: translate(0.43em, -0.52em);
             display: inline-block;`
         }
     },
-    double_dot_func_start: empty,
-    double_dot_func_end: { // place the double dot above the letter
+    dot_func_end: empty,
+    double_dot_func_start: { // place the double dot above the letter
         symbol: '¨',
         options: {
             color: getColors("number"),
             textDecoration: `none;
-            transform: translate(-0.55em, -0.25em);
+            transform: translate(0.55em, -0.25em);
             display: inline-block;`
         }
     },
-    triple_dot_func_start: empty,
-    triple_dot_func_end: { // place the triple dot above the letter
+    double_dot_func_end: empty,
+    triple_dot_func_start: { // place the triple dot above the letter
         symbol: '\u20DB',
         options: {
             color: getColors("number"),
             textDecoration: `none;
             font-family: JuliaMono;
             font-size: 1.4em;
-            transform: translate(-0.5em);
+            transform: translate(-0.1em);
             display: inline-block;`
         }
     },
-    quad_dot_func_start: empty,
-    quad_dot_func_end: { // place the quad dot above the letter
+    triple_dot_func_end: empty,
+    quad_dot_func_start: { // place the quad dot above the letter
         symbol: '\u20DC',
         options: {
             color: getColors("number"),
             textDecoration: `none;
             font-family: JuliaMono;
             font-size: 1.4em;
-            transform: translate(-0.52em);
+            transform: translate(-0.1em);
             display: inline-block;`
         }
     },
-    hat_func_start: empty,
-    hat_func_end: { // place the hat above the letter
+    quad_dot_func_end: empty,
+    hat_func_start: { // place the hat above the letter
         symbol: '^',
         options: {
             color: getColors("number"),
             textDecoration: `none;
-            transform: translate(-0.6em, -0.5em);
+            transform: translate(0.6em, -0.5em);
             font-size: 0.9em;
             display: inline-block;`
         }
     },
-    tilde_func_start: empty,
-    tilde_func_end: { // place the tilde above the letter
+    hat_func_end: empty,
+    tilde_func_start: { // place the tilde above the letter
         symbol: '~',
         options: {
             color: getColors("number"),
             textDecoration: `none;
-            transform: translate(-0.59em, -0.7em);
+            transform: translate(0.59em, -0.7em);
             font-size: 0.9em;
             display: inline-block;`
         }
     },
+    tilde_func_end: empty,
     norm_func: { // display the double bar
         symbol: '‖',
         options: {

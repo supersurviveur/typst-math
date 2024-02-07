@@ -16,18 +16,7 @@
         "space.punct": "puncsp",
         "space.thin": "thinsp",
         "space.hair": "hairsp",
-        "hyph.soft": "shy",
-        "bar.v": "|",
-        "bar.v.double": "‖",
-        "bar.v.triple": "⦀",
-        "bar.v.broken": "¦",
-        "bar.v.circle": "⦶",
-        "bar.h": "―",
-        "fence.l": "⧘",
-        "fence.l.double": "⧚",
-        "fence.r": "⧙",
-        "fence.r.double": "⧛",
-        "fence.dotted": "⦙"
+        "hyph.soft": "shy"
     },
     "comparison": {
         "eq": "=",
@@ -178,7 +167,18 @@
         "join.l": "⟕",
         "join.l.r": "⟗",
         "colon.eq": "≔",
-        "colon.double.eq": "⩴"
+        "colon.double.eq": "⩴",
+        "bar.v": "|",
+        "bar.v.double": "‖",
+        "bar.v.triple": "⦀",
+        "bar.v.broken": "¦",
+        "bar.v.circle": "⦶",
+        "bar.h": "―",
+        "fence.l": "⧘",
+        "fence.l.double": "⧚",
+        "fence.r": "⧙",
+        "fence.r.double": "⧛",
+        "fence.dotted": "⦙"
     },
     "operators": {
         "plus": "+",
