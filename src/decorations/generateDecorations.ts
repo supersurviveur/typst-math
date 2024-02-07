@@ -312,7 +312,7 @@ export async function dynamicDecorations(activeEditor: vscode.TextEditor): Promi
     // Per type decorations
 
     // Powers
-    await generator.simpleRegex(
+    generator.simpleRegex(
         /\^(\d+\b|\(\d+\))/g,
         "powers",
         {
@@ -340,7 +340,7 @@ export async function dynamicDecorations(activeEditor: vscode.TextEditor): Promi
     );
 
     // Negative powers
-    await generator.simpleRegex(
+    generator.simpleRegex(
         /\^\(\-\d+\)/g,
         "powers",
         {
@@ -366,7 +366,7 @@ export async function dynamicDecorations(activeEditor: vscode.TextEditor): Promi
 
 
     // Subscripts
-    await generator.simpleRegex(
+    generator.simpleRegex(
         /_(\d+\b|\(\d+\))/g,
         "subscripts",
         {
@@ -394,7 +394,7 @@ export async function dynamicDecorations(activeEditor: vscode.TextEditor): Promi
         }
     );
     // Negative subscripts
-    await generator.simpleRegex(
+    generator.simpleRegex(
         /_\(\-\d+\)/g,
         "subscripts",
         {
@@ -419,7 +419,7 @@ export async function dynamicDecorations(activeEditor: vscode.TextEditor): Promi
     );
 
     // Third letters superscripts like k=0, n+1...
-    await generator.simpleRegex(
+    generator.simpleRegex(
         /\^\([A-z](\+|\=|\-).\)/g,
         "powers",
         {
@@ -440,7 +440,7 @@ export async function dynamicDecorations(activeEditor: vscode.TextEditor): Promi
     );
 
     // Third letters subscripts like k=0, n+1...
-    await generator.simpleRegex(
+    generator.simpleRegex(
         /_\([A-z](\+|\=|\-).\)/g,
         "subscripts",
         {
