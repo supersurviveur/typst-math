@@ -16,9 +16,10 @@ export const STYLES = {
             color: getColors("number"),
             textDecoration: `none;
                 font-family: "NewComputerModernMath";
-                transform: translate(0.84em, -0.9em);
+                transform: translate(-0.1em, -0.9em);
                 font-size: 0.8em;
-                display: inline-block; `
+                display: inline-block;
+                position: absolute;`
         }
     },
     arrow_func_end: empty,
@@ -44,8 +45,9 @@ export const STYLES = {
         options: {
             color: getColors("number"),
             textDecoration: `none;
-            transform: translate(0.43em, -0.52em);
-            display: inline-block;`
+            transform: translate(0.15em, -0.52em);
+            display: inline-block;
+            position: absolute;`
         }
     },
     dot_func_end: empty,
@@ -54,8 +56,9 @@ export const STYLES = {
         options: {
             color: getColors("number"),
             textDecoration: `none;
-            transform: translate(0.55em, -0.25em);
-            display: inline-block;`
+            transform: translate(0, -0.25em);
+            display: inline-block;
+            position: absolute;`
         }
     },
     double_dot_func_end: empty,
@@ -88,9 +91,10 @@ export const STYLES = {
         options: {
             color: getColors("number"),
             textDecoration: `none;
-            transform: translate(0.6em, -0.5em);
+            transform: translate(0.03em, -0.5em);
             font-size: 0.9em;
-            display: inline-block;`
+            display: inline-block;
+            position: absolute;`
         }
     },
     hat_func_end: empty,
@@ -99,9 +103,10 @@ export const STYLES = {
         options: {
             color: getColors("number"),
             textDecoration: `none;
-            transform: translate(0.59em, -0.7em);
+            transform: translate(0.05em, -0.7em);
             font-size: 0.9em;
-            display: inline-block;`
+            display: inline-block;
+            position: absolute;`
         }
     },
     tilde_func_end: empty,

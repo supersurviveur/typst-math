@@ -119,6 +119,11 @@ export async function generateDecorations(activeEditor: vscode.TextEditor): Prom
         await generator.comparisonSymbol(/<--/g, '⟵', undefined, /[^-><\|]/g),
         await generator.comparisonSymbol(/<->/g, '↔'),
         await generator.comparisonSymbol(/<-->/g, '⟷'),
+
+        // operators
+        await generator.operatorSymbol(/\+/g, '+', /[^_]/g),
+        await generator.operatorSymbol(/\-/g, '−', /[^_<\-]/g),
+        await generator.operatorSymbol(/\*/g, '\u{2217}', /[^\^]/g),
     ];
 
     let compare = data["comparison"];
