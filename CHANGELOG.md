@@ -4,6 +4,10 @@ All notable changes to the "typst-math" extension will be documented in this fil
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## [v0.0.7]
+- Add 'dif' symbol
+- Symbols are now updated correctly
+
 ## [v0.0.6]
 - Add symbols
 - Add functions like `arrow()` in easy cases

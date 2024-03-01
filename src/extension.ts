@@ -81,15 +81,15 @@ export async function activate(context: vscode.ExtensionContext) {
     vscode.workspace.onDidChangeTextDocument(event => {
         if (activeEditor && event.document === activeEditor.document) {
             // if there is no carriage return, do not update the decorations
-            let flag = false;
             if (event.contentChanges.length === 0) { return; }
-            for (let change of event.contentChanges) {
-                if (change.text.includes("\n") || change.text.includes("\r")) {
-                    flag = true;
-                    break;
-                }
-            }
-            if (!flag) { return; }
+            // let flag = false;
+            // for (let change of event.contentChanges) {
+            //     if (change.text.includes("\n") || change.text.includes("\r")) {
+            //         flag = true;
+            //         break;
+            //     }
+            // }
+            // if (!flag) { return; }
             if (change_timeout) {
                 clearTimeout(change_timeout);
             }

@@ -459,6 +459,50 @@ export async function dynamicDecorations(activeEditor: vscode.TextEditor): Promi
             ];
         },
     );
+
+    // Subscripts between quotes
+    generator.simpleRegex(
+        /_\".*?\"/g,
+        "subscripts_quotes",
+        {
+            color: getColors("number"),
+            textDecoration: `none;
+            font-family: JuliaMono;
+            font-size: 0.8em;
+            transform: translateY(20%);
+            display: inline-block;`,
+        },
+        (match) => {
+            const content = match[0].slice(2, -1);
+            return [
+                content,
+                content
+            ];
+        },
+    );
+
+    // Superscripts between quotes
+    generator.simpleRegex(
+        /\^\".*?\"/g,
+        "powers_quotes",
+        {
+            color: getColors("number"),
+            textDecoration: `none;
+            font-family: JuliaMono;
+            font-size: 0.8em;
+            transform: translateY(-30%);
+            display: inline-block;`,
+        },
+        (match) => {
+            const content = match[0].slice(2, -1);
+            return [
+                content,
+                content
+            ];
+        },
+    );
+
+
     // Abs function for numbers
     generator.simpleRegex(
         /abs\(/g,
