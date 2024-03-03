@@ -18,6 +18,25 @@
         "space.hair": "hairsp",
         "hyph.soft": "shy"
     },
+    "punctuation": {
+        "wj": "⁠",
+        "zwj": "‍",
+        "zwnj": "‌",
+        "zws": "​",
+        "space": " ",
+        "space.nobreak": " ",
+        "space.en": " ",
+        "space.quad": " ",
+        "space.third": " ",
+        "space.quarter": " ",
+        "space.sixth": " ",
+        "space.med": " ",
+        "space.fig": " ",
+        "space.punct": " ",
+        "space.thin": " ",
+        "space.hair": " ",
+        "hyph.soft": "\u00AD"
+    },
     "comparison": {
         "eq": "=",
         "eq.star": "≛",

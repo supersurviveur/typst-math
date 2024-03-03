@@ -54,6 +54,11 @@ export function renderSymbolsOutsideMath() {
     const config = vscode.workspace.getConfiguration('typst-math');
     return config.get<boolean>('renderSymbolsOutsideMath');
 }
+// Retreive the settings for punctuation rendering
+export function renderPunctuation() {
+    const config = vscode.workspace.getConfiguration('typst-math');
+    return config.get<boolean>('renderPunctuation');
+}
 
 // Get the rendering mode
 export function renderingMode() {

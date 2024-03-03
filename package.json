@@ -70,6 +70,11 @@
           "default": true,
           "markdownDescription": "If true, symbols will be rendered also outside math blocks."
         },
+        "typst-math.renderPunctuation": {
+          "type": "boolean",
+          "default": false,
+          "markdownDescription": "If true, punctuation symbols like space, space.quad, wjoin... will be rendered."
+        },
         "typst-math.renderingMode": {
           "markdownDescription": "This mode let you select if you want to render complex symbols and combinations, or just simple ones like powers (Experimental)",
           "type": "string",
