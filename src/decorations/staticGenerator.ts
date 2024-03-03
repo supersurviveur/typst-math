@@ -7,7 +7,7 @@ import { STYLES } from './styles';
 export const wordLimit = /(?!\.|\()(\b|_|\n|\r)/g; // Can probably be improved
 export const startWordLimit = /(\s|(?!.[A-Za-z]|[A-Za-z]\.)(\n|..|\n.))/g; // Seems to work
 export const startWordLimitNoVariants = /(\s|(?!.[A-Za-z]|[A-Za-z]\.|._|.\^)(\n|..|\n.))/g;
-export const arrowLimitLow = /[^=\-<>]/g;
+export const arrowLimitLow = /[^=\-<>~]/g;
 
 // Map to store the already existing decorations, to avoid duplicates
 let already_existing_map: Map<string, boolean> = new Map();
