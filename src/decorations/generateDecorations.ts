@@ -160,7 +160,7 @@ export async function generateDecorations(activeEditor: vscode.TextEditor): Prom
         for (let value in punct) {
             let reg = stringToRegex(value);
             result.push(
-                await generator.comparisonSymbol(reg, punct[value], startWordLimit, wordLimit)
+                await generator.punctuationSymbol(reg, punct[value], startWordLimit, wordLimit)
             );
         }
     }

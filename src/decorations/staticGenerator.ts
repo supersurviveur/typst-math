@@ -108,6 +108,12 @@ export class StaticGenerator {
         }
         return [];
     }
+    public async punctuationSymbol(reg: RegExp, symbol: string, pre?: RegExp, post?: RegExp) {
+        return await this.helperSymbol(reg, symbol, {
+            color: "",
+            textDecoration: '',
+        }, pre, post);
+    }
     public async comparisonSymbol(reg: RegExp, symbol: string, pre?: RegExp, post?: RegExp) {
         return await this.helperSymbol(reg, symbol, {
             color: getColors("comparison"),
