@@ -30,7 +30,7 @@
 	"Define a math function": {
 		"prefix": "func",
 		"body": [
-			"${1:f} : cases(delim: \"|\", ${2:RR} -> ${3:RR}, ${4:x} -> ${5:x})"
+			"${1:f} : cases(delim: \"|\", ${2:RR} -> ${3:RR}, ${4:x} |-> ${5:x})"
 		],
 		"description": "Define a math function"
 	},
