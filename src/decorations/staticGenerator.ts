@@ -213,6 +213,8 @@ export class StaticGenerator {
         // create a massive or to match all variants in the minimal_variant_list variable
         // Generate complex variants
         let subsuper = "(" + minimal_variant_list.join("|") + ")_?\\^?(" + minimal_variant_list.join("|") + ")";
+        let sub = "(" + minimal_variant_list.join("|") + ")_(" + minimal_variant_list.join("|") + ")";
+        let big_reg_sub = new RegExp(`(${[...minimal_variant_list, sub].join("|")})`);
         minimal_variant_list.push(subsuper);
         variant_list.push(subsuper);
         let big_reg = new RegExp(`(${minimal_variant_list.join("|")})`);
@@ -265,11 +267,11 @@ export class StaticGenerator {
 
             // Square root function
             await this.helperSymbol(/s/g, STYLES.sqrt_func_start.symbol,
-                STYLES.sqrt_func_start.options, startWordLimit, RegExp(`qrt\\(${big_reg.source}\\)`), true),
+                STYLES.sqrt_func_start.options, startWordLimit, RegExp(`qrt\\(${big_reg_sub.source}\\)`), true),
             await this.helperSymbol(/qrt\(/g, STYLES.sqrt_func_second.symbol,
-                STYLES.sqrt_func_second.options, RegExp(`s`), RegExp(`${big_reg.source}\\)`), true),
+                STYLES.sqrt_func_second.options, RegExp(`s`), RegExp(`${big_reg_sub.source}\\)`), true),
             await this.helperSymbol(/\)/g, STYLES.sqrt_func_end.symbol,
-                STYLES.sqrt_func_end.options, RegExp(`sqrt\\(${big_reg.source}`), undefined, true),
+                STYLES.sqrt_func_end.options, RegExp(`sqrt\\(${big_reg_sub.source}`), undefined, true),
         ];
 
         result = result.concat([
