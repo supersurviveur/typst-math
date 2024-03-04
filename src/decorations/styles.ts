@@ -117,4 +117,23 @@ export const STYLES = {
             textDecoration: `none;`
         }
     },
+    sqrt_func_start: { // place the square root above the letter
+        symbol: '√',
+        options: {
+            color: getColors("number"),
+            textDecoration: `none;
+            display: inline-block;
+            transform: scaleY(1.5) translate(0.1em, -0.05em);`
+        }
+    },
+    sqrt_func_second: { // place the square root bar above the letter
+        symbol: '\u0305',
+        options: {
+            color: getColors("number"),
+            textDecoration: `none;
+            transform: translate(0em, -0.3em);
+            display: inline-block;`
+        }
+    },
+    sqrt_func_end: empty,
 };

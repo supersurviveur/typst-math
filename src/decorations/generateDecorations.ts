@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import { DynamicGenerator } from './dynamicGenerator';
 import { getAllDecorations } from './helpers';
-import { getColors, renderPunctuation, renderingMode } from './utils';
+import { getColors, renderSpace, renderingMode } from './utils';
 import { StaticGenerator, arrowLimitLow, resetDecorationMap, startWordLimit, wordLimit } from './staticGenerator';
 import fs from 'fs/promises';
 import path from 'path';
@@ -23,7 +23,7 @@ function stringToRegex(str: string) {
 }
 
 interface JsonData {
-    punctuation: { [x: string]: string },
+    space: { [x: string]: string },
     comparison: { [x: string]: string },
     arrows: { [x: string]: string },
     operators: { [x: string]: string },
@@ -155,12 +155,12 @@ export async function generateDecorations(activeEditor: vscode.TextEditor): Prom
         await generator.mathExtendSetSymbol(/\|\]/g, '\u{27E7}'),
     ];
 
-    if (renderPunctuation()) {
-        let punct = data["punctuation"];
+    if (renderSpace()) {
+        let punct = data["space"];
         for (let value in punct) {
             let reg = stringToRegex(value);
             result.push(
-                await generator.punctuationSymbol(reg, punct[value], startWordLimit, wordLimit)
+                await generator.spaceSymbol(reg, punct[value], startWordLimit, wordLimit)
             );
         }
     }

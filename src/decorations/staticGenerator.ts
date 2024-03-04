@@ -108,11 +108,11 @@ export class StaticGenerator {
         }
         return [];
     }
-    public async punctuationSymbol(reg: RegExp, symbol: string, pre?: RegExp, post?: RegExp) {
+    public async spaceSymbol(reg: RegExp, symbol: string, pre?: RegExp, post?: RegExp) {
         let color = getColors("keyword");
         return await this.helperSymbol(reg, symbol, {
             color: "",
-            textDecoration: `none; background-color: ${color}; opacity: 0.3;`,
+            textDecoration: `none; font-family: "JuliaMono"; background-color: ${color}; opacity: 0.3; box-shadow: 0 0 0 1px ${color};`,
         }, pre, post);
     }
     public async comparisonSymbol(reg: RegExp, symbol: string, pre?: RegExp, post?: RegExp) {
@@ -262,6 +262,14 @@ export class StaticGenerator {
                 STYLES.tilde_func_start.options, startWordLimit, RegExp(`${big_reg.source}\\)`), true),
             await this.helperSymbol(/\)/g, STYLES.tilde_func_end.symbol,
                 STYLES.tilde_func_end.options, RegExp(`tilde\\(${big_reg.source}`), undefined, true),
+
+            // Square root function
+            await this.helperSymbol(/s/g, STYLES.sqrt_func_start.symbol,
+                STYLES.sqrt_func_start.options, startWordLimit, RegExp(`qrt\\(${big_reg.source}\\)`), true),
+            await this.helperSymbol(/qrt\(/g, STYLES.sqrt_func_second.symbol,
+                STYLES.sqrt_func_second.options, RegExp(`s`), RegExp(`${big_reg.source}\\)`), true),
+            await this.helperSymbol(/\)/g, STYLES.sqrt_func_end.symbol,
+                STYLES.sqrt_func_end.options, RegExp(`sqrt\\(${big_reg.source}`), undefined, true),
         ];
 
         result = result.concat([
