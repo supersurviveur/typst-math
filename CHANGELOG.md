@@ -4,6 +4,9 @@ All notable changes to the "typst-math" extension will be documented in this fil
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## [v0.0.9]
+- Fix function's font family
+
 ## [v0.0.8]
 - Add sqrt function
 - Add space symbols
