@@ -10,7 +10,7 @@ const empty = {
 };
 
 export const STYLES = {
-    arrow_func_start:{ // place the arrow above the letter
+    arrow_func_start: { // place the arrow above the letter
         symbol: '→',
         options: {
             color: getColors("number"),
@@ -122,8 +122,9 @@ export const STYLES = {
         options: {
             color: getColors("number"),
             textDecoration: `none;
+            font-family: JuliaMono;
             display: inline-block;
-            transform: scaleY(1.5) translate(0.1em, -0.05em);`
+            transform: translate(0.1em, -0.1em);`
         }
     },
     sqrt_func_second: { // place the square root bar above the letter
@@ -131,7 +132,8 @@ export const STYLES = {
         options: {
             color: getColors("number"),
             textDecoration: `none;
-            transform: translate(0em, -0.3em);
+            font-family: JuliaMono;
+            transform: scaleX(1.2) translate(0em, -0.2em);
             display: inline-block;`
         }
     },
