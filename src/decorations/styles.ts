@@ -35,6 +35,7 @@ export const STYLES = {
         options: {
             color: getColors("number"),
             textDecoration: `none;
+            font-family: JuliaMono;
             transform: translate(0em, -0.2em);
             display: inline-block;`
         }
@@ -45,6 +46,8 @@ export const STYLES = {
         options: {
             color: getColors("number"),
             textDecoration: `none;
+            font-family: "Fira Math";
+            transform: translate(0.15em, -0.55em);
             transform: translate(0.15em, -0.52em);
             display: inline-block;
             position: absolute;`
@@ -56,6 +59,7 @@ export const STYLES = {
         options: {
             color: getColors("number"),
             textDecoration: `none;
+            font-family: JuliaMono;
             transform: translate(0, -0.25em);
             display: inline-block;
             position: absolute;`
@@ -91,7 +95,8 @@ export const STYLES = {
         options: {
             color: getColors("number"),
             textDecoration: `none;
-            transform: translate(0.03em, -0.5em);
+            font-family: Fira math;
+            transform: translate(0.03em, -0.3em);
             font-size: 0.9em;
             display: inline-block;
             position: absolute;`
@@ -103,6 +108,7 @@ export const STYLES = {
         options: {
             color: getColors("number"),
             textDecoration: `none;
+            font-family: JuliaMono;
             transform: translate(0.05em, -0.7em);
             font-size: 0.9em;
             display: inline-block;
@@ -133,7 +139,7 @@ export const STYLES = {
             color: getColors("number"),
             textDecoration: `none;
             font-family: JuliaMono;
-            transform: scaleX(1.2) translate(0em, -0.2em);
+            transform: scaleX(1.2) translate(-0.01em, -0.25em);
             display: inline-block;`
         }
     },
