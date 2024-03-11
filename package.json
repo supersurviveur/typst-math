@@ -19,9 +19,6 @@
     "onLanguage:typst"
   ],
   "main": "./dist/extension.js",
-  "extensionDependencies": [
-    "nvarner.typst-lsp"
-  ],
   "contributes": {
     "configuration": {
       "title": "Typst math",
