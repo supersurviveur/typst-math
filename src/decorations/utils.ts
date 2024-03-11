@@ -59,6 +59,11 @@ export function renderSpace() {
     const config = vscode.workspace.getConfiguration('typst-math');
     return config.get<boolean>('renderSpace');
 }
+// Retreive blacklisted symbols
+export function blacklistedSymbols() {
+    const config = vscode.workspace.getConfiguration('typst-math');
+    return config.get<string[]>('blacklist') || [];
+}
 
 // Get the rendering mode
 export function renderingMode() {

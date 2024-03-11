@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import { DynamicGenerator } from './dynamicGenerator';
 import { getAllDecorations } from './helpers';
-import { getColors, renderSpace, renderingMode } from './utils';
+import { blacklistedSymbols, getColors, renderSpace, renderingMode } from './utils';
 import { StaticGenerator, arrowLimitLow, resetDecorationMap, startWordLimit, wordLimit } from './staticGenerator';
 import fs from 'fs/promises';
 import path from 'path';
@@ -51,6 +51,7 @@ export async function generateDecorations(activeEditor: vscode.TextEditor): Prom
     if (renderingMode() === 0 || !showSymbols) {
         return [];
     }
+    const blacklist = blacklistedSymbols();
     // Usefull variables
     const generator = new StaticGenerator(activeEditor);
 
@@ -158,6 +159,9 @@ export async function generateDecorations(activeEditor: vscode.TextEditor): Prom
     if (renderSpace()) {
         let punct = data["space"];
         for (let value in punct) {
+            if (blacklist.includes(value)) {
+                continue;
+            }
             let reg = stringToRegex(value);
             result.push(
                 await generator.spaceSymbol(reg, punct[value], startWordLimit, wordLimit)
@@ -167,6 +171,9 @@ export async function generateDecorations(activeEditor: vscode.TextEditor): Prom
 
     let compare = data["comparison"];
     for (let value in compare) {
+        if (blacklist.includes(value)) {
+            continue;
+        }
         let reg = stringToRegex(value);
         result.push(
             await generator.comparisonSymbol(reg, compare[value], startWordLimit, wordLimit)
@@ -175,6 +182,9 @@ export async function generateDecorations(activeEditor: vscode.TextEditor): Prom
 
     let arrows = data["arrows"];
     for (let value in arrows) {
+        if (blacklist.includes(value)) {
+            continue;
+        }
         let reg = stringToRegex(value);
         result.push(
             await generator.comparisonSymbol(reg, arrows[value], startWordLimit, wordLimit)
@@ -182,6 +192,9 @@ export async function generateDecorations(activeEditor: vscode.TextEditor): Prom
     }
     let operators = data["operators"];
     for (let value in operators) {
+        if (blacklist.includes(value)) {
+            continue;
+        }
         let reg = stringToRegex(value);
         result.push(
             await generator.operatorSymbol(reg, operators[value], startWordLimit, wordLimit)
@@ -189,6 +202,9 @@ export async function generateDecorations(activeEditor: vscode.TextEditor): Prom
     }
     let basics = data["basics"];
     for (let value in basics) {
+        if (blacklist.includes(value)) {
+            continue;
+        }
         let reg = stringToRegex(value);
         result.push(
             await generator.numberSymbol(reg, basics[value], startWordLimit, wordLimit)
@@ -196,6 +212,9 @@ export async function generateDecorations(activeEditor: vscode.TextEditor): Prom
     }
     let bigLetters = data["bigLetters"];
     for (let value in bigLetters) {
+        if (blacklist.includes(value)) {
+            continue;
+        }
         let reg = stringToRegex(value);
         result.push(
             await generator.bigLetterSymbol(reg, bigLetters[value], startWordLimit, wordLimit)
@@ -203,6 +222,9 @@ export async function generateDecorations(activeEditor: vscode.TextEditor): Prom
     }
     let keywords = data["keywords"];
     for (let value in keywords) {
+        if (blacklist.includes(value)) {
+            continue;
+        }
         let reg = stringToRegex(value);
         result.push(
             await generator.keywordSymbol(reg, keywords[value], startWordLimit, wordLimit)
@@ -210,6 +232,9 @@ export async function generateDecorations(activeEditor: vscode.TextEditor): Prom
     }
     let sets = data["sets"];
     for (let value in sets) {
+        if (blacklist.includes(value)) {
+            continue;
+        }
         let reg = stringToRegex(value);
         result.push(
             await generator.mathSetSymbol(reg, sets[value], startWordLimit, wordLimit)
@@ -217,6 +242,9 @@ export async function generateDecorations(activeEditor: vscode.TextEditor): Prom
     }
     let setsVariants = data["setsVariants"];
     for (let value in setsVariants) {
+        if (blacklist.includes(value)) {
+            continue;
+        }
         let reg = stringToRegex(value);
         result = result.concat(
             ...await generator.mathSetSymbolWithVariants(reg, setsVariants[value])
@@ -224,6 +252,9 @@ export async function generateDecorations(activeEditor: vscode.TextEditor): Prom
     }
     let greekLetters = data["greekLetters"];
     for (let value in greekLetters) {
+        if (blacklist.includes(value)) {
+            continue;
+        }
         let reg = stringToRegex(value);
         result = result.concat(
             ...await generator.letterSymbolWithVariants(reg, greekLetters[value])
@@ -232,6 +263,9 @@ export async function generateDecorations(activeEditor: vscode.TextEditor): Prom
 
     let otherSymbols = otherData["symbols"];
     for (let symbol of otherSymbols) {
+        if (blacklist.includes(symbol.letter)) {
+            continue;
+        }
         result = result.concat(
             ...await generator.numberSymbolOnlyVariantsJulia(stringToRegex(symbol.letter), symbol.letter),
             await generator.numberSymbol(stringToRegex(`cal\(${symbol.letter}\)`), symbol.cal, startWordLimit),

@@ -88,6 +88,14 @@
             "Render more symbols, like integrals, sets...",
             "Render a maximum of symbols, including some functions like arrow()..."
           ]
+        },
+        "typst-math.blacklist": {
+          "type": "array",
+          "default": [],
+          "markdownDescription": "A list of symbols that will not be rendered. (ex: [plus, minus, tilde.eq.not])",
+          "items": {
+            "type": "string"
+          }
         }
       }
     },
