@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import { createDecorationType, helperSimpleRegex, resetAllDecorations } from './helpers';
-import { getColors, renderingMode } from './utils';
+import { blacklistedSymbols, getColors, renderingMode } from './utils';
 import { STYLES } from './styles';
 
 // Usefull regex
@@ -28,9 +28,11 @@ export function resetDecorationMap() {
 
 export class StaticGenerator {
     text: string;
+    blacklist: string[];
 
     constructor(activeEditor: vscode.TextEditor) {
         this.text = activeEditor.document.getText();
+        this.blacklist = blacklistedSymbols();
     }
 
     staticSimpleRegex(activeEditor: vscode.TextEditor, reg: RegExp, pre?: RegExp, post?: RegExp, rangeStartOffset = 0, rangeEndOffset = 0) {
@@ -40,12 +42,15 @@ export class StaticGenerator {
         }, pre, post, rangeStartOffset, rangeEndOffset);
         return result;
     }
-    async helperSymbol(reg: RegExp, symbol: string, options: {
+    helperSymbol(reg: RegExp, symbol: string, options: {
         color: string,
         textDecoration: string,
     }, pre?: RegExp, post?: RegExp, force_creation: boolean = false) {
         let uuid = symbol + (post ? post.source : "") + "-qz2qf-" + reg.source + (pre ? pre.source : "");
         if (already_existing_map.has(uuid) && !force_creation) {
+            return null;
+        }
+        if (this.blacklist.includes(reg.source.replace("\\", ""))) {
             return null;
         }
         // Try the regex on the current text, return null if no match
@@ -63,18 +68,18 @@ export class StaticGenerator {
             })
         };
     }
-    public async helperWithVariants(reg: RegExp, symbol: string, options: {
+    public helperWithVariants(reg: RegExp, symbol: string, options: {
         color: string,
         textDecoration: string,
     }, pre?: RegExp, post?: RegExp) {
         return [
             // Basic version
-            await this.helperSymbol(reg, symbol, options, pre, post),
+            this.helperSymbol(reg, symbol, options, pre, post),
             // Variants
-            ...(await this.helperOnlyVariants(reg, symbol, options, pre, post))
+            ...(this.helperOnlyVariants(reg, symbol, options, pre, post))
         ];
     }
-    public async helperOnlyVariants(reg: RegExp, symbol: string, options: {
+    public helperOnlyVariants(reg: RegExp, symbol: string, options: {
         color: string,
         textDecoration: string,
     }, pre?: RegExp, post?: RegExp, minimal: boolean = false) {
@@ -84,23 +89,23 @@ export class StaticGenerator {
             return [
 
                 // Superscript version
-                await this.helperSymbol(RegExp(`\\^(${reg.source}\\b|\\(${reg.source}\\))`), symbol,
+                this.helperSymbol(RegExp(`\\^(${reg.source}\\b|\\(${reg.source}\\))`), symbol,
                     {
                         ...options,
                         textDecoration: options.textDecoration + `font-size: 0.8em; transform: translateY(-30%); display: inline-block; `
                     }),
                 // Subscript version
-                await this.helperSymbol(RegExp(`_(${reg.source}\\b|\\(${reg.source}\\))`), symbol, {
+                this.helperSymbol(RegExp(`_(${reg.source}\\b|\\(${reg.source}\\))`), symbol, {
                     ...options,
                     textDecoration: options.textDecoration + `font-size: 0.8em; transform: translateY(20%); display: inline-block; `
                 }),
                 // Superscrit with minus
-                await this.helperSymbol(RegExp(`\\^\\(-${reg.source}\\)`), "-" + symbol, {
+                this.helperSymbol(RegExp(`\\^\\(-${reg.source}\\)`), "-" + symbol, {
                     ...options,
                     textDecoration: options.textDecoration + `font-size: 0.8em; transform: translateY(-30%); display: inline-block; `
                 }),
                 // Subscript with minus
-                await this.helperSymbol(RegExp(`_\\(-${reg.source}\\)`), "-" + symbol, {
+                this.helperSymbol(RegExp(`_\\(-${reg.source}\\)`), "-" + symbol, {
                     ...options,
                     textDecoration: options.textDecoration + `font-size: 0.8em; transform: translateY(20%); display: inline-block; `
                 }),
@@ -108,33 +113,33 @@ export class StaticGenerator {
         }
         return [];
     }
-    public async spaceSymbol(reg: RegExp, symbol: string, pre?: RegExp, post?: RegExp) {
+    public spaceSymbol(reg: RegExp, symbol: string, pre?: RegExp, post?: RegExp) {
         let color = getColors("keyword");
-        return await this.helperSymbol(reg, symbol, {
+        return this.helperSymbol(reg, symbol, {
             color: "",
             textDecoration: `none; font-family: "JuliaMono"; background-color: ${color}; opacity: 0.3; box-shadow: 0 0 0 1px ${color};`,
         }, pre, post);
     }
-    public async comparisonSymbol(reg: RegExp, symbol: string, pre?: RegExp, post?: RegExp) {
-        return await this.helperSymbol(reg, symbol, {
+    public comparisonSymbol(reg: RegExp, symbol: string, pre?: RegExp, post?: RegExp) {
+        return this.helperSymbol(reg, symbol, {
             color: getColors("comparison"),
             textDecoration: 'none; font-family: "NewComputerModernMath"; font-weight: bold;',
         }, pre, post);
     }
-    public async keywordSymbol(reg: RegExp, symbol: string, pre?: RegExp, post?: RegExp) {
+    public keywordSymbol(reg: RegExp, symbol: string, pre?: RegExp, post?: RegExp) {
         if (renderingMode() < 2) { return null; }
-        return await this.helperSymbol(reg, symbol, {
+        return this.helperSymbol(reg, symbol, {
             color: getColors("keyword"),
             textDecoration: 'none; font-family: "NewComputerModernMath"; font-weight: bold;'
         }, pre, post);
     }
-    public async letterSymbol(reg: RegExp, symbol: string) {
-        return await this.helperSymbol(reg, symbol, {
+    public letterSymbol(reg: RegExp, symbol: string) {
+        return this.helperSymbol(reg, symbol, {
             color: getColors("letter"),
             textDecoration: 'none; font-family: "JuliaMono";',
         }, startWordLimit, wordLimit);
     }
-    public async letterSymbolWithVariants(reg: RegExp, symbol: string) {
+    public letterSymbolWithVariants(reg: RegExp, symbol: string) {
         return this.helperWithVariants(reg, symbol,
             {
                 color: getColors("letter"),
@@ -142,34 +147,34 @@ export class StaticGenerator {
             }, startWordLimitNoVariants, wordLimit);
     }
 
-    public async bigLetterSymbol(reg: RegExp, symbol: string, pre?: RegExp, post?: RegExp) {
+    public bigLetterSymbol(reg: RegExp, symbol: string, pre?: RegExp, post?: RegExp) {
         if (renderingMode() < 2) { return null; }
-        return await this.helperSymbol(reg, symbol, {
+        return this.helperSymbol(reg, symbol, {
             color: getColors("letter"),
             textDecoration: 'none; font-family: "NewComputerModernMath";',
         }, pre, post);
     }
 
-    public async mathSetSymbol(reg: RegExp, symbol: string, pre?: RegExp, post?: RegExp) {
+    public mathSetSymbol(reg: RegExp, symbol: string, pre?: RegExp, post?: RegExp) {
         if (renderingMode() < 2) { return null; }
-        return await this.helperSymbol(reg, symbol, {
+        return this.helperSymbol(reg, symbol, {
             color: getColors("group"),
             textDecoration: `none;
         font-family: "Fira Math"; `,
         }, pre, post);
     }
-    public async mathSetSymbolWithVariants(reg: RegExp, symbol: string) {
+    public mathSetSymbolWithVariants(reg: RegExp, symbol: string) {
         if (renderingMode() < 2) { return []; }
-        return await this.helperWithVariants(reg, symbol, {
+        return this.helperWithVariants(reg, symbol, {
             color: getColors("group"),
             textDecoration: `none;
         font-family: "Fira Math"; `,
         }, /(?!\^|[A-z])./g, wordLimit);
     }
 
-    public async mathSetVariantsSymbol(reg: RegExp, symbol: string, style: string, pre?: RegExp, post?: RegExp) {
+    public mathSetVariantsSymbol(reg: RegExp, symbol: string, style: string, pre?: RegExp, post?: RegExp) {
         if (renderingMode() < 2) { return null; }
-        return await this.helperSymbol(reg, symbol, {
+        return this.helperSymbol(reg, symbol, {
             color: getColors("group"),
             textDecoration: `none;
         font-family: "JuliaMono";
@@ -177,39 +182,39 @@ export class StaticGenerator {
         }, pre, post);
     }
 
-    public async mathExtendSetSymbol(reg: RegExp, symbol: string, pre?: RegExp, post?: RegExp) {
-        return await this.helperSymbol(reg, symbol, {
+    public mathExtendSetSymbol(reg: RegExp, symbol: string, pre?: RegExp, post?: RegExp) {
+        return this.helperSymbol(reg, symbol, {
             color: getColors("group"),
             textDecoration: `none;
         font-family: "Fira Math"; `,
         }, pre, post);
     }
 
-    public async operatorSymbol(reg: RegExp, symbol: string, pre?: RegExp, post?: RegExp) {
-        return await this.helperSymbol(reg, symbol, {
+    public operatorSymbol(reg: RegExp, symbol: string, pre?: RegExp, post?: RegExp) {
+        return this.helperSymbol(reg, symbol, {
             color: getColors("operator"),
             textDecoration: `none;
         font-family: "Fira Math"; `,
         }, pre, post);
     }
 
-    public async numberSymbol(reg: RegExp, symbol: string, pre?: RegExp, post?: RegExp) {
+    public numberSymbol(reg: RegExp, symbol: string, pre?: RegExp, post?: RegExp) {
         if (renderingMode() < 2) { return null; }
-        return await this.helperSymbol(reg, symbol, {
+        return this.helperSymbol(reg, symbol, {
             color: getColors("number"),
             textDecoration: `none;
         font-family: "NewComputerModernMath"; `,
         }, pre, post);
     }
-    public async numberSymbolOnlyVariantsJulia(reg: RegExp, symbol: string, pre?: RegExp, post?: RegExp, minimal: boolean = false) {
-        return await this.helperOnlyVariants(reg, symbol, {
+    public numberSymbolOnlyVariantsJulia(reg: RegExp, symbol: string, pre?: RegExp, post?: RegExp, minimal: boolean = false) {
+        return this.helperOnlyVariants(reg, symbol, {
             color: getColors("number"),
             textDecoration: `none;
         letter-spacing: -0.1em;
         font-family: JuliaMono; `,
         }, pre, post, minimal);
     }
-    public async generateFunctionVariants() {
+    public generateFunctionVariants() {
         // create a massive or to match all variants in the minimal_variant_list variable
         // Generate complex variants
         let subsuper = "(" + minimal_variant_list.join("|") + ")_?\\^?(" + minimal_variant_list.join("|") + ")";
@@ -221,70 +226,70 @@ export class StaticGenerator {
         let big_reg_notminimal = new RegExp(`(${variant_list.join("|")})`);
         let result = [
             // Arrow function
-            await this.helperSymbol(/arrow\(/g, STYLES.arrow_func_start.symbol,
+            this.helperSymbol(/arrow\(/g, STYLES.arrow_func_start.symbol,
                 STYLES.arrow_func_start.options, startWordLimit, RegExp(`${big_reg.source}\\)`), true),
-            await this.helperSymbol(/\)/g, STYLES.arrow_func_end.symbol,
+            this.helperSymbol(/\)/g, STYLES.arrow_func_end.symbol,
                 STYLES.arrow_func_end.options, RegExp(`arrow\\(${big_reg.source}`), undefined, true),
 
             // Overline function
-            await this.helperSymbol(/overline\(/g, STYLES.overline_func_start.symbol,
+            this.helperSymbol(/overline\(/g, STYLES.overline_func_start.symbol,
                 STYLES.overline_func_start.options, startWordLimit, RegExp(`${big_reg.source}\\)`), true),
-            await this.helperSymbol(/\)/g, STYLES.overline_func_end.symbol,
+            this.helperSymbol(/\)/g, STYLES.overline_func_end.symbol,
                 STYLES.overline_func_end.options, RegExp(`overline\\(${big_reg.source}`), undefined, true),
 
             // Dot function
-            await this.helperSymbol(/dot\(/g, STYLES.dot_func_start.symbol,
+            this.helperSymbol(/dot\(/g, STYLES.dot_func_start.symbol,
                 STYLES.dot_func_start.options, startWordLimit, RegExp(`${big_reg.source}\\)`), true),
-            await this.helperSymbol(/\)/g, STYLES.dot_func_end.symbol,
+            this.helperSymbol(/\)/g, STYLES.dot_func_end.symbol,
                 STYLES.dot_func_end.options, RegExp(`dot\\(${big_reg.source}`), undefined, true),
             // Double dot function
-            await this.helperSymbol(/dot\.double\(/g, STYLES.double_dot_func_start.symbol,
+            this.helperSymbol(/dot\.double\(/g, STYLES.double_dot_func_start.symbol,
                 STYLES.double_dot_func_start.options, startWordLimit, RegExp(`${big_reg.source}\\)`), true),
-            await this.helperSymbol(/\)/g, STYLES.double_dot_func_end.symbol,
+            this.helperSymbol(/\)/g, STYLES.double_dot_func_end.symbol,
                 STYLES.double_dot_func_end.options, RegExp(`dot\\.double\\(${big_reg.source}`), undefined, true),
             // Triple dot function
-            await this.helperSymbol(/dot\.triple\(/g, STYLES.triple_dot_func_start.symbol,
+            this.helperSymbol(/dot\.triple\(/g, STYLES.triple_dot_func_start.symbol,
                 STYLES.triple_dot_func_start.options, startWordLimit, RegExp(`${big_reg.source}\\)`), true),
-            await this.helperSymbol(/\)/g, STYLES.triple_dot_func_end.symbol,
+            this.helperSymbol(/\)/g, STYLES.triple_dot_func_end.symbol,
                 STYLES.triple_dot_func_end.options, RegExp(`dot\\.triple\\(${big_reg.source}`), undefined, true),
             // Quad dot function
-            await this.helperSymbol(/dot\.quad\(/g, STYLES.quad_dot_func_start.symbol,
+            this.helperSymbol(/dot\.quad\(/g, STYLES.quad_dot_func_start.symbol,
                 STYLES.quad_dot_func_start.options, startWordLimit, RegExp(`${big_reg.source}\\)`), true),
-            await this.helperSymbol(/\)/g, STYLES.quad_dot_func_end.symbol,
+            this.helperSymbol(/\)/g, STYLES.quad_dot_func_end.symbol,
                 STYLES.quad_dot_func_end.options, RegExp(`dot\\.quad\\(${big_reg.source}`), undefined, true),
 
             // Hat function
-            await this.helperSymbol(/hat\(/g, STYLES.hat_func_start.symbol,
+            this.helperSymbol(/hat\(/g, STYLES.hat_func_start.symbol,
                 STYLES.hat_func_start.options, startWordLimit, RegExp(`${big_reg.source}\\)`), true),
-            await this.helperSymbol(/\)/g, STYLES.hat_func_end.symbol,
+            this.helperSymbol(/\)/g, STYLES.hat_func_end.symbol,
                 STYLES.hat_func_end.options, RegExp(`hat\\(${big_reg.source}`), undefined, true),
 
             // Tilde function
-            await this.helperSymbol(/tilde\(/g, STYLES.tilde_func_start.symbol,
+            this.helperSymbol(/tilde\(/g, STYLES.tilde_func_start.symbol,
                 STYLES.tilde_func_start.options, startWordLimit, RegExp(`${big_reg.source}\\)`), true),
-            await this.helperSymbol(/\)/g, STYLES.tilde_func_end.symbol,
+            this.helperSymbol(/\)/g, STYLES.tilde_func_end.symbol,
                 STYLES.tilde_func_end.options, RegExp(`tilde\\(${big_reg.source}`), undefined, true),
 
             // Square root function
-            await this.helperSymbol(/s/g, STYLES.sqrt_func_start.symbol,
+            this.helperSymbol(/s/g, STYLES.sqrt_func_start.symbol,
                 STYLES.sqrt_func_start.options, startWordLimit, RegExp(`qrt\\(${big_reg_sub.source}\\)`), true),
-            await this.helperSymbol(/qrt\(/g, STYLES.sqrt_func_second.symbol,
+            this.helperSymbol(/qrt\(/g, STYLES.sqrt_func_second.symbol,
                 STYLES.sqrt_func_second.options, RegExp(`s`), RegExp(`${big_reg_sub.source}\\)`), true),
-            await this.helperSymbol(/\)/g, STYLES.sqrt_func_end.symbol,
+            this.helperSymbol(/\)/g, STYLES.sqrt_func_end.symbol,
                 STYLES.sqrt_func_end.options, RegExp(`sqrt\\(${big_reg_sub.source}`), undefined, true),
         ];
 
         result = result.concat([
             // Abs function
-            await this.helperSymbol(/abs\(/g, STYLES.abs_func.symbol,
+            this.helperSymbol(/abs\(/g, STYLES.abs_func.symbol,
                 STYLES.abs_func.options, startWordLimit, RegExp(`${big_reg_notminimal.source}\\)`), true),
-            await this.helperSymbol(/\)/g, STYLES.abs_func.symbol,
+            this.helperSymbol(/\)/g, STYLES.abs_func.symbol,
                 STYLES.abs_func.options, RegExp(`abs\\(${big_reg_notminimal.source}`), undefined, true),
 
             // Norm function
-            await this.helperSymbol(/norm\(/g, STYLES.norm_func.symbol,
+            this.helperSymbol(/norm\(/g, STYLES.norm_func.symbol,
                 STYLES.norm_func.options, startWordLimit, RegExp(`${big_reg_notminimal.source}\\)`), true),
-            await this.helperSymbol(/\)/g, STYLES.norm_func.symbol,
+            this.helperSymbol(/\)/g, STYLES.norm_func.symbol,
                 STYLES.norm_func.options, RegExp(`norm\\(${big_reg_notminimal.source}`), undefined, true),
         ]);
 

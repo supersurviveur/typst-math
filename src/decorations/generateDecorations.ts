@@ -66,12 +66,12 @@ export async function generateDecorations(activeEditor: vscode.TextEditor): Prom
         [/_\-/g, "₋"]
     ];
 
-    async function generateSignedVariants() {
+    function generateSignedVariants() {
         const result = [];
 
         for (let variant of signVariants) {
             // Match only signed
-            result.push(await generator.mathSetVariantsSymbol(
+            result.push(generator.mathSetVariantsSymbol(
                 variant[0],
                 variant[1],
                 ``,
@@ -79,7 +79,7 @@ export async function generateDecorations(activeEditor: vscode.TextEditor): Prom
                 /(?!\^\*)/g // Don't match non-zero
             ));
             // Match non-zero then signed (for sign)
-            result.push(await generator.mathSetVariantsSymbol(
+            result.push(generator.mathSetVariantsSymbol(
                 variant[0],
                 variant[1],
                 `transform: translateX(-0.37em);
@@ -87,7 +87,7 @@ export async function generateDecorations(activeEditor: vscode.TextEditor): Prom
                 /\b([A-Z])\1\^\*/g,
             ));
             // Match signed then non-zero (for sign)
-            result.push(await generator.mathSetVariantsSymbol(
+            result.push(generator.mathSetVariantsSymbol(
                 variant[0],
                 variant[1],
                 ``,
@@ -98,6 +98,20 @@ export async function generateDecorations(activeEditor: vscode.TextEditor): Prom
         return result;
     }
 
+    /**
+     * Wrapper to remove blacklisted symbols
+     * @param func 
+     * @param reg 
+     * @param args 
+     * @returns 
+     */
+    function generationWrapper(func: any, reg: RegExp, ...args: any[]) {
+        if (blacklist.includes(reg.source.replace("\\", ""))) {
+            return null;
+        }
+        return func(reg, ...args);
+    }
+
     let result = [
         // Three regex are used everywhere:
         // - reg: The main regex, matching the symbol we want to decorate
@@ -106,158 +120,128 @@ export async function generateDecorations(activeEditor: vscode.TextEditor): Prom
         // pre and post avoid matching multiple times the same text with different decorations
 
         // comparison symbols
-        await generator.comparisonSymbol(/=/g, '=', /[^:<>!=]/g, /[^:<>!=]/g), // TODO: avoid replacing char, just add style
-        await generator.comparisonSymbol(/</g, '<', arrowLimitLow, arrowLimitLow),
-        await generator.comparisonSymbol(/>/g, '>', arrowLimitLow, arrowLimitLow),
-        await generator.comparisonSymbol(/<</g, '≪', arrowLimitLow, arrowLimitLow),
-        await generator.comparisonSymbol(/>>/g, '≫', arrowLimitLow, arrowLimitLow),
-        await generator.comparisonSymbol(/<<</g, '⋘', arrowLimitLow, arrowLimitLow),
-        await generator.comparisonSymbol(/>>>/g, '⋙', arrowLimitLow, arrowLimitLow),
+        generator.comparisonSymbol(/=/g, '=', /[^:<>!=]/g, /[^:<>!=]/g), // TODO: avoid replacing char, just add style
+        generator.comparisonSymbol(/</g, '<', arrowLimitLow, arrowLimitLow),
+        generator.comparisonSymbol(/>/g, '>', arrowLimitLow, arrowLimitLow),
+        generator.comparisonSymbol(/<</g, '≪', arrowLimitLow, arrowLimitLow),
+        generator.comparisonSymbol(/>>/g, '≫', arrowLimitLow, arrowLimitLow),
+        generator.comparisonSymbol(/<<</g, '⋘', arrowLimitLow, arrowLimitLow),
+        generator.comparisonSymbol(/>>>/g, '⋙', arrowLimitLow, arrowLimitLow),
 
 
-        await generator.comparisonSymbol(/!=/g, '≠'),
-        await generator.comparisonSymbol(/:=/g, '≔', /[^:]/g),
-        await generator.comparisonSymbol(/::=/g, '⩴'),
-        await generator.comparisonSymbol(/=:/g, '≕', /[^:]/g),
-        await generator.comparisonSymbol(/=>/g, '⇒', /[^<=\|]/g),
-        await generator.comparisonSymbol(/\|=>/g, '⤇', /[^<=]/g),
-        await generator.comparisonSymbol(/==>/g, '⟹', /[^<]/g),
-        await generator.comparisonSymbol(/<=>/g, '⇔', /[^<]/g),
-        await generator.comparisonSymbol(/<==>/g, '⟺', /[^<]/g),
-        await generator.comparisonSymbol(/<==/g, '⟸', /[^<]/g, /[^>]/g),
-        await generator.comparisonSymbol(/<=/g, '≤', /[^<]/g, /[^>=]/g),
-        await generator.comparisonSymbol(/>=/g, '≥', /[^>]/g, /[^>=]/g),
-        await generator.comparisonSymbol(/->/g, '→', /[^-><\|]/g, /[^>]/g),
-        await generator.comparisonSymbol(/-->/g, '⟶', /[^-><\|]/g),
-        await generator.comparisonSymbol(/\|->/g, '↦'),
-        await generator.comparisonSymbol(/->>/g, '↠'),
-        await generator.comparisonSymbol(/~>/g, '⇝', /[^~]/g),
-        await generator.comparisonSymbol(/~~>/g, '⟿'),
-        await generator.comparisonSymbol(/>->/g, '↣', /[^>]/g),
-        await generator.comparisonSymbol(/<-/g, '←', /[^<]/g, /[^-><\|]/g),
-        await generator.comparisonSymbol(/<--/g, '⟵', undefined, /[^-><\|]/g),
-        await generator.comparisonSymbol(/<~/g, '⇜', undefined, /[^~]/g),
-        await generator.comparisonSymbol(/<-</g, '↢'),
-        await generator.comparisonSymbol(/<<-/g, '↞'),
-        await generator.comparisonSymbol(/<~~/g, '⟷'),
-        await generator.comparisonSymbol(/<->/g, '↔'),
-        await generator.comparisonSymbol(/<-->/g, '⟷'),
-        await generator.comparisonSymbol(/\|\|/g, '∥'),
+        generator.comparisonSymbol(/!=/g, '≠'),
+        generator.comparisonSymbol(/:=/g, '≔', /[^:]/g),
+        generator.comparisonSymbol(/::=/g, '⩴'),
+        generator.comparisonSymbol(/=:/g, '≕', /[^:]/g),
+        generator.comparisonSymbol(/=>/g, '⇒', /[^<=\|]/g),
+        generator.comparisonSymbol(/\|=>/g, '⤇', /[^<=]/g),
+        generator.comparisonSymbol(/==>/g, '⟹', /[^<]/g),
+        generator.comparisonSymbol(/<=>/g, '⇔', /[^<]/g),
+        generator.comparisonSymbol(/<==>/g, '⟺', /[^<]/g),
+        generator.comparisonSymbol(/<==/g, '⟸', /[^<]/g, /[^>]/g),
+        generator.comparisonSymbol(/<=/g, '≤', /[^<]/g, /[^>=]/g),
+        generator.comparisonSymbol(/>=/g, '≥', /[^>]/g, /[^>=]/g),
+        generator.comparisonSymbol(/->/g, '→', /[^-><\|]/g, /[^>]/g),
+        generator.comparisonSymbol(/-->/g, '⟶', /[^-><\|]/g),
+        generator.comparisonSymbol(/\|->/g, '↦'),
+        generator.comparisonSymbol(/->>/g, '↠'),
+        generator.comparisonSymbol(/~>/g, '⇝', /[^~]/g),
+        generator.comparisonSymbol(/~~>/g, '⟿'),
+        generator.comparisonSymbol(/>->/g, '↣', /[^>]/g),
+        generator.comparisonSymbol(/<-/g, '←', /[^<]/g, /[^-><\|]/g),
+        generator.comparisonSymbol(/<--/g, '⟵', undefined, /[^-><\|]/g),
+        generator.comparisonSymbol(/<~/g, '⇜', undefined, /[^~]/g),
+        generator.comparisonSymbol(/<-</g, '↢'),
+        generator.comparisonSymbol(/<<-/g, '↞'),
+        generator.comparisonSymbol(/<~~/g, '⟷'),
+        generator.comparisonSymbol(/<->/g, '↔'),
+        generator.comparisonSymbol(/<-->/g, '⟷'),
+        generator.comparisonSymbol(/\|\|/g, '∥'),
 
         // operators
-        await generator.operatorSymbol(/\+/g, '+', /[^_]/g),
-        await generator.operatorSymbol(/\-/g, '−', /[^_<\-]/g),
-        await generator.operatorSymbol(/\*/g, '\u{2217}', /[^\^]/g),
+        generator.operatorSymbol(/\+/g, '+', /[^_]/g),
+        generator.operatorSymbol(/\-/g, '−', /[^_<\-]/g),
+        generator.operatorSymbol(/\*/g, '\u{2217}', /[^\^]/g),
 
         // Sets
-        await generator.mathExtendSetSymbol(/\[/g, '[', undefined, /[^|]/g),
-        await generator.mathExtendSetSymbol(/\]/g, ']', /[^|]/g),
-        await generator.mathExtendSetSymbol(/\[\|/g, '\u{27E6}'),
-        await generator.mathExtendSetSymbol(/\|\]/g, '\u{27E7}'),
+        generator.mathExtendSetSymbol(/\[/g, '[', undefined, /[^|]/g),
+        generator.mathExtendSetSymbol(/\]/g, ']', /[^|]/g),
+        generator.mathExtendSetSymbol(/\[\|/g, '\u{27E6}'),
+        generator.mathExtendSetSymbol(/\|\]/g, '\u{27E7}'),
     ];
 
     if (renderSpace()) {
         let punct = data["space"];
         for (let value in punct) {
-            if (blacklist.includes(value)) {
-                continue;
-            }
             let reg = stringToRegex(value);
             result.push(
-                await generator.spaceSymbol(reg, punct[value], startWordLimit, wordLimit)
+                generator.spaceSymbol(reg, punct[value], startWordLimit, wordLimit)
             );
         }
     }
 
     let compare = data["comparison"];
     for (let value in compare) {
-        if (blacklist.includes(value)) {
-            continue;
-        }
         let reg = stringToRegex(value);
         result.push(
-            await generator.comparisonSymbol(reg, compare[value], startWordLimit, wordLimit)
+            generator.comparisonSymbol(reg, compare[value], startWordLimit, wordLimit)
         );
     }
 
     let arrows = data["arrows"];
     for (let value in arrows) {
-        if (blacklist.includes(value)) {
-            continue;
-        }
         let reg = stringToRegex(value);
         result.push(
-            await generator.comparisonSymbol(reg, arrows[value], startWordLimit, wordLimit)
+            generator.comparisonSymbol(reg, arrows[value], startWordLimit, wordLimit)
         );
     }
     let operators = data["operators"];
     for (let value in operators) {
-        if (blacklist.includes(value)) {
-            continue;
-        }
         let reg = stringToRegex(value);
         result.push(
-            await generator.operatorSymbol(reg, operators[value], startWordLimit, wordLimit)
+            generator.operatorSymbol(reg, operators[value], startWordLimit, wordLimit)
         );
     }
     let basics = data["basics"];
     for (let value in basics) {
-        if (blacklist.includes(value)) {
-            continue;
-        }
         let reg = stringToRegex(value);
         result.push(
-            await generator.numberSymbol(reg, basics[value], startWordLimit, wordLimit)
+            generator.numberSymbol(reg, basics[value], startWordLimit, wordLimit)
         );
     }
     let bigLetters = data["bigLetters"];
     for (let value in bigLetters) {
-        if (blacklist.includes(value)) {
-            continue;
-        }
         let reg = stringToRegex(value);
         result.push(
-            await generator.bigLetterSymbol(reg, bigLetters[value], startWordLimit, wordLimit)
+            generator.bigLetterSymbol(reg, bigLetters[value], startWordLimit, wordLimit)
         );
     }
     let keywords = data["keywords"];
     for (let value in keywords) {
-        if (blacklist.includes(value)) {
-            continue;
-        }
         let reg = stringToRegex(value);
         result.push(
-            await generator.keywordSymbol(reg, keywords[value], startWordLimit, wordLimit)
+            generator.keywordSymbol(reg, keywords[value], startWordLimit, wordLimit)
         );
     }
     let sets = data["sets"];
     for (let value in sets) {
-        if (blacklist.includes(value)) {
-            continue;
-        }
         let reg = stringToRegex(value);
         result.push(
-            await generator.mathSetSymbol(reg, sets[value], startWordLimit, wordLimit)
+            generator.mathSetSymbol(reg, sets[value], startWordLimit, wordLimit)
         );
     }
     let setsVariants = data["setsVariants"];
     for (let value in setsVariants) {
-        if (blacklist.includes(value)) {
-            continue;
-        }
         let reg = stringToRegex(value);
         result = result.concat(
-            ...await generator.mathSetSymbolWithVariants(reg, setsVariants[value])
+            ...generator.mathSetSymbolWithVariants(reg, setsVariants[value])
         );
     }
     let greekLetters = data["greekLetters"];
     for (let value in greekLetters) {
-        if (blacklist.includes(value)) {
-            continue;
-        }
         let reg = stringToRegex(value);
         result = result.concat(
-            ...await generator.letterSymbolWithVariants(reg, greekLetters[value])
+            ...generator.letterSymbolWithVariants(reg, greekLetters[value])
         );
     }
 
@@ -267,17 +251,17 @@ export async function generateDecorations(activeEditor: vscode.TextEditor): Prom
             continue;
         }
         result = result.concat(
-            ...await generator.numberSymbolOnlyVariantsJulia(stringToRegex(symbol.letter), symbol.letter),
-            await generator.numberSymbol(stringToRegex(`cal\(${symbol.letter}\)`), symbol.cal, startWordLimit),
-            await generator.numberSymbol(stringToRegex(`frak\(${symbol.letter}\)`), symbol.frak, startWordLimit),
-            await generator.numberSymbol(stringToRegex(`bb\(${symbol.letter}\)`), symbol.bb, startWordLimit)
+            ...generator.numberSymbolOnlyVariantsJulia(stringToRegex(symbol.letter), symbol.letter),
+            generator.numberSymbol(stringToRegex(`cal\(${symbol.letter}\)`), symbol.cal, startWordLimit),
+            generator.numberSymbol(stringToRegex(`frak\(${symbol.letter}\)`), symbol.frak, startWordLimit),
+            generator.numberSymbol(stringToRegex(`bb\(${symbol.letter}\)`), symbol.bb, startWordLimit)
         );
     }
 
     result = result.concat([
         // Set variants
         // Match non-zero
-        await generator.mathSetVariantsSymbol(
+        generator.mathSetVariantsSymbol(
             /\^\*/g,
             "*",
             `font-size: 0.6em;
@@ -289,9 +273,9 @@ export async function generateDecorations(activeEditor: vscode.TextEditor): Prom
         // Match non-zero signed, using two different decorations, for better styling
         // To cover all cases, we need to do 4 regex
         // Only positive and negative set, and non-zero and signed (for sign)
-        ...await generateSignedVariants(),
+        ...generateSignedVariants(),
         // 3. Match non-zero then signed (for non-zero)
-        await generator.mathSetVariantsSymbol(
+        generator.mathSetVariantsSymbol(
             /\^\*/g,
             "*",
             `font-size: 0.6em;
@@ -301,7 +285,7 @@ export async function generateDecorations(activeEditor: vscode.TextEditor): Prom
             /_(\+|\-)/g
         ),
         // 4. Match signed then non-zero (for non-zero)
-        await generator.mathSetVariantsSymbol(
+        generator.mathSetVariantsSymbol(
             /\^\*/g,
             "*",
             `font-size: 0.6em;
@@ -311,32 +295,32 @@ export async function generateDecorations(activeEditor: vscode.TextEditor): Prom
         ),
 
 
-        await generator.numberSymbol(/bb\(0\)/g, '𝟘', startWordLimit),
-        await generator.numberSymbol(/bb\(1\)/g, '𝟙', startWordLimit),
-        await generator.numberSymbol(/bb\(2\)/g, '𝟚', startWordLimit),
-        await generator.numberSymbol(/bb\(3\)/g, '𝟛', startWordLimit),
-        await generator.numberSymbol(/bb\(4\)/g, '𝟜', startWordLimit),
-        await generator.numberSymbol(/bb\(5\)/g, '𝟝', startWordLimit),
-        await generator.numberSymbol(/bb\(6\)/g, '𝟞', startWordLimit),
-        await generator.numberSymbol(/bb\(7\)/g, '𝟟', startWordLimit),
-        await generator.numberSymbol(/bb\(8\)/g, '𝟠', startWordLimit),
-        await generator.numberSymbol(/bb\(9\)/g, '𝟡', startWordLimit),
+        generator.numberSymbol(/bb\(0\)/g, '𝟘', startWordLimit),
+        generator.numberSymbol(/bb\(1\)/g, '𝟙', startWordLimit),
+        generator.numberSymbol(/bb\(2\)/g, '𝟚', startWordLimit),
+        generator.numberSymbol(/bb\(3\)/g, '𝟛', startWordLimit),
+        generator.numberSymbol(/bb\(4\)/g, '𝟜', startWordLimit),
+        generator.numberSymbol(/bb\(5\)/g, '𝟝', startWordLimit),
+        generator.numberSymbol(/bb\(6\)/g, '𝟞', startWordLimit),
+        generator.numberSymbol(/bb\(7\)/g, '𝟟', startWordLimit),
+        generator.numberSymbol(/bb\(8\)/g, '𝟠', startWordLimit),
+        generator.numberSymbol(/bb\(9\)/g, '𝟡', startWordLimit),
 
-        ...await generator.numberSymbolOnlyVariantsJulia(/0/g, '0', undefined, undefined, true),
-        ...await generator.numberSymbolOnlyVariantsJulia(/1/g, '1', undefined, undefined, true),
-        ...await generator.numberSymbolOnlyVariantsJulia(/2/g, '2', undefined, undefined, true),
-        ...await generator.numberSymbolOnlyVariantsJulia(/3/g, '3', undefined, undefined, true),
-        ...await generator.numberSymbolOnlyVariantsJulia(/4/g, '4', undefined, undefined, true),
-        ...await generator.numberSymbolOnlyVariantsJulia(/5/g, '5', undefined, undefined, true),
-        ...await generator.numberSymbolOnlyVariantsJulia(/6/g, '6', undefined, undefined, true),
-        ...await generator.numberSymbolOnlyVariantsJulia(/7/g, '7', undefined, undefined, true),
-        ...await generator.numberSymbolOnlyVariantsJulia(/8/g, '8', undefined, undefined, true),
-        ...await generator.numberSymbolOnlyVariantsJulia(/9/g, '9', undefined, undefined, true),
+        ...generator.numberSymbolOnlyVariantsJulia(/0/g, '0', undefined, undefined, true),
+        ...generator.numberSymbolOnlyVariantsJulia(/1/g, '1', undefined, undefined, true),
+        ...generator.numberSymbolOnlyVariantsJulia(/2/g, '2', undefined, undefined, true),
+        ...generator.numberSymbolOnlyVariantsJulia(/3/g, '3', undefined, undefined, true),
+        ...generator.numberSymbolOnlyVariantsJulia(/4/g, '4', undefined, undefined, true),
+        ...generator.numberSymbolOnlyVariantsJulia(/5/g, '5', undefined, undefined, true),
+        ...generator.numberSymbolOnlyVariantsJulia(/6/g, '6', undefined, undefined, true),
+        ...generator.numberSymbolOnlyVariantsJulia(/7/g, '7', undefined, undefined, true),
+        ...generator.numberSymbolOnlyVariantsJulia(/8/g, '8', undefined, undefined, true),
+        ...generator.numberSymbolOnlyVariantsJulia(/9/g, '9', undefined, undefined, true),
 
     ]);
     if (first_generation && renderingMode() === 3) {
         first_generation = false;
-        result = result.concat(await generator.generateFunctionVariants());
+        result = result.concat(generator.generateFunctionVariants());
     }
     // Return result without null
     return result.filter((x) => x !== null) as any;

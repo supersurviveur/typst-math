@@ -92,7 +92,7 @@
         "typst-math.blacklist": {
           "type": "array",
           "default": [],
-          "markdownDescription": "A list of symbols that will not be rendered. (ex: [plus, minus, tilde.eq.not])",
+          "markdownDescription": "A list of symbols that will not be rendered. _(ex: plus, minus, tilde.eq.not)_",
           "items": {
             "type": "string"
           }
