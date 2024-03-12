@@ -1,6 +1,20 @@
 import * as vscode from 'vscode';
 import { renderSymbolsOutsideMath } from './utils';
 
+let functions_list: string[] = [
+    "arrow",
+    "overline",
+    "dot",
+    "hat",
+    "tilde",
+    "sqrt",
+    "abs",
+    "norm",
+    "dot.double",
+    "dot.triple",
+    "dot.quad",
+];
+
 let allDecorations: {
     [key: string]: {
         [key: string]: {
@@ -43,6 +57,12 @@ export function helperSimpleRegex(text: string, activeEditor: vscode.TextEditor,
             if (!newMatch) { continue; }
             startIndex = match.index + newMatch.index;
             endIndex = match.index + newMatch.index + newMatch[0].length;
+            if (post) {
+                // If the match end with an (, don't render it if it is in function_list
+                if (text[endIndex] === '(' && functions_list.includes(newMatch[0])) {
+                    continue;
+                } 
+            }
         } else {
             newMatch = match;
             startIndex = match.index;

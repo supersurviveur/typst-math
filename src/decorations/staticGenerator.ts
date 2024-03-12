@@ -4,7 +4,7 @@ import { blacklistedSymbols, getColors, renderingMode } from './utils';
 import { STYLES } from './styles';
 
 // Usefull regex
-export const wordLimit = /(?!\.|\()(\b|_|\n|\r)/g; // Can probably be improved
+export const wordLimit = /(?!\.)(\b|_|\n|\r)/g; // Can probably be improved
 export const startWordLimit = /(\s|(?!.[A-Za-z]|[A-Za-z]\.)(\n|..|\n.))/g; // Seems to work
 export const startWordLimitNoVariants = /(\s|(?!.[A-Za-z]|[A-Za-z]\.|._|.\^)(\n|..|\n.))/g;
 export const arrowLimitLow = /[^=\-<>~]/g;
