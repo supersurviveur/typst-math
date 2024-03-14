@@ -4,6 +4,9 @@ All notable changes to the "typst-math" extension will be documented in this fil
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## [v0.0.11]
+- Fix issue #10
+
 ## [v0.0.10]
 - Remove useless code
 - Add a symbol blacklist
