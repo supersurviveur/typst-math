@@ -4,6 +4,10 @@ All notable changes to the "typst-math" extension will be documented in this fil
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## [v0.0.12]
+- Fix issue #11
+- Correction of spelling mistakes
+
 ## [v0.0.11]
 - Fix issue #10
 

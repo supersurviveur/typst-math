@@ -1,11 +1,11 @@
 {
   "name": "typst-math",
   "displayName": "Typst Math",
-  "version": "0.0.11",
+  "version": "0.0.12",
   "engines": {
     "vscode": "^1.85.0"
   },
-  "description": "Provide usefull features for math writing in typst",
+  "description": "Provides usefull features for math writing in typst",
   "icon": "assets/icon.png",
   "publisher": "surv",
   "repository": {

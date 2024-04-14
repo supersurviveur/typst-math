@@ -6,9 +6,9 @@ A VS Code extension to simplify math writing in [Typst](https://typst.app/home).
 
 The extension can be downloaded from the [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=surv.typst-math).
 
-To preview math symbols, some fonts are needed, you can install them [manually](./fonts/README.md) or let the extension install them automatically on first launch (Works only on Windows).
+To preview math symbols, some fonts are required, which you can either install [manually](./fonts/README.md) or let the extension install them automatically on first launch (works on Windows only).
 
-Unfortunatly, you also need to set your theme colors in the extension settings, because the extension can't access the theme colors directly. You can find the settings in `File > Preferences > Settings > Extensions > Typst Math`.
+Unfortunatly, you also need to set your theme colors in the extension settings, as the extension can't access theme colors directly. You can find the settings in `File > Preferences > Settings > Extensions > Typst Math`.
 By default, the extension will use the monokai theme colors.
 
 # Features
@@ -19,14 +19,14 @@ By default, the extension will use the monokai theme colors.
     ![Typst math without preview](./github/math-without-preview.png)
   - To : \
     ![Preview some math symbols directly](./github/math-preview.png) \
-    When you edit a line containing math symbols, these symbols will be rendered as text (as in the first image) to allow you to edit them easily.
+    When you edit a line containing math symbols, these symbols will be displayed as text (as in the first image) for easy editing.
 
 # Settings
 
 - **Colors**: Select your theme colors.
 - **RenderSymbolsOutsideMath**: If set to true, the extension will render symbols everywhere in the document, not only in math equations.
 - **RenderSpace**: If set to true, the extension will render space symbols like space, wj, space.quad...
-- **RenderingMode**: Choose if you want to render just simple symbols or complex equations too.
+- **RenderingMode**: Choose whether to render only simple symbols or also complex equations.
 
 # TODO
 

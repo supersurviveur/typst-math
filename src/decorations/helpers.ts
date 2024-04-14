@@ -13,6 +13,7 @@ let functions_list: string[] = [
     "dot.double",
     "dot.triple",
     "dot.quad",
+    "diaer"
 ];
 
 let allDecorations: {
