@@ -15,8 +15,7 @@
 			"group": {
 				"kind": "build",
 				"isDefault": true
-			},
-			"path": "vscode"
+			}
 		},
 		{
 			"type": "npm",
@@ -27,8 +26,7 @@
 				"reveal": "never",
 				"group": "watchers"
 			},
-			"group": "build",
-			"path": "vscode"
+			"group": "build"
 		},
 		{
 			"label": "tasks: watch-tests",

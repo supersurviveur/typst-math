@@ -54,6 +54,9 @@ async function updateDecorations(needReload = false) {
 
 export async function activate(context: vscode.ExtensionContext) {
     Logger.info("Activating extension");
+    const wasm = await import("typst-math-rust");
+    vscode.window.showInformationMessage(wasm.testRS(vscode.window.activeTextEditor?.document.getText() as string));
+
     // Only on the first launch
     // context.globalState.update("firstLaunch", undefined);
     if (context.globalState.get("firstLaunch") === undefined) {

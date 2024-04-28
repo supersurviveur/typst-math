@@ -187,6 +187,7 @@
     "webpack-cli": "^5.1.4"
   },
   "dependencies": {
-    "installfont": "^0.0.12"
+    "installfont": "^0.0.12",
+    "typst-math-rust": "file:./typst-math-rust/pkg"
   }
 }

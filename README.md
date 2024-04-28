@@ -6,7 +6,7 @@ A VS Code extension to simplify math writing in [Typst](https://typst.app/home).
 
 The extension can be downloaded from the [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=surv.typst-math).
 
-To preview math symbols, some fonts are required, which you can either install [manually](./vscode/assets/fonts/README.md) or let the extension install them automatically on first launch (works on Windows only).
+To preview math symbols, some fonts are required, which you can either install [manually](./assets/fonts/README.md) or let the extension install them automatically on first launch (works on Windows only).
 
 Unfortunatly, you also need to set your theme colors in the extension settings, as the extension can't access theme colors directly. You can find the settings in `File > Preferences > Settings > Extensions > Typst Math`.
 By default, the extension will use the monokai theme colors.
