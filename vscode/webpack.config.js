@@ -51,7 +51,7 @@ const extensionConfig = {
     new CopyWebpackPlugin({
       patterns: [
         {
-          context: 'fonts',
+          context: 'assets/fonts',
           from: '*.(ttf|otf)',
           to: 'fonts'
         }
