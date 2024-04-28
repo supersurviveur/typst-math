@@ -78,18 +78,20 @@ export async function activate(context: vscode.ExtensionContext) {
     }, null, context.subscriptions);
 
     let change_timeout: NodeJS.Timeout | undefined = undefined;
+    let last_edited_line: undefined | number = undefined;
     vscode.workspace.onDidChangeTextDocument(event => {
         if (activeEditor && event.document === activeEditor.document) {
+            last_edited_line = event.contentChanges[0].range.start.line;
             // if there is no carriage return, do not update the decorations
             if (event.contentChanges.length === 0) { return; }
-            // let flag = false;
-            // for (let change of event.contentChanges) {
-            //     if (change.text.includes("\n") || change.text.includes("\r")) {
-            //         flag = true;
-            //         break;
-            //     }
-            // }
-            // if (!flag) { return; }
+            let flag = false;
+            for (let change of event.contentChanges) {
+                if (change.text.includes("\n") || change.text.includes("\r")) {
+                    flag = true;
+                    break;
+                }
+            }
+            if (!flag) { return; }
             if (change_timeout) {
                 clearTimeout(change_timeout);
             }
@@ -102,14 +104,17 @@ export async function activate(context: vscode.ExtensionContext) {
     let selection_timeout: NodeJS.Timeout | undefined = undefined;
     vscode.window.onDidChangeTextEditorSelection(event => {
         if (activeEditor && event.textEditor === activeEditor) {
+            let temp_line = last_edited_line;
+            
             // If the selection changes, update the decorations after a short delay, to avoid updating the decorations too often
             if (selection_timeout) {
                 clearTimeout(selection_timeout);
             }
             selection_timeout = setTimeout(() => {
-                updateDecorations();
+                updateDecorations(temp_line !== undefined && temp_line !== event.selections[0].start.line);
             }, 50);
         }
+        last_edited_line = undefined;
     }, null, context.subscriptions);
 
     // Register commands

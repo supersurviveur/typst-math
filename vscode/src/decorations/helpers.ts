@@ -30,7 +30,6 @@ export function resetAllDecorations() {
     // Clear current decorations
     for (const key in allDecorations) {
         for (const subKey in allDecorations[key]) {
-            allDecorations[key][subKey].ranges = [];
             // Reset decorations on all editors
             vscode.window.visibleTextEditors.forEach(editor => {
                 editor.setDecorations(allDecorations[key][subKey].decorationType, []);
