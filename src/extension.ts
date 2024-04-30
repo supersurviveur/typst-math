@@ -7,6 +7,8 @@ import { resetAllDecorations } from './decorations/helpers';
 import { toggleSymbolsCommand } from './commands/toggleSymbols';
 import { Logger } from './logger';
 
+let wasm;
+
 let decorations: {
     decorationType: vscode.TextEditorDecorationType;
     getRanges: (document: vscode.TextEditor) => vscode.DecorationOptions[];
@@ -54,8 +56,9 @@ async function updateDecorations(needReload = false) {
 
 export async function activate(context: vscode.ExtensionContext) {
     Logger.info("Activating extension");
-    const wasm = await import("typst-math-rust");
-    vscode.window.showInformationMessage(wasm.testRS(vscode.window.activeTextEditor?.document.getText() as string));
+    wasm = await import("typst-math-rust");
+    wasm.init_lib();
+    vscode.window.showInformationMessage(wasm.test(vscode.window.activeTextEditor?.document.getText() as string));
 
     // Only on the first launch
     // context.globalState.update("firstLaunch", undefined);
