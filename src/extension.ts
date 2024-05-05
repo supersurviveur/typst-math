@@ -99,7 +99,7 @@ function temp(currentId: number = 0) {
             );
         }
         console.timeEnd("test");
-        console.log(`Loaded ${decorations.length} decorations`);
+        Logger.info(`Loaded ${decorations.length} decorations`);
     }
 }
 

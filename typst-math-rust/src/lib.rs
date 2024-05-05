@@ -30,10 +30,12 @@ pub fn ast_dfs(
                 Expr::MathIdent(ident) => {
                     if let Some(entry) = SYMBOLS.get_entry(ident.as_str()) {
                         let range = source.range(child.span()).expect("TODO source range error");
+                        println!("{:?}-{:?}", range.start, range.end);
+                        println!("{:?}-{:?}", source.byte_to_utf16(range.start), source.byte_to_utf16(range.end));
                         if let Some(map) = result.get_mut(&ident.to_string()) {
                             map.positions.push(Position {
-                                start: range.start,
-                                end: range.end,
+                                start: source.byte_to_utf16(range.start).unwrap(),
+                                end: source.byte_to_utf16(range.end).unwrap(),
                             });
                         } else {
                             result.insert(
@@ -42,8 +44,8 @@ pub fn ast_dfs(
                                     content: ident.to_string(),
                                     symbol: entry.1.clone(),
                                     positions: vec![Position {
-                                        start: range.start,
-                                        end: range.end
+                                        start: source.byte_to_utf16(range.start).unwrap(),
+                                        end: source.byte_to_utf16(range.end).unwrap(),
                                     }],
                                 },
                             );
@@ -58,8 +60,8 @@ pub fn ast_dfs(
                                 source.range(child.span()).expect("TODO source range error");
                             if let Some(map) = result.get_mut(&content) {
                                 map.positions.push(Position {
-                                    start: range.start,
-                                    end: range.end,
+                                    start: source.byte_to_utf16(range.start).unwrap(),
+                                    end: source.byte_to_utf16(range.end).unwrap(),
                                 });
                             } else {
                                 result.insert(
@@ -68,8 +70,8 @@ pub fn ast_dfs(
                                         content: content,
                                         symbol: entry.1.clone(),
                                         positions: vec![Position {
-                                            start: range.start,
-                                            end: range.end
+                                            start: source.byte_to_utf16(range.start).unwrap(),
+                                            end: source.byte_to_utf16(range.end).unwrap(),
                                         }],
                                     },
                                 );
