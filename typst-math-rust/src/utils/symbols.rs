@@ -2,14 +2,20 @@
 use std::fmt::Debug;
 use phf::phf_map;
 use typst_math_macros::symbols;
+use wasm_bindgen::prelude::wasm_bindgen;
 
-#[derive(Debug, Clone, Eq, PartialEq, Hash)]
+#[derive(Debug, Clone)]
+#[wasm_bindgen(getter_with_clone)]
 pub struct Symbol {
-    symbol: char,
+    pub symbol: char,
+    pub category: Category
 }
 
+#[derive(Debug, Clone)]
+#[wasm_bindgen]
 pub enum Category {
-    OPERATOR
+    OPERATOR,
+    DEFAULT
 }
 
 /// The list of general symbols.

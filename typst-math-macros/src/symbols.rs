@@ -15,7 +15,7 @@ pub fn symbols(stream: TokenStream) -> Result<TokenStream> {
     let pairs = list.iter().map(|symbol| {
         let name = symbol.name.to_string();
         let symbol = match &symbol.kind {
-            Kind::Single(c) => quote! { #name => Symbol{ symbol: #c } },
+            Kind::Single(c) => quote! { #name => Symbol{ symbol: #c, category: Category::DEFAULT } },
             Kind::Multiple(variants) => {
                 let first = variants.first().unwrap();
                 let first = &first.c;
@@ -23,13 +23,13 @@ pub fn symbols(stream: TokenStream) -> Result<TokenStream> {
                     if !variant.name.is_empty() {
                         let new_name = format!("{}.{}", &name, &variant.name);
                         let c = &variant.c;
-                        Some(quote! { #new_name => Symbol{ symbol: #c } })
+                        Some(quote! { #new_name => Symbol{ symbol: #c, category: Category::DEFAULT } })
                     } else {
                         None
                     }
                 });
                 quote! {
-                    #name => Symbol { symbol: #first }, #(#variants),*
+                    #name => Symbol { symbol: #first, category: Category::DEFAULT }, #(#variants),*
                 }
             }
         };

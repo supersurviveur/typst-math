@@ -3,11 +3,11 @@ import { askForFonts, installFontsCommandProvider } from './commands/installFont
 import { mathCommand } from './commands/math';
 import { matrix2Command, matrix3Command, matrixCommand, squareMatrixCommand } from './commands/matrix';
 import { dynamicDecorations, generateDecorations, resetGeneration } from './decorations/generateDecorations';
-import { resetAllDecorations } from './decorations/helpers';
+import { appendDecoration, createDecorationType, resetAllDecorations } from './decorations/helpers';
 import { toggleSymbolsCommand } from './commands/toggleSymbols';
 import { Logger } from './logger';
 
-let wasm;
+let wasm: typeof import("typst-math-rust");
 
 let decorations: {
     decorationType: vscode.TextEditorDecorationType;
@@ -54,11 +54,59 @@ async function updateDecorations(needReload = false) {
     }
 }
 
+
+let allDecorationsRust: {
+    [key: string]: {
+        decorationType: vscode.TextEditorDecorationType,
+        ranges: vscode.DecorationOptions[],
+    }
+} = {
+};
+let currentRendering = 0;
+
+function temp(currentId: number = 0) {
+    if (activeEditor) {
+        console.log(`Start temp`);
+        console.time("test2");
+        for (let t in allDecorationsRust) {
+            allDecorationsRust[t].ranges = [];
+        }
+        let test = activeEditor;
+        let decorations = wasm.test(activeEditor.document.getText() as string);
+        for (let decoration of decorations) {
+            if (!allDecorationsRust.hasOwnProperty(decoration.content)) {
+                allDecorationsRust[decoration.content] = {
+                    decorationType: createDecorationType({
+                        contentText: decoration.symbol.symbol
+                    }),
+                    ranges: []
+                };
+            }
+            let ranges = decoration.positions.map<vscode.DecorationOptions>((pos) => {
+                return {
+                    range: new vscode.Range(test.document.positionAt(pos.start), test.document.positionAt(pos.end)),
+                };
+            });
+            allDecorationsRust[decoration.content].ranges = ranges;
+        }
+        console.log(`Hmm ${currentRendering} vs ${currentId}`);
+        console.timeEnd("test2");
+        console.time("test");
+        for (let t in allDecorationsRust) {
+            activeEditor?.setDecorations(
+                allDecorationsRust[t].decorationType,
+                allDecorationsRust[t].ranges
+            );
+        }
+        console.timeEnd("test");
+        console.log(`Loaded ${decorations.length} decorations`);
+    }
+}
+
 export async function activate(context: vscode.ExtensionContext) {
     Logger.info("Activating extension");
     wasm = await import("typst-math-rust");
     wasm.init_lib();
-    vscode.window.showInformationMessage(wasm.test(vscode.window.activeTextEditor?.document.getText() as string));
 
     // Only on the first launch
     // context.globalState.update("firstLaunch", undefined);
@@ -68,18 +116,20 @@ export async function activate(context: vscode.ExtensionContext) {
     }
 
     // If settings or the current theme change, update the decorations
-    vscode.workspace.onDidChangeConfiguration(regenerateDecorations);
-    vscode.window.onDidChangeActiveColorTheme(regenerateDecorations);
+    // vscode.workspace.onDidChangeConfiguration(regenerateDecorations);
+    // vscode.window.onDidChangeActiveColorTheme(regenerateDecorations);
 
 
     if (activeEditor) {
-        updateDecorations(true);
+        temp();
+        // updateDecorations(true);
     }
 
     vscode.window.onDidChangeActiveTextEditor(editor => {
         activeEditor = editor;
         if (editor) {
-            updateDecorations(true);
+            temp();
+            // updateDecorations(true);
         }
     }, null, context.subscriptions);
 
@@ -102,7 +152,8 @@ export async function activate(context: vscode.ExtensionContext) {
                 clearTimeout(change_timeout);
             }
             change_timeout = setTimeout(() => {
-                updateDecorations(true);
+                // temp();
+                // updateDecorations(true);
             }, 100);
         }
     }, null, context.subscriptions);
@@ -111,14 +162,18 @@ export async function activate(context: vscode.ExtensionContext) {
     vscode.window.onDidChangeTextEditorSelection(event => {
         if (activeEditor && event.textEditor === activeEditor) {
             let temp_line = last_edited_line;
-            
+
             // If the selection changes, update the decorations after a short delay, to avoid updating the decorations too often
             if (selection_timeout) {
                 clearTimeout(selection_timeout);
             }
-            selection_timeout = setTimeout(() => {
-                updateDecorations(temp_line !== undefined && temp_line !== event.selections[0].start.line);
-            }, 50);
+            console.log("init timeout");
+            currentRendering += 1;
+            let tempId = currentRendering;
+            selection_timeout = setTimeout(async () => {
+                temp(tempId);
+                // updateDecorations(temp_line !== undefined && temp_line !== event.selections[0].start.line);
+            }, 200);
         }
         last_edited_line = undefined;
     }, null, context.subscriptions);
