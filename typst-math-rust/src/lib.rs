@@ -107,7 +107,7 @@ fn field_access_recursive(access: FieldAccess) -> Option<String> {
 }
 
 #[wasm_bindgen]
-pub fn test(content: &str) -> Vec<Decoration> {
+pub fn parse_document(content: &str) -> Vec<Decoration> {
     let source = typst_syntax::Source::detached(content.to_string());
     println!("{:#?}", source.root());
     let mut result = HashMap::new();
