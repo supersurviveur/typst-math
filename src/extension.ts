@@ -62,12 +62,34 @@ let allDecorationsRust: {
     }
 } = {
 };
-let currentRendering = 0;
 
-function temp(currentId: number = 0) {
+function renderDecorations(hasSelection:  boolean = false) {
+    console.time("renderDecorations");
+    if (hasSelection && activeEditor?.selection) {
+        let selection = activeEditor.selection;
+        let reveal_selection = new vscode.Range(new vscode.Position(selection.start.line, 0), new vscode.Position(selection.end.line+1, 0));
+        
+        for (let t in allDecorationsRust) {
+            activeEditor?.setDecorations(
+                allDecorationsRust[t].decorationType,
+                allDecorationsRust[t].ranges.filter(range => {
+                    return range.range.intersection(reveal_selection) === undefined;
+                })
+            );
+        }
+    } else {
+        for (let t in allDecorationsRust) {
+            activeEditor?.setDecorations(
+                allDecorationsRust[t].decorationType,
+                allDecorationsRust[t].ranges
+            );
+        }
+    }
+    console.timeEnd("renderDecorations");
+}
+function reloadDecorations() {
     if (activeEditor) {
-        console.log(`Start temp`);
-        console.time("test2");
+        console.time("reloadDecorations");
         for (let t in allDecorationsRust) {
             allDecorationsRust[t].ranges = [];
         }
@@ -89,16 +111,8 @@ function temp(currentId: number = 0) {
             });
             allDecorationsRust[decoration.content].ranges = ranges;
         }
-        console.log(`Hmm ${currentRendering} vs ${currentId}`);
-        console.timeEnd("test2");
-        console.time("test");
-        for (let t in allDecorationsRust) {
-            activeEditor?.setDecorations(
-                allDecorationsRust[t].decorationType,
-                allDecorationsRust[t].ranges
-            );
-        }
-        console.timeEnd("test");
+        renderDecorations();
+        console.timeEnd("reloadDecorations");
         Logger.info(`Loaded ${decorations.length} decorations`);
     }
 }
@@ -116,66 +130,53 @@ export async function activate(context: vscode.ExtensionContext) {
     }
 
     // If settings or the current theme change, update the decorations
-    // vscode.workspace.onDidChangeConfiguration(regenerateDecorations);
-    // vscode.window.onDidChangeActiveColorTheme(regenerateDecorations);
+    // vscode.workspace.onDidChangeConfiguration(reloadDecorations);
+    // vscode.window.onDidChangeActiveColorTheme(reloadDecorations);
 
 
     if (activeEditor) {
-        temp();
+        reloadDecorations();
         // updateDecorations(true);
     }
 
     vscode.window.onDidChangeActiveTextEditor(editor => {
         activeEditor = editor;
         if (editor) {
-            temp();
+            reloadDecorations();
             // updateDecorations(true);
         }
     }, null, context.subscriptions);
 
-    let change_timeout: NodeJS.Timeout | undefined = undefined;
-    let last_edited_line: undefined | number = undefined;
+    let editing = false;
     vscode.workspace.onDidChangeTextDocument(event => {
-        if (activeEditor && event.document === activeEditor.document) {
-            last_edited_line = event.contentChanges[0].range.start.line;
-            // if there is no carriage return, do not update the decorations
-            if (event.contentChanges.length === 0) { return; }
-            let flag = false;
-            for (let change of event.contentChanges) {
-                if (change.text.includes("\n") || change.text.includes("\r")) {
-                    flag = true;
-                    break;
-                }
-            }
-            if (!flag) { return; }
-            if (change_timeout) {
-                clearTimeout(change_timeout);
-            }
-            change_timeout = setTimeout(() => {
-                // temp();
-                // updateDecorations(true);
-            }, 100);
-        }
+        editing = true;
     }, null, context.subscriptions);
 
     let selection_timeout: NodeJS.Timeout | undefined = undefined;
+    let last_selection_line = {start: -1, end: -1};
     vscode.window.onDidChangeTextEditorSelection(event => {
         if (activeEditor && event.textEditor === activeEditor) {
-            let temp_line = last_edited_line;
+            if (last_selection_line.start !== event.selections[0].start.line || last_selection_line.end !== event.selections[0].end.line) { // The cursor changes of line
+                last_selection_line.start = event.selections[0].start.line;
+                last_selection_line.end = event.selections[0].start.line;
 
-            // If the selection changes, update the decorations after a short delay, to avoid updating the decorations too often
-            if (selection_timeout) {
-                clearTimeout(selection_timeout);
+                // If the selection changes, update the decorations after a short delay, to avoid updating the decorations too often
+                if (selection_timeout) {
+                    clearTimeout(selection_timeout);
+                }
+
+                if (editing) { // Text was typed, reload completely decorations
+                    editing = false;
+                    selection_timeout = setTimeout(async () => {
+                        reloadDecorations();
+                    }, 200);
+                } else { // Only cursor was moved
+                    selection_timeout = setTimeout(async () => {
+                        renderDecorations(true);
+                    }, 50); // 50ms to keep things fast
+                }
             }
-            console.log("init timeout");
-            currentRendering += 1;
-            let tempId = currentRendering;
-            selection_timeout = setTimeout(async () => {
-                temp(tempId);
-                // updateDecorations(temp_line !== undefined && temp_line !== event.selections[0].start.line);
-            }, 200);
         }
-        last_edited_line = undefined;
     }, null, context.subscriptions);
 
     // Register commands

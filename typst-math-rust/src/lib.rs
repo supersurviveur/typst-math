@@ -2,7 +2,6 @@ mod interface;
 mod utils;
 
 use std::collections::HashMap;
-use std::hash::Hash;
 
 use interface::{Decoration, Position};
 use typst_syntax::ast::FieldAccess;
