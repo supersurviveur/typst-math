@@ -1,9 +1,10 @@
 import * as vscode from 'vscode';
 import { createDecorationType } from './decorations/helpers';
 import { Logger } from './logger';
+import { getColors2 } from './decorations/utils';
+import getWASM from './wasmHelper';
 
 export class Decorations {
-    wasm: typeof import("typst-math-rust") | undefined;
     allDecorations: {
         [key: string]: {
             decorationType: vscode.TextEditorDecorationType,
@@ -14,12 +15,6 @@ export class Decorations {
     last_selection_line = { start: -1, end: -1 };
     editing = false;
     activeEditor = vscode.window.activeTextEditor;
-
-    // Init the WASM lib
-    async init() {
-        this.wasm = await import("typst-math-rust");
-        this.wasm.init_lib();
-    }
 
     // Render decorations, while revealing current line
     renderDecorations() {
@@ -48,7 +43,7 @@ export class Decorations {
     }
     // Pass the current doc to typst to get symbols, and then render them
     reloadDecorations() {
-        if (this.activeEditor && this.wasm) {
+        if (this.activeEditor) {
             console.time("reloadDecorations");
             // Reset ranges
             for (let t in this.allDecorations) {
@@ -57,12 +52,14 @@ export class Decorations {
             let editor = this.activeEditor; // Make typescript happy
 
             // Get symbols list
-            let decorations = this.wasm.parse_document(this.activeEditor.document.getText() as string);
+            let decorations = getWASM().parse_document(this.activeEditor.document.getText() as string);
             for (let decoration of decorations) {
                 if (!this.allDecorations.hasOwnProperty(decoration.content)) {
                     this.allDecorations[decoration.content] = {
                         decorationType: createDecorationType({
-                            contentText: decoration.symbol.symbol
+                            contentText: decoration.symbol.symbol,
+                            color: getColors2(decoration.color),
+                            textDecoration: decoration.text_decoration
                         }),
                         ranges: []
                     };
@@ -77,7 +74,7 @@ export class Decorations {
             }
             console.timeEnd("reloadDecorations");
             this.renderDecorations();
-            Logger.info(`Loaded ${decorations.length} decorations`);
+            Logger.info(`Loaded ${this.allDecorations.length} decorations`);
         }
     }
 

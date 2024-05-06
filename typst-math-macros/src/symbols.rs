@@ -1,6 +1,5 @@
 /// Stealed from https://github.com/typst/typst/blob/main/crates/typst-macros/src/symbols.rs
 /// Edited to handle symbol name, symbol unicode, symbol type and symbol category
-
 use proc_macro2::TokenStream;
 use quote::quote;
 use syn::ext::IdentExt;
@@ -10,26 +9,27 @@ use syn::{Ident, Result, Token};
 
 /// Expand the `symbols!` macro.
 pub fn symbols(stream: TokenStream) -> Result<TokenStream> {
-    let list: Punctuated<Symbol, Token![,]> =
-        Punctuated::parse_terminated.parse2(stream)?;
+    let list: Punctuated<Symbol, Token![,]> = Punctuated::parse_terminated.parse2(stream)?;
     let pairs = list.iter().map(|symbol| {
         let name = symbol.name.to_string();
         let symbol = match &symbol.kind {
-            Kind::Single(c) => quote! { #name => Symbol{ symbol: #c, category: Category::DEFAULT } },
+            Kind::Single(Base {c, category}) => quote! { #name => Symbol { symbol: #c, category: Category::#category } },
             Kind::Multiple(variants) => {
                 let first = variants.first().unwrap();
-                let first = &first.c;
                 let variants = variants.iter().filter_map(|variant| {
                     if !variant.name.is_empty() {
                         let new_name = format!("{}.{}", &name, &variant.name);
                         let c = &variant.c;
-                        Some(quote! { #new_name => Symbol{ symbol: #c, category: Category::DEFAULT } })
+                        let category = &variant.category;
+                        Some(quote! { #new_name => Symbol { symbol: #c, category: Category::#category } })
                     } else {
                         None
                     }
                 });
+                let c = &first.c;
+                let category = &first.category;
                 quote! {
-                    #name => Symbol { symbol: #first, category: Category::DEFAULT }, #(#variants),*
+                    #name => Symbol { symbol: #c, category: Category::#category }, #(#variants),*
                 }
             }
         };
@@ -45,13 +45,18 @@ struct Symbol {
 }
 
 enum Kind {
-    Single(syn::LitChar),
+    Single(Base),
     Multiple(Punctuated<Variant, Token![,]>),
 }
 
+struct Base {
+    c: syn::LitChar,
+    category: syn::Ident,
+}
 struct Variant {
     name: String,
     c: syn::LitChar,
+    category: syn::Ident,
 }
 
 impl Parse for Symbol {
@@ -66,7 +71,10 @@ impl Parse for Symbol {
 impl Parse for Kind {
     fn parse(input: ParseStream) -> Result<Self> {
         if input.peek(syn::LitChar) {
-            Ok(Self::Single(input.parse()?))
+            let c = input.parse()?;
+            input.parse::<Token![;]>()?;
+            let category = input.call(Ident::parse_any)?;
+            Ok(Self::Single(Base { c, category }))
         } else {
             let content;
             syn::bracketed!(content in input);
@@ -88,6 +96,8 @@ impl Parse for Variant {
             input.parse::<Token![:]>()?;
         }
         let c = input.parse()?;
-        Ok(Self { name, c })
+        input.parse::<Token![;]>()?;
+        let category = input.call(Ident::parse_any)?;
+        Ok(Self { name, c, category })
     }
 }

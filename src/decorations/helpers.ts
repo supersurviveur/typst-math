@@ -107,7 +107,10 @@ export function helperSimpleRegex(text: string, activeEditor: vscode.TextEditor,
 export function createDecorationType(options: vscode.ThemableDecorationAttachmentRenderOptions) {
     return vscode.window.createTextEditorDecorationType({
         textDecoration: 'none; position: absolute; opacity: 0;',
-        after: options
+        after: {
+            ...options,
+            textDecoration: `none;${options.textDecoration}`,
+        }
     });
 }
 

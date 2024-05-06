@@ -1,6 +1,6 @@
 use wasm_bindgen::prelude::*;
 
-use crate::utils::symbols::Symbol;
+use crate::utils::symbols::{Color, Symbol};
 
 /// A structure which represents a content which will be replaced in VSCode
 #[derive(Debug, Clone)]
@@ -8,6 +8,8 @@ use crate::utils::symbols::Symbol;
 pub struct Decoration {
     pub content: String,
     pub symbol: Symbol,
+    pub color: Color,
+    pub text_decoration: String,
     pub positions: Vec<Position>,
 }
 
@@ -17,3 +19,4 @@ pub struct Position {
     pub start: usize,
     pub end: usize,
 }
+

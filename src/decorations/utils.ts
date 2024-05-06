@@ -1,4 +1,6 @@
 import * as vscode from 'vscode';
+import { Color } from "typst-math-rust";
+import getWASM from '../wasmHelper';
 
 interface Colors {
     comparison: string,
@@ -46,6 +48,34 @@ export function getColors(colorType: keyof Colors) {
         }
     } else {
         return colors[colorType];
+    }
+}
+
+
+function enumToColorName(colorEnum: Color) {
+    switch (colorEnum) {
+        case getWASM().Color.KEYWORD: return "keyword";
+        case getWASM().Color.NUMBER: return "number";
+    }
+}
+// Get colors from settings
+export function getColors2(colorType: Color) {
+    const config = vscode.workspace.getConfiguration('typst-math');
+    const colors = config.get<Colors>('colors');
+    if (!colors) {
+        throw new Error("Invalid colors");
+    }
+    const color = enumToColorName(colorType);
+    if (colors[color] === "") {
+        // Get the theme kind (light or dark)
+        const themeKind = vscode.window.activeColorTheme.kind;
+        if (themeKind === vscode.ColorThemeKind.Dark) {
+            return darkTheme[color];
+        } else {
+            return lightTheme[color];
+        }
+    } else {
+        return colors[color];
     }
 }
 

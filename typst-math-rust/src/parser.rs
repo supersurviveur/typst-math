@@ -1,10 +1,11 @@
 use crate::interface::{Decoration, Position};
+use crate::utils::styles::SYMBOLS_STYLES;
 use std::collections::HashMap;
 use typst_syntax::ast::FieldAccess;
 use typst_syntax::Span;
 use typst_syntax::{ast::Expr, SyntaxNode};
 
-use crate::utils::symbols::{Symbol, SYMBOLS};
+use crate::utils::symbols::{Color, Symbol, SYMBOLS};
 
 /// Helper function to insert a new symbol in the symbols hashmap
 pub fn insert_result(
@@ -12,6 +13,8 @@ pub fn insert_result(
     span: Span,
     content: String,
     symbol: &Symbol,
+    color: Color,
+    text_decoration: String,
     result: &mut HashMap<String, Decoration>,
 ) {
     let range = source.range(span).expect("TODO source range error");
@@ -30,6 +33,8 @@ pub fn insert_result(
             Decoration {
                 content,
                 symbol: symbol.clone(),
+                color,
+                text_decoration,
                 positions: vec![position],
             },
         );
@@ -48,14 +53,36 @@ pub fn ast_dfs(
                 // Math identifier, check if it is in the symbols list
                 Expr::MathIdent(ident) => {
                     if let Some(entry) = SYMBOLS.get_entry(ident.as_str()) {
-                        insert_result(source, child.span(), ident.to_string(), entry.1, result);
+                        let mut color = Color::NUMBER;
+                        let mut text_decoration = "".to_string();
+                        if let Some(style) = SYMBOLS_STYLES.get_entry(entry.1.category.to_string().as_str()) {
+                            color = style.1.0;
+                            text_decoration = style.1.1.to_string();
+                        }
+                        insert_result(
+                            source,
+                            child.span(),
+                            ident.to_string(),
+                            entry.1,
+                            color,
+                            text_decoration,
+                            result,
+                        );
                     }
                 }
                 // Field Access, create a string containing all fields sparated with a dot (alpha.alt), and check if it is in symbols list
                 Expr::FieldAccess(access) => {
                     if let Some(content) = field_access_recursive(access) {
                         if let Some(entry) = SYMBOLS.get_entry(content.as_str()) {
-                            insert_result(source, child.span(), content, entry.1, result);
+                            insert_result(
+                                source,
+                                child.span(),
+                                content,
+                                entry.1,
+                                Color::NUMBER,
+                                "".to_string(),
+                                result,
+                            );
                         }
                     }
                 }

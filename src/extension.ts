@@ -5,13 +5,14 @@ import { matrix2Command, matrix3Command, matrixCommand, squareMatrixCommand } fr
 import { toggleSymbolsCommand } from './commands/toggleSymbols';
 import { Logger } from './logger';
 import { Decorations } from './decorations';
+import { initWASM } from './wasmHelper';
 
 
 export async function activate(context: vscode.ExtensionContext) {
     Logger.info("Activating extension");
-    // Init decorations module with WASM
+    // Init decorations module and WASM
+    await initWASM(); // Wait for initialisation
     const decorations = new Decorations();
-    await decorations.init();
 
     // Only on the first launch
     // context.globalState.update("firstLaunch", undefined);
