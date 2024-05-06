@@ -8,12 +8,12 @@ use crate::utils::symbols::Symbol;
 pub struct Decoration {
     pub content: String,
     pub symbol: Symbol,
-    pub positions: Vec<Position>
+    pub positions: Vec<Position>,
 }
 
 #[derive(Debug, Clone)]
 #[wasm_bindgen]
 pub struct Position {
     pub start: usize,
-    pub end: usize
+    pub end: usize,
 }

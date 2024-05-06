@@ -50,10 +50,13 @@ export class Decorations {
     reloadDecorations() {
         if (this.activeEditor && this.wasm) {
             console.time("reloadDecorations");
+            // Reset ranges
             for (let t in this.allDecorations) {
                 this.allDecorations[t].ranges = [];
             }
-            let test = this.activeEditor;
+            let editor = this.activeEditor; // Make typescript happy
+
+            // Get symbols list
             let decorations = this.wasm.parse_document(this.activeEditor.document.getText() as string);
             for (let decoration of decorations) {
                 if (!this.allDecorations.hasOwnProperty(decoration.content)) {
@@ -64,9 +67,10 @@ export class Decorations {
                         ranges: []
                     };
                 }
+                // Generate ranges with rust data
                 let ranges = decoration.positions.map<vscode.DecorationOptions>((pos) => {
                     return {
-                        range: new vscode.Range(test.document.positionAt(pos.start), test.document.positionAt(pos.end)),
+                        range: new vscode.Range(editor.document.positionAt(pos.start), editor.document.positionAt(pos.end)),
                     };
                 });
                 this.allDecorations[decoration.content].ranges = ranges;
@@ -82,7 +86,7 @@ export class Decorations {
         if (this.activeEditor && event.textEditor === this.activeEditor) {
             if (this.last_selection_line.start !== event.selections[0].start.line || this.last_selection_line.end !== event.selections[0].end.line) { // The cursor changes of line
                 this.last_selection_line.start = event.selections[0].start.line;
-                this.last_selection_line.end = event.selections[0].start.line;
+                this.last_selection_line.end = event.selections[0].end.line;
 
                 // If the selection changes, update the decorations after a short delay, to avoid updating the decorations too often
                 if (this.selection_timeout) {

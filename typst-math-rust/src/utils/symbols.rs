@@ -1,6 +1,6 @@
 /// Stealed from https://github.com/typst/typst/blob/main/crates/typst/src/symbols/symbol.rs
-use std::fmt::Debug;
 use phf::phf_map;
+use std::fmt::Debug;
 use typst_math_macros::symbols;
 use wasm_bindgen::prelude::wasm_bindgen;
 
@@ -8,14 +8,14 @@ use wasm_bindgen::prelude::wasm_bindgen;
 #[wasm_bindgen(getter_with_clone)]
 pub struct Symbol {
     pub symbol: char,
-    pub category: Category
+    pub category: Category,
 }
 
 #[derive(Debug, Clone)]
 #[wasm_bindgen]
 pub enum Category {
     OPERATOR,
-    DEFAULT
+    DEFAULT,
 }
 
 /// The list of general symbols.
