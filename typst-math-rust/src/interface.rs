@@ -7,7 +7,7 @@ use crate::utils::symbols::{Color, Symbol};
 #[wasm_bindgen(getter_with_clone)]
 pub struct Decoration {
     pub uuid: String,
-    pub symbol: Symbol,
+    pub symbol: String,
     pub color: Color,
     pub text_decoration: String,
     pub positions: Vec<Position>,

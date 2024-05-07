@@ -27,8 +27,8 @@ export async function activate(context: vscode.ExtensionContext) {
     }
 
     // If settings or the current theme change, update the decorations
-    vscode.workspace.onDidChangeConfiguration(decorations.reloadDecorations.bind(decorations));
-    vscode.window.onDidChangeActiveColorTheme(decorations.reloadDecorations.bind(decorations));
+    vscode.workspace.onDidChangeConfiguration(decorations.clearDecorations.bind(decorations));
+    vscode.window.onDidChangeActiveColorTheme(decorations.clearDecorations.bind(decorations));
     // Reloading symbols
     vscode.window.onDidChangeActiveTextEditor(decorations.onActiveTextEditorChange.bind(decorations), null, context.subscriptions);
     vscode.workspace.onDidChangeTextDocument(decorations.onTextDocumentChange.bind(decorations), null, context.subscriptions);

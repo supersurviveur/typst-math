@@ -41,6 +41,10 @@ export class Decorations {
         }
         console.timeEnd("renderDecorations");
     }
+    clearDecorations() {
+        this.allDecorations = {};
+        this.reloadDecorations();
+    }
     // Pass the current doc to typst to get symbols, and then render them
     reloadDecorations() {
         if (this.activeEditor) {
@@ -57,7 +61,7 @@ export class Decorations {
                 if (!this.allDecorations.hasOwnProperty(decoration.uuid)) {
                     this.allDecorations[decoration.uuid] = {
                         decorationType: createDecorationType({
-                            contentText: decoration.symbol.symbol,
+                            contentText: decoration.symbol,
                             color: getColors2(decoration.color),
                             textDecoration: decoration.text_decoration
                         }),
