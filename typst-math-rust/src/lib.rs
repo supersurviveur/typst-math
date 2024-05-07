@@ -18,6 +18,7 @@ pub fn init_lib() {
 pub fn parse_document(content: &str) -> Vec<Decoration> {
     // Generate a fake source
     let source = typst_syntax::Source::detached(content.to_string());
+    println!("{:#?}", source.root());
 
     // Parse the AST produced by typst
     let mut result: HashMap<String, Decoration> = HashMap::new();

@@ -55,6 +55,10 @@ export function getColors(colorType: keyof Colors) {
 function enumToColorName(colorEnum: Color) {
     switch (colorEnum) {
         case getWASM().Color.KEYWORD: return "keyword";
+        case getWASM().Color.COMPARISON: return "comparison";
+        case getWASM().Color.OPERATOR: return "operator";
+        case getWASM().Color.LETTER: return "letter";
+        case getWASM().Color.SET: return "group";
         case getWASM().Color.NUMBER: return "number";
     }
 }

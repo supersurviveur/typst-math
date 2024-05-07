@@ -54,8 +54,8 @@ export class Decorations {
             // Get symbols list
             let decorations = getWASM().parse_document(this.activeEditor.document.getText() as string);
             for (let decoration of decorations) {
-                if (!this.allDecorations.hasOwnProperty(decoration.content)) {
-                    this.allDecorations[decoration.content] = {
+                if (!this.allDecorations.hasOwnProperty(decoration.uuid)) {
+                    this.allDecorations[decoration.uuid] = {
                         decorationType: createDecorationType({
                             contentText: decoration.symbol.symbol,
                             color: getColors2(decoration.color),
@@ -70,11 +70,11 @@ export class Decorations {
                         range: new vscode.Range(editor.document.positionAt(pos.start), editor.document.positionAt(pos.end)),
                     };
                 });
-                this.allDecorations[decoration.content].ranges = ranges;
+                this.allDecorations[decoration.uuid].ranges = ranges;
             }
             console.timeEnd("reloadDecorations");
             this.renderDecorations();
-            Logger.info(`Loaded ${this.allDecorations.length} decorations`);
+            Logger.info(`Loaded ${Object.keys(this.allDecorations).length} decorations`);
         }
     }
 

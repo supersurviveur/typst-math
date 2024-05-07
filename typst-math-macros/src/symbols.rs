@@ -12,22 +12,23 @@ pub fn symbols(stream: TokenStream) -> Result<TokenStream> {
     let list: Punctuated<Symbol, Token![,]> = Punctuated::parse_terminated.parse2(stream)?;
     let pairs = list.iter().map(|symbol| {
         let name = symbol.name.to_string();
+        let category = &symbol.category;
         let symbol = match &symbol.kind {
-            Kind::Single(Base {c, category}) => quote! { #name => Symbol { symbol: #c, category: Category::#category } },
+            Kind::Single(c) => {
+                quote! { #name => Symbol { symbol: #c, category: Category::#category } }
+            },
             Kind::Multiple(variants) => {
                 let first = variants.first().unwrap();
                 let variants = variants.iter().filter_map(|variant| {
                     if !variant.name.is_empty() {
                         let new_name = format!("{}.{}", &name, &variant.name);
                         let c = &variant.c;
-                        let category = &variant.category;
                         Some(quote! { #new_name => Symbol { symbol: #c, category: Category::#category } })
                     } else {
                         None
                     }
                 });
                 let c = &first.c;
-                let category = &first.category;
                 quote! {
                     #name => Symbol { symbol: #c, category: Category::#category }, #(#variants),*
                 }
@@ -42,21 +43,17 @@ pub fn symbols(stream: TokenStream) -> Result<TokenStream> {
 struct Symbol {
     name: syn::Ident,
     kind: Kind,
+    category: syn::Ident
 }
 
 enum Kind {
-    Single(Base),
+    Single(syn::LitChar),
     Multiple(Punctuated<Variant, Token![,]>),
 }
 
-struct Base {
-    c: syn::LitChar,
-    category: syn::Ident,
-}
 struct Variant {
     name: String,
     c: syn::LitChar,
-    category: syn::Ident,
 }
 
 impl Parse for Symbol {
@@ -64,17 +61,16 @@ impl Parse for Symbol {
         let name = input.call(Ident::parse_any)?;
         input.parse::<Token![:]>()?;
         let kind = input.parse()?;
-        Ok(Self { name, kind })
+        input.parse::<Token![;]>()?;
+        let category = input.call(Ident::parse_any)?;
+        Ok(Self { name, kind, category })
     }
 }
 
 impl Parse for Kind {
     fn parse(input: ParseStream) -> Result<Self> {
         if input.peek(syn::LitChar) {
-            let c = input.parse()?;
-            input.parse::<Token![;]>()?;
-            let category = input.call(Ident::parse_any)?;
-            Ok(Self::Single(Base { c, category }))
+            Ok(Self::Single(input.parse()?))
         } else {
             let content;
             syn::bracketed!(content in input);
@@ -96,8 +92,6 @@ impl Parse for Variant {
             input.parse::<Token![:]>()?;
         }
         let c = input.parse()?;
-        input.parse::<Token![;]>()?;
-        let category = input.call(Ident::parse_any)?;
-        Ok(Self { name, c, category })
+        Ok(Self { name, c })
     }
 }

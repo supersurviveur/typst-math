@@ -6,7 +6,7 @@ use crate::utils::symbols::{Color, Symbol};
 #[derive(Debug, Clone)]
 #[wasm_bindgen(getter_with_clone)]
 pub struct Decoration {
-    pub content: String,
+    pub uuid: String,
     pub symbol: Symbol,
     pub color: Color,
     pub text_decoration: String,
