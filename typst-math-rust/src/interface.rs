@@ -1,6 +1,6 @@
 use wasm_bindgen::prelude::*;
 
-use crate::utils::symbols::{Color, Symbol};
+use crate::utils::symbols::Color;
 
 /// A structure which represents a content which will be replaced in VSCode
 #[derive(Debug, Clone)]

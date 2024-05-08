@@ -21,7 +21,9 @@ export class Decorations {
         console.time("renderDecorations");
         if (this.activeEditor?.selection) {
             let selection = this.activeEditor.selection;
-            let reveal_selection = new vscode.Range(new vscode.Position(selection.start.line, 0), new vscode.Position(selection.end.line + 1, 0));
+            let reveal_selection = new vscode.Range(
+                new vscode.Position(selection.start.line, 0),
+                new vscode.Position(selection.end.line, this.activeEditor.document.lineAt(selection.end.line).text.length));
 
             for (let t in this.allDecorations) {
                 this.activeEditor?.setDecorations(
@@ -42,8 +44,19 @@ export class Decorations {
         console.timeEnd("renderDecorations");
     }
     clearDecorations() {
+        // Reset decorations on all editors
+        for (const key in this.allDecorations) {
+            vscode.window.visibleTextEditors.forEach(editor => {
+                editor.setDecorations(this.allDecorations[key].decorationType, []);
+            });
+        }
         this.allDecorations = {};
         this.reloadDecorations();
+    }
+    onConfigChange(event: vscode.ConfigurationChangeEvent) {
+        if (event.affectsConfiguration("typst-math")) {
+            this.clearDecorations();
+        }
     }
     // Pass the current doc to typst to get symbols, and then render them
     reloadDecorations() {

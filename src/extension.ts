@@ -27,12 +27,12 @@ export async function activate(context: vscode.ExtensionContext) {
     }
 
     // If settings or the current theme change, update the decorations
-    vscode.workspace.onDidChangeConfiguration(decorations.clearDecorations.bind(decorations));
+    vscode.workspace.onDidChangeConfiguration(decorations.onConfigChange.bind(decorations));
     vscode.window.onDidChangeActiveColorTheme(decorations.clearDecorations.bind(decorations));
     // Reloading symbols
-    vscode.window.onDidChangeActiveTextEditor(decorations.onActiveTextEditorChange.bind(decorations), null, context.subscriptions);
-    vscode.workspace.onDidChangeTextDocument(decorations.onTextDocumentChange.bind(decorations), null, context.subscriptions);
-    vscode.window.onDidChangeTextEditorSelection(decorations.onSelectionChange.bind(decorations), null, context.subscriptions);
+    vscode.window.onDidChangeActiveTextEditor(decorations.onActiveTextEditorChange.bind(decorations));
+    vscode.workspace.onDidChangeTextDocument(decorations.onTextDocumentChange.bind(decorations));
+    vscode.window.onDidChangeTextEditorSelection(decorations.onSelectionChange.bind(decorations));
 
     // Register commands
     context.subscriptions.push(toggleSymbolsCommand);
