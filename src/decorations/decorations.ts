@@ -3,6 +3,7 @@ import { createDecorationType } from './helpers';
 import { Logger } from '../logger';
 import { blacklistedSymbols, getColors, getRenderingMode, renderSpaces, renderSymbolsOutsideMath } from '../utils';
 import getWASM from '../wasmHelper';
+import { updateStatusBarItem } from '../statusbar';
 
 export class Decorations {
     allDecorations: {
@@ -55,6 +56,7 @@ export class Decorations {
         } else {
             this.clearDecorations();
         }
+        updateStatusBarItem(this);
     }
     clearDecorations() {
         // Reset decorations on all editors
@@ -108,6 +110,7 @@ export class Decorations {
             }
             console.timeEnd("reloadDecorations");
             this.renderDecorations();
+            updateStatusBarItem(this);
             Logger.info(`Loaded ${Object.keys(this.allDecorations).length} decorations`);
         }
     }

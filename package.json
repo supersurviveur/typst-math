@@ -134,6 +134,11 @@
         "command": "typst-math.install-fonts",
         "title": "Install fonts",
         "category": "Typst math"
+      },
+      {
+        "command": "typst-math.decorations-count",
+        "title": "Install fonts",
+        "category": "Typst math"
       }
     ],
     "snippets": [
