@@ -13,7 +13,7 @@ pub struct Symbol {
 }
 
 /// Represents a symbol category, used for styling.
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 #[wasm_bindgen]
 pub enum Category {
     Keyword,

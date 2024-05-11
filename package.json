@@ -67,7 +67,7 @@
           "default": true,
           "markdownDescription": "If true, symbols will be rendered also outside math blocks."
         },
-        "typst-math.renderSpace": {
+        "typst-math.renderSpaces": {
           "type": "boolean",
           "default": false,
           "markdownDescription": "If true, space symbols like space, space.quad, wjoin... will be rendered."

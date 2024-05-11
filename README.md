@@ -25,7 +25,7 @@ By default, the extension will use the monokai theme colors.
 
 - **Colors**: Select your theme colors.
 - **RenderSymbolsOutsideMath**: If set to true, the extension will render symbols everywhere in the document, not only in math equations.
-- **RenderSpace**: If set to true, the extension will render space symbols like space, wj, space.quad...
+- **RenderSpaces**: If set to true, the extension will render space symbols like space, wj, space.quad...
 - **RenderingMode**: Choose whether to render only simple symbols or also complex equations.
 
 # TODO

@@ -1,107 +1,14 @@
-use crate::interface::{Decoration, Options, Position};
-use crate::utils::styles::SYMBOLS_STYLES;
+use crate::interface::{Decoration, Options};
 use std::collections::HashMap;
 use typst_syntax::ast::{AstNode, FieldAccess, Str, Text};
 use typst_syntax::{ast::Expr, SyntaxNode};
-use typst_syntax::{LinkedNode, Span, SyntaxKind};
+use typst_syntax::{LinkedNode, SyntaxKind};
 
-use crate::utils::symbols::{
-    Category, Color, BLACKBOLD_LETTERS, CAL_LETTERS, FRAK_LETTERS, SYMBOLS,
-};
+use crate::utils::symbols::{Color, BLACKBOLD_LETTERS, CAL_LETTERS, FRAK_LETTERS};
 
-/// Helper function to insert a new symbol in the symbols hashmap
-pub fn insert_result(
-    source: &typst_syntax::Source,
-    span: Span,
-    uuid: String,
-    symbol: String,
-    color: Color,
-    text_decoration: String,
-    result: &mut HashMap<String, Decoration>,
-    offset: (usize, usize),
-) {
-    let range = source.range(span).expect("TODO source range error");
+use super::utils::{insert_result, insert_result_symbol, insert_void};
 
-    let position = Position {
-        start: source.byte_to_utf16(range.start).unwrap() - offset.0,
-        end: source.byte_to_utf16(range.end).unwrap() + offset.1,
-    };
-    // If the decoration already exists, simply add a new range
-    if let Some(map) = result.get_mut(&uuid) {
-        map.positions.push(position);
-    } else {
-        // If not, create the decoration and add this range
-        result.insert(
-            uuid.clone(),
-            Decoration {
-                uuid,
-                symbol: symbol,
-                color,
-                text_decoration,
-                positions: vec![position],
-            },
-        );
-    }
-}
-pub fn insert_void(
-    source: &typst_syntax::Source,
-    span: Span,
-    result: &mut HashMap<String, Decoration>,
-    offset: (usize, usize),
-) {
-    insert_result(
-        source,
-        span,
-        "void".to_string(),
-        "".to_string(),
-        Color::Number,
-        "".to_string(),
-        result,
-        offset,
-    )
-}
-/// Helper function to insert a new symbol in the symbols hashmap, with a symbol directly from the typst sym module
-pub fn insert_result_symbol(
-    source: &typst_syntax::Source,
-    span: Span,
-    content: String,
-    uuid: String,
-    result: &mut HashMap<String, Decoration>,
-    added_text_decoration: &str,
-    offset: (usize, usize),
-    additional_content: (&str, &str),
-) {
-    if let Some(entry) = SYMBOLS.get_entry(&content.as_str()) {
-        let (color, text_decoration) = get_style_from_category(entry.1.category);
-        insert_result(
-            source,
-            span,
-            uuid,
-            format!(
-                "{}{}{}",
-                additional_content.0,
-                entry.1.symbol.to_string(),
-                additional_content.1,
-            ),
-            color,
-            format!("{text_decoration} {added_text_decoration}"),
-            result,
-            offset,
-        );
-    }
-}
-
-/// Get color and text_decoration from a symbol category
-fn get_style_from_category(category: Category) -> (Color, std::string::String) {
-    let mut color = Color::Number;
-    let mut text_decoration = "".to_string();
-    if let Some(style) = SYMBOLS_STYLES.get(category as usize) {
-        color = style.0;
-        text_decoration = style.1.to_string();
-    }
-    return (color, text_decoration);
-}
-
+/// State of the parser, used to know if we are in a base, attachment, or other
 #[derive(Clone)]
 pub struct State {
     pub is_base: bool,
@@ -117,7 +24,7 @@ fn inner_ast_dfs(
     uuid: &str,
     added_text_decoration: &str,
     offset: (usize, usize),
-    options: &Options
+    options: &Options,
 ) {
     match expr {
         // Math identifier, check if it is in the symbols list
@@ -131,6 +38,7 @@ fn inner_ast_dfs(
                 added_text_decoration,
                 offset,
                 ("", ""),
+                options,
             );
         }
         // Field Access, create a string containing all fields sparated with a dot (alpha.alt), and check if it is in symbols list
@@ -139,7 +47,11 @@ fn inner_ast_dfs(
                 let mut offset = offset;
                 // Add one to offset to remove the # with sym
                 if content.contains("sym") {
-                    offset.0 = offset.0 + 1;
+                    if options.render_outside_math {
+                        offset.0 = offset.0 + 1;
+                    } else {
+                        return;
+                    }
                 }
 
                 let content = content.replace("sym.", "");
@@ -152,6 +64,7 @@ fn inner_ast_dfs(
                     added_text_decoration,
                     offset,
                     ("", ""),
+                    options,
                 );
             }
         }
@@ -162,7 +75,10 @@ fn inner_ast_dfs(
                 format!("{uuid}-linebreak"),
                 '⮰'.to_string(),
                 Color::Comparison,
-                format!("{}font-family: NewComputerModernMath; font-weight: bold;", added_text_decoration),
+                format!(
+                    "{}font-family: NewComputerModernMath; font-weight: bold;",
+                    added_text_decoration
+                ),
                 result,
                 offset,
             );
@@ -184,7 +100,7 @@ fn inner_ast_dfs(
                         uuid,
                         added_text_decoration,
                         offset,
-                        options
+                        options,
                     );
                 }
             }
@@ -201,7 +117,7 @@ fn inner_ast_dfs(
                     "top-",
                     "font-size: 0.8em; transform: translateY(-30%); display: inline-block;",
                     (1, 0),
-                    options
+                    options,
                 )
             }
             if let Some(bottom) = attachment.bottom() {
@@ -217,7 +133,7 @@ fn inner_ast_dfs(
                     "bottom-",
                     "font-size: 0.8em; transform: translateY(20%); display: inline-block;",
                     (1, 0),
-                    options
+                    options,
                 )
             }
         }
@@ -235,7 +151,7 @@ fn inner_ast_dfs(
                 uuid,
                 added_text_decoration,
                 offset,
-                options
+                options,
             );
             inner_ast_dfs(
                 source,
@@ -249,7 +165,7 @@ fn inner_ast_dfs(
                 uuid,
                 added_text_decoration,
                 offset,
-                options
+                options,
             );
             if let Some(math_expr) = math.body().to_untyped().cast::<Expr>() {
                 inner_ast_dfs(
@@ -264,7 +180,7 @@ fn inner_ast_dfs(
                     uuid,
                     added_text_decoration,
                     offset,
-                    options
+                    options,
                 )
             }
         }
@@ -314,7 +230,7 @@ fn inner_ast_dfs(
                                     uuid,
                                     added_text_decoration,
                                     (0, 0),
-                                    options
+                                    options,
                                 );
                             }
                         }
@@ -582,7 +498,7 @@ pub fn ast_dfs(
     node: &SyntaxNode,
     result: &mut HashMap<String, Decoration>,
     state: State,
-    options: &Options
+    options: &Options,
 ) {
     for child in node.children() {
         if let Some(expr) = child.cast::<Expr>() {
@@ -595,7 +511,7 @@ pub fn ast_dfs(
                 "",
                 "",
                 (0, 0),
-                options
+                options,
             )
         } else {
             ast_dfs(source, child, result, state.clone(), options);

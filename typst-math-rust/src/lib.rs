@@ -4,9 +4,9 @@ mod utils;
 
 use std::collections::HashMap;
 
+use crate::parser::parser::State;
 use interface::{Decoration, Options};
-use crate::parser::State;
-use parser::ast_dfs;
+use parser::parser::ast_dfs;
 use utils::hook::set_panic_hook;
 use wasm_bindgen::prelude::*;
 
@@ -18,7 +18,12 @@ pub fn init_lib() {
 
 /// Parse a document and return the decorations to apply
 #[wasm_bindgen]
-pub fn parse_document(content: &str, rendering_mode: u8, render_outside_math: bool, render_spaces: bool) -> Vec<Decoration> {
+pub fn parse_document(
+    content: &str,
+    rendering_mode: u8,
+    render_outside_math: bool,
+    render_spaces: bool,
+) -> Vec<Decoration> {
     // Generate a fake source
     let source = typst_syntax::Source::detached(content.to_string());
     // println!("{:#?}", source.root());

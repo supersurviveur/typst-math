@@ -74,9 +74,9 @@ export function renderSymbolsOutsideMath() {
     return config.get<boolean>('renderSymbolsOutsideMath') || false;
 }
 // Retreive the settings for space rendering
-export function renderSpace() {
+export function renderSpaces() {
     const config = vscode.workspace.getConfiguration('typst-math');
-    return config.get<boolean>('renderSpace') || false;
+    return config.get<boolean>('renderSpaces') || false;
 }
 // Retreive blacklisted symbols
 export function blacklistedSymbols() {
