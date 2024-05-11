@@ -154,6 +154,18 @@ fn inner_ast_dfs(
                 );
             }
         }
+        Expr::Linebreak(lbreak) => {
+            insert_result(
+                source,
+                lbreak.span(),
+                format!("{uuid}-linebreak"),
+                '⮰'.to_string(),
+                Color::COMPARISON,
+                format!("{}font-family: NewComputerModernMath; font-weight: bold;", added_text_decoration),
+                result,
+                offset,
+            );
+        }
         // Math attachment, power, subscript, superscript
         Expr::MathAttach(attachment) => {
             if let Some(child) = source.find(attachment.span()) {
