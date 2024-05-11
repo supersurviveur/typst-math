@@ -1,3 +1,5 @@
+//! Utility functions for the parser
+
 use std::collections::HashMap;
 
 use typst_syntax::Span;

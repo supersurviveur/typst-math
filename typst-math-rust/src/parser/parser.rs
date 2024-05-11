@@ -1,3 +1,6 @@
+//! Parser module, traverse the AST to generate decorations
+
+
 use crate::interface::{Decoration, Options};
 use std::collections::HashMap;
 use typst_syntax::ast::{AstNode, FieldAccess, Str, Text};
@@ -15,6 +18,9 @@ pub struct State {
     pub is_attachment: bool,
 }
 
+/// Inner code of the DFS, used to traverse the AST and apply style
+/// Most complex part of the code, match the current expression and then,
+/// compute the appropriate style and/or if we need to continue over children
 fn inner_ast_dfs(
     source: &typst_syntax::Source,
     expr: Expr,
@@ -68,6 +74,7 @@ fn inner_ast_dfs(
                 );
             }
         }
+        // Replace linebreak with an arrow
         Expr::Linebreak(lbreak) => {
             insert_result(
                 source,
@@ -185,6 +192,7 @@ fn inner_ast_dfs(
                 )
             }
         }
+        // Math block, continue over children and check current state to apply style
         Expr::Math(math) => {
             if let Some(child) = source.find(math.span()) {
                 let children: Vec<LinkedNode> = child.children().collect();
@@ -241,8 +249,9 @@ fn inner_ast_dfs(
                 ast_dfs(source, &child, result, state, options); // Propagate the function
             }
         }
+        // Typst shorthands
         Expr::Shorthand(short) => {
-            let (color, decoration, content) = match short.get() {
+            let (color, decoration, content) = match short.get() { // Apply specific style for each shorthand
                 '\u{2212}' => (Color::Operator, "", '-'),
                 '∗' => (Color::Operator, "", '*'),
                 '⟦' | '⟧' => (Color::Set, "", short.get()),
@@ -264,6 +273,7 @@ fn inner_ast_dfs(
                 options,
             );
         }
+        // Typst text block, some symbols are here instead of shorthand
         Expr::Text(text) => {
             if text.get().len() == 1 {
                 if let Some((color, decoration)) = match text.get().as_str() {
@@ -300,6 +310,7 @@ fn inner_ast_dfs(
                 );
             }
         }
+        // Typst string block (between quotes)
         Expr::Str(text) => {
             if state.is_attachment {
                 insert_result(
@@ -315,6 +326,7 @@ fn inner_ast_dfs(
                 );
             }
         }
+        // Typst func, if it's a common func, apply style, else continue over args and callee
         Expr::FuncCall(func) => {
             let args = func.args().to_untyped();
             let children: Vec<&SyntaxNode> = args.children().collect();

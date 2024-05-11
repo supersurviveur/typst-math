@@ -1,4 +1,7 @@
-/// Stealed from https://github.com/typst/typst/blob/main/crates/typst/src/symbols/symbol.rs
+//! Contains every symbol lists used in the project.
+//! Stealed from https://github.com/typst/typst/blob/main/crates/typst/src/symbols/symbol.rs
+//! and edited to be used in the frontend.
+
 use phf::phf_map;
 use std::fmt::Debug;
 use typst_math_macros::symbols;
@@ -367,7 +370,7 @@ pub const SYMBOLS: phf::Map<&str, Symbol> = symbols! {
     emptyset: ['∅', rev: '⦰']; Set,
     nothing: ['∅', rev: '⦰']; Set,
     without: '∖'; Set,
-    complement: '∁'; Set,
+    complement: '∁'; Keyword,
     in: [
         '∈',
         not: '∉',

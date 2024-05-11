@@ -1,4 +1,4 @@
-/// Styles for symbols rendering
+//! Styles for symbols rendering
 use super::symbols::Color;
 
 /// Styles for symbols rendering, ordered by category
