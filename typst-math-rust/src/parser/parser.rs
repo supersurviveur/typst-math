@@ -1,6 +1,5 @@
 //! Parser module, traverse the AST to generate decorations
 
-
 use crate::interface::{Decoration, Options};
 use std::collections::HashMap;
 use typst_syntax::ast::{AstNode, FieldAccess, Str, Text};
@@ -88,7 +87,7 @@ fn inner_ast_dfs(
                 ),
                 result,
                 offset,
-                options
+                options,
             );
         }
         // Math attachment, power, subscript, superscript
@@ -251,7 +250,8 @@ fn inner_ast_dfs(
         }
         // Typst shorthands
         Expr::Shorthand(short) => {
-            let (color, decoration, content) = match short.get() { // Apply specific style for each shorthand
+            let (color, decoration, content) = match short.get() {
+                // Apply specific style for each shorthand
                 '\u{2212}' => (Color::Operator, "", '-'),
                 '∗' => (Color::Operator, "", '*'),
                 '⟦' | '⟧' => (Color::Set, "", short.get()),

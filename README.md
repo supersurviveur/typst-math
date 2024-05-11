@@ -28,11 +28,10 @@ By default, the extension will use the monokai theme colors.
 - **RenderSpaces**: If set to true, the extension will render space symbols like space, wj, space.quad...
 - **RenderingMode**: Choose whether to render only simple symbols or also complex equations.
 
-# TODO
+# Issues
+If you encounter any issues, please report them on the [GitHub repository](https://github.com/supersurviveur/typst-math/issues).
 
-- Installing fonts seems to work only on windows, recreate a clean font installation system
-- Add more features :
-  - Snippets
-  - Commands
-  - Keywords
-  - Symbols
+Feel free to contribute to the project !
+
+# Acknowledgements
+- Thanks to [Enter-tainer](https://github.com/Enter-tainer) for his advices

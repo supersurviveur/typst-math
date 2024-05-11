@@ -24,7 +24,6 @@ pub fn insert_result(
     offset: (usize, usize),
     options: &Options,
 ) {
-
     let range = source.range(span).expect("Span out of range");
 
     // Convert position to UTF-16, because VSCode uses UTF-16 for positions
@@ -34,10 +33,12 @@ pub fn insert_result(
     };
 
     // Check if the symbol is blacklisted
-    if options.blacklisted_symbols.contains(&source.get(range).unwrap_or("UNREACHABLE").to_string()) {
+    if options
+        .blacklisted_symbols
+        .contains(&source.get(range).unwrap_or("UNREACHABLE").to_string())
+    {
         return;
     }
-
 
     // If the decoration already exists, simply add a new range
     if let Some(map) = result.get_mut(&uuid) {
