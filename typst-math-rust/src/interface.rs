@@ -19,4 +19,3 @@ pub struct Position {
     pub start: usize,
     pub end: usize,
 }
-

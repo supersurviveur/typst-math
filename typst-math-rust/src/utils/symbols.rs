@@ -932,7 +932,6 @@ pub const SYMBOLS: phf::Map<&str, Symbol> = symbols! {
     dotless: [i: '𝚤', j: '𝚥']; DEFAULT,
 };
 
-
 /// The list of caligraphic letters.
 pub const CAL_LETTERS: phf::Map<char, char> = phf_map! {
     'A' => '𝒜',
@@ -989,7 +988,6 @@ pub const CAL_LETTERS: phf::Map<char, char> = phf_map! {
     'z' => '𝓏',
 };
 
-
 /// The list of fraktur letters.
 pub const FRAK_LETTERS: phf::Map<char, char> = phf_map! {
     'A' => '𝔄',
@@ -1045,7 +1043,6 @@ pub const FRAK_LETTERS: phf::Map<char, char> = phf_map! {
     'y' => '𝔶',
     'z' => '𝔷',
 };
-
 
 /// The list of blackbold letters.
 pub const BLACKBOLD_LETTERS: phf::Map<char, char> = phf_map! {

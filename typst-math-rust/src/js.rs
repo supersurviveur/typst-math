@@ -1,16 +1,14 @@
 // use wasm_bindgen::prelude::wasm_bindgen;
 
-
 // #[wasm_bindgen(raw_module = "vscode")]
 // extern "C" {
 //     pub type LogOutputChannel;
-    
+
 //     #[wasm_bindgen(method)]
 //     fn info(this: &LogOutputChannel, message: &str);
 //     #[wasm_bindgen(method)]
 //     fn debug(this: &LogOutputChannel, message: &str);
 // }
-
 
 // pub mod logger {
 //     use std::cell::RefCell;

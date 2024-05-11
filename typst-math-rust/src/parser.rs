@@ -436,23 +436,37 @@ fn inner_ast_dfs(
                 _ => None,
             } {
                 if let Some((symbol, decoration)) = match content.as_str() {
-                    "arrow" => Some(('→', "font-family: \"NewComputerModernMath\"; transform: translate(-0.1em, -0.9em); font-size: 0.8em; display: inline-block; position: absolute;")),
-                    "dot" => Some(('⋅', "font-family: \"Fira Math\"; transform: translate(0.15em, -0.55em); transform: translate(0.15em, -0.52em); display: inline-block; position: absolute;")),
+                    "arrow" => Some((
+                        '→',
+                        "font-family: \"NewComputerModernMath\"; transform: translate(-0.1em, -0.9em); font-size: 0.8em; display: inline-block; position: absolute;",
+                    )),
+                    "dot" => Some((
+                        '⋅',
+                        "font-family: \"Fira Math\";
+                        transform: translate(0.15em, -0.55em);
+                        transform: translate(0.15em, -0.52em); display: inline-block; position: absolute;",
+                    )),
                     "dot.double" => Some(('¨', "font-family: JuliaMono; transform: translate(0, -0.25em); display: inline-block; position: absolute;")),
                     "dot.triple" => Some(('\u{20DB}', "font-family: JuliaMono; font-size: 1.4em; transform: translate(-0.1em); display: inline-block;")),
                     "dot.quad" => Some(('\u{20DC}', "font-family: JuliaMono; font-size: 1.4em; transform: translate(-0.1em); display: inline-block;")),
-                    "hat" => Some(('^', "font-family: Fira math; transform: translate(0.03em, -0.3em); font-size: 0.9em; display: inline-block; position: absolute;")),
-                    "tilde" => Some(('~', "font-family: JuliaMono; transform: translate(0.05em, -0.7em); font-size: 0.9em; display: inline-block; position: absolute;")),
+                    "hat" => Some((
+                        '^',
+                        "font-family: Fira math; transform: translate(0.03em, -0.3em); font-size: 0.9em; display: inline-block; position: absolute;",
+                    )),
+                    "tilde" => Some((
+                        '~',
+                        "font-family: JuliaMono; transform: translate(0.05em, -0.7em); font-size: 0.9em; display: inline-block; position: absolute;",
+                    )),
                     "overline" => Some(('\u{0305}', "font-family: JuliaMono; transform: translate(0em, -0.2em); display: inline-block;")),
-                    _ => None
+                    _ => None,
                 } {
                     if args.children().len() == 3
-                    && children[0].kind() == SyntaxKind::LeftParen
-                    && (children[1].kind() == SyntaxKind::MathIdent
-                    || children[1].kind() == SyntaxKind::Text)
-                    && children[2].kind() == SyntaxKind::RightParen
+                        && children[0].kind() == SyntaxKind::LeftParen
+                        && (children[1].kind() == SyntaxKind::MathIdent
+                            || children[1].kind() == SyntaxKind::Text
+                            || (children[1].kind() == SyntaxKind::MathAttach && children[1].children().len() == 3))
+                        && children[2].kind() == SyntaxKind::RightParen
                     {
-                        // inner_ast_dfs(source, children[1].cast::<Expr>().unwrap(), Some(children[1]), result, state.clone(), uuid, added_text_decoration, offset);
                         insert_result(
                             source,
                             span,
@@ -465,17 +479,71 @@ fn inner_ast_dfs(
                         );
                         insert_void(source, children[2].span(), result, offset);
                     }
-                } else {
-                    inner_ast_dfs(
+                } else if let Some(symbol) = match content.as_str() {
+                    "abs" => Some('|'),
+                    "norm" => Some('‖'),
+                    _ => None,
+                } {
+                    insert_void(source, span, result, offset);
+                    insert_result(
                         source,
-                        func.callee(),
-                        Some(func.callee().to_untyped()),
+                        children[0].span(),
+                        format!("{uuid}-func-{}", symbol),
+                        symbol.to_string(),
+                        Color::OPERATOR,
+                        format!("{}", added_text_decoration),
                         result,
-                        state.clone(),
-                        uuid,
-                        added_text_decoration,
-                        offset,
+                        (offset.0, offset.1),
                     );
+                    insert_result(
+                        source,
+                        children[2].span(),
+                        format!("{uuid}-func-{}", symbol),
+                        symbol.to_string(),
+                        Color::OPERATOR,
+                        format!("{}", added_text_decoration),
+                        result,
+                        (offset.0, offset.1),
+                    );
+                } else if content.as_str() == "sqrt" && args.children().len() == 3 && children[0].kind() == SyntaxKind::LeftParen && children[2].kind() == SyntaxKind::RightParen {
+                    let mut root_size = None;
+                    if children[1].kind() == SyntaxKind::MathIdent || children[1].kind() == SyntaxKind::Text {
+                        root_size = Some(1.2); 
+                    } else if children[1].kind() == SyntaxKind::MathAttach && children[1].children().len() == 3  && 
+                        (children[1].children().nth(2).unwrap().kind() == SyntaxKind::MathIdent
+                        || children[1].children().nth(2).unwrap().kind() == SyntaxKind::Text
+                    ) {
+                        root_size = Some(1.8);
+                    }
+                    if root_size.is_some() {
+                        insert_result(
+                            source,
+                            children[0].span(),
+                            format!("{uuid}-func-{}-size-{}", '\u{0305}', root_size.unwrap()),
+                            '\u{0305}'.to_string(),
+                            Color::OPERATOR,
+                            format!(
+                                "{}font-family: JuliaMono; transform: scaleX({:.1}) translate(-0.01em, -0.25em); display: inline-block;",
+                                added_text_decoration,
+                                root_size.unwrap()
+                            ),
+                            result,
+                            offset,
+                        );
+                        insert_result(
+                            source,
+                            span,
+                            format!("{uuid}-func-{}", '√'),
+                            '√'.to_string(),
+                            Color::OPERATOR,
+                            format!("{}font-family: JuliaMono; display: inline-block; transform: translate(0.1em, -0.1em);", added_text_decoration),
+                            result,
+                            offset,
+                        );
+                        insert_void(source, children[2].span(), result, offset);
+                    }
+                } else {
+                    inner_ast_dfs(source, func.callee(), Some(func.callee().to_untyped()), result, state.clone(), uuid, added_text_decoration, offset);
                 }
             }
             ast_dfs(source, func.args().to_untyped(), result, state);
