@@ -29,4 +29,5 @@ pub struct Options {
     pub rendering_mode: u8,
     pub render_outside_math: bool,
     pub render_spaces: bool,
+    pub blacklisted_symbols: Vec<String>,
 }

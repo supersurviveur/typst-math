@@ -20,7 +20,9 @@ pub fn insert_result(
     text_decoration: String,
     result: &mut HashMap<String, Decoration>,
     offset: (usize, usize),
+    options: &Options,
 ) {
+
     let range = source.range(span).expect("Span out of range");
 
     // Convert position to UTF-16, because VSCode uses UTF-16 for positions
@@ -28,6 +30,12 @@ pub fn insert_result(
         start: source.byte_to_utf16(range.start).unwrap() - offset.0,
         end: source.byte_to_utf16(range.end).unwrap() + offset.1,
     };
+
+    // Check if the symbol is blacklisted
+    if options.blacklisted_symbols.contains(&source.get(range).unwrap_or("UNREACHABLE").to_string()) {
+        return;
+    }
+
 
     // If the decoration already exists, simply add a new range
     if let Some(map) = result.get_mut(&uuid) {
@@ -52,6 +60,7 @@ pub fn insert_void(
     span: Span,
     result: &mut HashMap<String, Decoration>,
     offset: (usize, usize),
+    options: &Options,
 ) {
     insert_result(
         source,
@@ -62,6 +71,7 @@ pub fn insert_void(
         "".to_string(),
         result,
         offset,
+        options,
     )
 }
 /// Helper function to insert a new symbol in the symbols hashmap, with a symbol directly from the typst sym module
@@ -97,6 +107,7 @@ pub fn insert_result_symbol(
             format!("{text_decoration} {added_text_decoration}"),
             result,
             offset,
+            options,
         );
     }
 }

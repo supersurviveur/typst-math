@@ -81,6 +81,7 @@ fn inner_ast_dfs(
                 ),
                 result,
                 offset,
+                options
             );
         }
         // Math attachment, power, subscript, superscript
@@ -217,8 +218,8 @@ fn inner_ast_dfs(
 
                     // We can propagate, hide paren and then continue over children (With a for loop and a call to inner, to keep current style)
                     if propagate_style {
-                        insert_void(source, children[0].span(), result, (offset.0, 0));
-                        insert_void(source, children[2].span(), result, (0, offset.1));
+                        insert_void(source, children[0].span(), result, (offset.0, 0), options);
+                        insert_void(source, children[2].span(), result, (0, offset.1), options);
                         for child in children[1].children() {
                             if let Some(expr) = child.cast::<Expr>() {
                                 inner_ast_dfs(
@@ -259,7 +260,8 @@ fn inner_ast_dfs(
                 color,
                 format!("{}{}", added_text_decoration, decoration),
                 result,
-                (offset.0, offset.1),
+                offset,
+                options,
             );
         }
         Expr::Text(text) => {
@@ -279,6 +281,7 @@ fn inner_ast_dfs(
                         format!("{}{}", added_text_decoration, decoration),
                         result,
                         offset,
+                        options,
                     );
                     return;
                 }
@@ -293,6 +296,7 @@ fn inner_ast_dfs(
                     format!("{}", added_text_decoration),
                     result,
                     offset,
+                    options,
                 );
             }
         }
@@ -307,6 +311,7 @@ fn inner_ast_dfs(
                     format!("{}", added_text_decoration),
                     result,
                     offset,
+                    options,
                 );
             }
         }
@@ -353,6 +358,7 @@ fn inner_ast_dfs(
                                 format!("{}{}", added_text_decoration, decoration),
                                 result,
                                 (ident.as_str().len() + 1 + offset.0, 1 + offset.1),
+                                options,
                             );
                             return;
                         }
@@ -412,15 +418,16 @@ fn inner_ast_dfs(
                             format!("{}{}", added_text_decoration, decoration),
                             result,
                             (offset.0, 1 + offset.1),
+                            options,
                         );
-                        insert_void(source, children[2].span(), result, offset);
+                        insert_void(source, children[2].span(), result, offset, options);
                     }
                 } else if let Some(symbol) = match content.as_str() {
                     "abs" => Some('|'),
                     "norm" => Some('‖'),
                     _ => None,
                 } {
-                    insert_void(source, span, result, offset);
+                    insert_void(source, span, result, offset, options);
                     insert_result(
                         source,
                         children[0].span(),
@@ -429,7 +436,8 @@ fn inner_ast_dfs(
                         Color::Operator,
                         format!("{}", added_text_decoration),
                         result,
-                        (offset.0, offset.1),
+                        offset,
+                        options,
                     );
                     insert_result(
                         source,
@@ -439,7 +447,8 @@ fn inner_ast_dfs(
                         Color::Operator,
                         format!("{}", added_text_decoration),
                         result,
-                        (offset.0, offset.1),
+                        offset,
+                        options,
                     );
                 } else if content.as_str() == "sqrt" && args.children().len() == 3 && children[0].kind() == SyntaxKind::LeftParen && children[2].kind() == SyntaxKind::RightParen {
                     let mut root_size = None;
@@ -465,6 +474,7 @@ fn inner_ast_dfs(
                             ),
                             result,
                             offset,
+                            options,
                         );
                         insert_result(
                             source,
@@ -475,8 +485,9 @@ fn inner_ast_dfs(
                             format!("{}font-family: JuliaMono; display: inline-block; transform: translate(0.1em, -0.1em);", added_text_decoration),
                             result,
                             offset,
+                            options,
                         );
-                        insert_void(source, children[2].span(), result, offset);
+                        insert_void(source, children[2].span(), result, offset, options);
                     }
                 } else {
                     inner_ast_dfs(source, func.callee(), Some(func.callee().to_untyped()), result, state.clone(), uuid, added_text_decoration, offset, options);
@@ -519,6 +530,7 @@ pub fn ast_dfs(
     }
 }
 
+/// Recursive function to convert a field access into a string (`[alpha, ., alt]` -> `'alpha.alt'`)
 fn field_access_recursive(access: FieldAccess) -> Option<String> {
     // Check if the target is a math identifier or another field access
     match access.target() {

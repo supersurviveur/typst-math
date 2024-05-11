@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import { createDecorationType } from './helpers';
 import { Logger } from '../logger';
-import { getColors, getRenderingMode, renderSpaces, renderSymbolsOutsideMath } from '../utils';
+import { blacklistedSymbols, getColors, getRenderingMode, renderSpaces, renderSymbolsOutsideMath } from '../utils';
 import getWASM from '../wasmHelper';
 
 export class Decorations {
@@ -18,6 +18,7 @@ export class Decorations {
     renderingMode = getRenderingMode();
     renderOutsideMath = renderSymbolsOutsideMath();
     renderSpaces = renderSpaces();
+    blacklistedSymbols = blacklistedSymbols();
     activeEditor = vscode.window.activeTextEditor;
 
     // Render decorations, while revealing current line
@@ -70,6 +71,7 @@ export class Decorations {
             this.renderingMode = getRenderingMode();
             this.renderOutsideMath = renderSymbolsOutsideMath();
             this.renderSpaces = renderSpaces();
+            this.blacklistedSymbols = blacklistedSymbols();
             this.clearDecorations();
         }
     }
@@ -84,7 +86,7 @@ export class Decorations {
             let editor = this.activeEditor; // Make typescript happy
 
             // Get symbols list
-            let decorations = getWASM().parse_document(this.activeEditor.document.getText() as string, this.renderingMode, this.renderOutsideMath, this.renderSpaces);
+            let decorations = getWASM().parse_document(this.activeEditor.document.getText() as string, this.renderingMode, this.renderOutsideMath, this.renderSpaces, this.blacklistedSymbols);
             for (let decoration of decorations) {
                 if (!this.allDecorations.hasOwnProperty(decoration.uuid)) {
                     this.allDecorations[decoration.uuid] = {

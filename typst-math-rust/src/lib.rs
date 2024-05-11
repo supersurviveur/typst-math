@@ -23,6 +23,7 @@ pub fn parse_document(
     rendering_mode: u8,
     render_outside_math: bool,
     render_spaces: bool,
+    blacklisted_symbols: Vec<String>,
 ) -> Vec<Decoration> {
     // Generate a fake source
     let source = typst_syntax::Source::detached(content.to_string());
@@ -42,6 +43,7 @@ pub fn parse_document(
             rendering_mode,
             render_outside_math,
             render_spaces,
+            blacklisted_symbols,
         },
     );
 
