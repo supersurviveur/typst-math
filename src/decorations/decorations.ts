@@ -1,8 +1,8 @@
 import * as vscode from 'vscode';
-import { createDecorationType } from './decorations/helpers';
-import { Logger } from './logger';
-import { getColors2 } from './decorations/utils';
-import getWASM from './wasmHelper';
+import { createDecorationType } from './helpers';
+import { Logger } from '../logger';
+import { getColors, getRenderingMode, renderSymbolsOutsideMath } from '../utils';
+import getWASM from '../wasmHelper';
 
 export class Decorations {
     allDecorations: {
@@ -14,6 +14,9 @@ export class Decorations {
     selection_timeout: NodeJS.Timeout | undefined = undefined;
     last_selection_line = { start: -1, end: -1 };
     editing = false;
+    rendering = true;
+    renderingMode = 3;
+    renderOutsideMath = false;
     activeEditor = vscode.window.activeTextEditor;
 
     // Render decorations, while revealing current line
@@ -43,6 +46,14 @@ export class Decorations {
         }
         console.timeEnd("renderDecorations");
     }
+    toggleRendering() {
+        this.rendering = !this.rendering;
+        if (this.rendering) {
+            this.reloadDecorations();
+        } else {
+            this.clearDecorations();
+        }
+    }
     clearDecorations() {
         // Reset decorations on all editors
         for (const key in this.allDecorations) {
@@ -55,12 +66,14 @@ export class Decorations {
     }
     onConfigChange(event: vscode.ConfigurationChangeEvent) {
         if (event.affectsConfiguration("typst-math")) {
+            this.renderingMode = getRenderingMode();
+            this.renderOutsideMath = renderSymbolsOutsideMath();
             this.clearDecorations();
         }
     }
     // Pass the current doc to typst to get symbols, and then render them
     reloadDecorations() {
-        if (this.activeEditor) {
+        if (this.activeEditor && this.activeEditor.document.languageId === "typst" && this.rendering) {
             console.time("reloadDecorations");
             // Reset ranges
             for (let t in this.allDecorations) {
@@ -69,13 +82,13 @@ export class Decorations {
             let editor = this.activeEditor; // Make typescript happy
 
             // Get symbols list
-            let decorations = getWASM().parse_document(this.activeEditor.document.getText() as string);
+            let decorations = getWASM().parse_document(this.activeEditor.document.getText() as string, this.renderingMode, this.renderOutsideMath);
             for (let decoration of decorations) {
                 if (!this.allDecorations.hasOwnProperty(decoration.uuid)) {
                     this.allDecorations[decoration.uuid] = {
                         decorationType: createDecorationType({
                             contentText: decoration.symbol,
-                            color: getColors2(decoration.color),
+                            color: getColors(decoration.color),
                             textDecoration: decoration.text_decoration
                         }),
                         ranges: []
@@ -97,7 +110,7 @@ export class Decorations {
 
     // When the selection change, check if a reload and/or a render is needed
     onSelectionChange(event: vscode.TextEditorSelectionChangeEvent) {
-        if (this.activeEditor && event.textEditor === this.activeEditor) {
+        if (this.activeEditor && event.textEditor === this.activeEditor && this.activeEditor.document.languageId === "typst" && this.rendering) {
             if (this.last_selection_line.start !== event.selections[0].start.line || this.last_selection_line.end !== event.selections[0].end.line) { // The cursor changes of line
                 this.last_selection_line.start = event.selections[0].start.line;
                 this.last_selection_line.end = event.selections[0].end.line;

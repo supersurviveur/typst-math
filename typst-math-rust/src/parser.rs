@@ -1,4 +1,4 @@
-use crate::interface::{Decoration, Position};
+use crate::interface::{Decoration, Options, Position};
 use crate::utils::styles::SYMBOLS_STYLES;
 use std::collections::HashMap;
 use typst_syntax::ast::{AstNode, FieldAccess, Str, Text};
@@ -54,7 +54,7 @@ pub fn insert_void(
         span,
         "void".to_string(),
         "".to_string(),
-        Color::NUMBER,
+        Color::Number,
         "".to_string(),
         result,
         offset,
@@ -93,7 +93,7 @@ pub fn insert_result_symbol(
 
 /// Get color and text_decoration from a symbol category
 fn get_style_from_category(category: Category) -> (Color, std::string::String) {
-    let mut color = Color::NUMBER;
+    let mut color = Color::Number;
     let mut text_decoration = "".to_string();
     if let Some(style) = SYMBOLS_STYLES.get(category as usize) {
         color = style.0;
@@ -117,6 +117,7 @@ fn inner_ast_dfs(
     uuid: &str,
     added_text_decoration: &str,
     offset: (usize, usize),
+    options: &Options
 ) {
     match expr {
         // Math identifier, check if it is in the symbols list
@@ -160,7 +161,7 @@ fn inner_ast_dfs(
                 lbreak.span(),
                 format!("{uuid}-linebreak"),
                 '⮰'.to_string(),
-                Color::COMPARISON,
+                Color::Comparison,
                 format!("{}font-family: NewComputerModernMath; font-weight: bold;", added_text_decoration),
                 result,
                 offset,
@@ -183,6 +184,7 @@ fn inner_ast_dfs(
                         uuid,
                         added_text_decoration,
                         offset,
+                        options
                     );
                 }
             }
@@ -199,6 +201,7 @@ fn inner_ast_dfs(
                     "top-",
                     "font-size: 0.8em; transform: translateY(-30%); display: inline-block;",
                     (1, 0),
+                    options
                 )
             }
             if let Some(bottom) = attachment.bottom() {
@@ -214,6 +217,7 @@ fn inner_ast_dfs(
                     "bottom-",
                     "font-size: 0.8em; transform: translateY(20%); display: inline-block;",
                     (1, 0),
+                    options
                 )
             }
         }
@@ -231,6 +235,7 @@ fn inner_ast_dfs(
                 uuid,
                 added_text_decoration,
                 offset,
+                options
             );
             inner_ast_dfs(
                 source,
@@ -244,6 +249,7 @@ fn inner_ast_dfs(
                 uuid,
                 added_text_decoration,
                 offset,
+                options
             );
             if let Some(math_expr) = math.body().to_untyped().cast::<Expr>() {
                 inner_ast_dfs(
@@ -258,6 +264,7 @@ fn inner_ast_dfs(
                     uuid,
                     added_text_decoration,
                     offset,
+                    options
                 )
             }
         }
@@ -307,22 +314,23 @@ fn inner_ast_dfs(
                                     uuid,
                                     added_text_decoration,
                                     (0, 0),
+                                    options
                                 );
                             }
                         }
                         return;
                     }
                 }
-                ast_dfs(source, &child, result, state); // Propagate the function
+                ast_dfs(source, &child, result, state, options); // Propagate the function
             }
         }
         Expr::Shorthand(short) => {
             let (color, decoration, content) = match short.get() {
-                '\u{2212}' => (Color::OPERATOR, "", '-'),
-                '∗' => (Color::OPERATOR, "", '*'),
-                '⟦' | '⟧' => (Color::SET, "", short.get()),
+                '\u{2212}' => (Color::Operator, "", '-'),
+                '∗' => (Color::Operator, "", '*'),
+                '⟦' | '⟧' => (Color::Set, "", short.get()),
                 c => (
-                    Color::COMPARISON,
+                    Color::Comparison,
                     "font-family: \"NewComputerModernMath\"; font-weight: bold;",
                     c,
                 ),
@@ -341,9 +349,9 @@ fn inner_ast_dfs(
         Expr::Text(text) => {
             if text.get().len() == 1 {
                 if let Some((color, decoration)) = match text.get().as_str() {
-                    "+" => Some((Color::OPERATOR, "")),
-                    "=" | "<" | ">" => Some((Color::COMPARISON, "")),
-                    "[" | "]" => Some((Color::SET, "")),
+                    "+" => Some((Color::Operator, "")),
+                    "=" | "<" | ">" => Some((Color::Comparison, "")),
+                    "[" | "]" => Some((Color::Set, "")),
                     _ => None,
                 } {
                     insert_result(
@@ -365,7 +373,7 @@ fn inner_ast_dfs(
                     text.span(),
                     format!("{uuid}-text-{}", text.get().to_string()),
                     text.get().to_string(),
-                    Color::NUMBER,
+                    Color::Number,
                     format!("{}", added_text_decoration),
                     result,
                     offset,
@@ -379,7 +387,7 @@ fn inner_ast_dfs(
                     text.span(),
                     format!("{uuid}-text-{}", text.get().to_string()),
                     text.get().to_string(),
-                    Color::NUMBER,
+                    Color::Number,
                     format!("{}", added_text_decoration),
                     result,
                     offset,
@@ -425,7 +433,7 @@ fn inner_ast_dfs(
                                 text.span(),
                                 format!("{uuid}-{}", symbol),
                                 symbol,
-                                Color::NUMBER,
+                                Color::Number,
                                 format!("{}{}", added_text_decoration, decoration),
                                 result,
                                 (ident.as_str().len() + 1 + offset.0, 1 + offset.1),
@@ -458,7 +466,7 @@ fn inner_ast_dfs(
                         transform: translate(0.15em, -0.55em);
                         transform: translate(0.15em, -0.52em); display: inline-block; position: absolute;",
                     )),
-                    "dot.double" => Some(('¨', "font-family: JuliaMono; transform: translate(0, -0.25em); display: inline-block; position: absolute;")),
+                    "dot.double" | "diaer" => Some(('¨', "font-family: JuliaMono; transform: translate(0, -0.25em); display: inline-block; position: absolute;")),
                     "dot.triple" => Some(('\u{20DB}', "font-family: JuliaMono; font-size: 1.4em; transform: translate(-0.1em); display: inline-block;")),
                     "dot.quad" => Some(('\u{20DC}', "font-family: JuliaMono; font-size: 1.4em; transform: translate(-0.1em); display: inline-block;")),
                     "hat" => Some((
@@ -484,7 +492,7 @@ fn inner_ast_dfs(
                             span,
                             format!("{uuid}-func-{}", symbol),
                             symbol.to_string(),
-                            Color::NUMBER,
+                            Color::Number,
                             format!("{}{}", added_text_decoration, decoration),
                             result,
                             (offset.0, 1 + offset.1),
@@ -502,7 +510,7 @@ fn inner_ast_dfs(
                         children[0].span(),
                         format!("{uuid}-func-{}", symbol),
                         symbol.to_string(),
-                        Color::OPERATOR,
+                        Color::Operator,
                         format!("{}", added_text_decoration),
                         result,
                         (offset.0, offset.1),
@@ -512,7 +520,7 @@ fn inner_ast_dfs(
                         children[2].span(),
                         format!("{uuid}-func-{}", symbol),
                         symbol.to_string(),
-                        Color::OPERATOR,
+                        Color::Operator,
                         format!("{}", added_text_decoration),
                         result,
                         (offset.0, offset.1),
@@ -533,7 +541,7 @@ fn inner_ast_dfs(
                             children[0].span(),
                             format!("{uuid}-func-{}-size-{}", '\u{0305}', root_size.unwrap()),
                             '\u{0305}'.to_string(),
-                            Color::OPERATOR,
+                            Color::Operator,
                             format!(
                                 "{}font-family: JuliaMono; transform: scaleX({:.1}) translate(-0.01em, -0.25em); display: inline-block;",
                                 added_text_decoration,
@@ -547,7 +555,7 @@ fn inner_ast_dfs(
                             span,
                             format!("{uuid}-func-{}", '√'),
                             '√'.to_string(),
-                            Color::OPERATOR,
+                            Color::Operator,
                             format!("{}font-family: JuliaMono; display: inline-block; transform: translate(0.1em, -0.1em);", added_text_decoration),
                             result,
                             offset,
@@ -555,14 +563,14 @@ fn inner_ast_dfs(
                         insert_void(source, children[2].span(), result, offset);
                     }
                 } else {
-                    inner_ast_dfs(source, func.callee(), Some(func.callee().to_untyped()), result, state.clone(), uuid, added_text_decoration, offset);
+                    inner_ast_dfs(source, func.callee(), Some(func.callee().to_untyped()), result, state.clone(), uuid, added_text_decoration, offset, options);
                 }
             }
-            ast_dfs(source, func.args().to_untyped(), result, state);
+            ast_dfs(source, func.args().to_untyped(), result, state, options);
         }
         _ => {
             if let Some(child) = child {
-                ast_dfs(source, child, result, state); // Propagate the function
+                ast_dfs(source, child, result, state, options); // Propagate the function
             }
         }
     }
@@ -574,6 +582,7 @@ pub fn ast_dfs(
     node: &SyntaxNode,
     result: &mut HashMap<String, Decoration>,
     state: State,
+    options: &Options
 ) {
     for child in node.children() {
         if let Some(expr) = child.cast::<Expr>() {
@@ -586,9 +595,10 @@ pub fn ast_dfs(
                 "",
                 "",
                 (0, 0),
+                options
             )
         } else {
-            ast_dfs(source, child, result, state.clone());
+            ast_dfs(source, child, result, state.clone(), options);
         }
     }
 }

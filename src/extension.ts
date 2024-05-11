@@ -4,7 +4,7 @@ import { mathCommand } from './commands/math';
 import { matrix2Command, matrix3Command, matrixCommand, squareMatrixCommand } from './commands/matrix';
 import { toggleSymbolsCommand } from './commands/toggleSymbols';
 import { Logger } from './logger';
-import { Decorations } from './decorations';
+import { Decorations } from './decorations/decorations';
 import { initWASM } from './wasmHelper';
 
 
@@ -35,7 +35,7 @@ export async function activate(context: vscode.ExtensionContext) {
     vscode.window.onDidChangeTextEditorSelection(decorations.onSelectionChange.bind(decorations));
 
     // Register commands
-    context.subscriptions.push(toggleSymbolsCommand);
+    context.subscriptions.push(toggleSymbolsCommand(decorations));
     context.subscriptions.push(mathCommand);
     context.subscriptions.push(matrixCommand);
     context.subscriptions.push(squareMatrixCommand);

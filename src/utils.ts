@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import { Color } from "typst-math-rust";
-import getWASM from '../wasmHelper';
+import getWASM from './wasmHelper';
 
 interface Colors {
     comparison: string,
@@ -31,39 +31,24 @@ const lightTheme = {
     operator: "#0070C1"
 };
 
-// Get colors from settings
-export function getColors(colorType: keyof Colors) {
-    const config = vscode.workspace.getConfiguration('typst-math');
-    const colors = config.get<Colors>('colors');
-    if (!colors) {
-        throw new Error("Invalid colors");
-    }
-    if (colors[colorType] === "") {
-        // Get the theme kind (light or dark)
-        const themeKind = vscode.window.activeColorTheme.kind;
-        if (themeKind === vscode.ColorThemeKind.Dark) {
-            return darkTheme[colorType];
-        } else {
-            return lightTheme[colorType];
-        }
-    } else {
-        return colors[colorType];
-    }
-}
 
-
-function enumToColorName(colorEnum: Color) {
+/**
+ * Convert a WASM color to the name of the corresponding color in the settings
+ * @param colorEnum 
+ * @returns 
+ */
+function enumToColorName(colorEnum: Color): keyof Colors {
     switch (colorEnum) {
-        case getWASM().Color.KEYWORD: return "keyword";
-        case getWASM().Color.COMPARISON: return "comparison";
-        case getWASM().Color.OPERATOR: return "operator";
-        case getWASM().Color.LETTER: return "letter";
-        case getWASM().Color.SET: return "group";
-        case getWASM().Color.NUMBER: return "number";
+        case getWASM().Color.Keyword: return "keyword";
+        case getWASM().Color.Comparison: return "comparison";
+        case getWASM().Color.Operator: return "operator";
+        case getWASM().Color.Letter: return "letter";
+        case getWASM().Color.Set: return "group";
+        case getWASM().Color.Number: return "number";
     }
 }
 // Get colors from settings
-export function getColors2(colorType: Color) {
+export function getColors(colorType: Color) {
     const config = vscode.workspace.getConfiguration('typst-math');
     const colors = config.get<Colors>('colors');
     if (!colors) {
@@ -86,12 +71,12 @@ export function getColors2(colorType: Color) {
 // Retreive the settings for decorations outside math mode
 export function renderSymbolsOutsideMath() {
     const config = vscode.workspace.getConfiguration('typst-math');
-    return config.get<boolean>('renderSymbolsOutsideMath');
+    return config.get<boolean>('renderSymbolsOutsideMath') || false;
 }
 // Retreive the settings for space rendering
 export function renderSpace() {
     const config = vscode.workspace.getConfiguration('typst-math');
-    return config.get<boolean>('renderSpace');
+    return config.get<boolean>('renderSpace') || false;
 }
 // Retreive blacklisted symbols
 export function blacklistedSymbols() {
@@ -100,7 +85,7 @@ export function blacklistedSymbols() {
 }
 
 // Get the rendering mode
-export function renderingMode() {
+export function getRenderingMode() {
     const config = vscode.workspace.getConfiguration('typst-math');
     let mode = config.get<string>('renderingMode');
     if (mode === "nothing") {

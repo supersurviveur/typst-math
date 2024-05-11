@@ -1,19 +1,33 @@
 /// Styles for symbols rendering
 use super::symbols::Color;
 
-pub const SYMBOLS_STYLES: [(Color, &str); 7] = [
+/// Styles for symbols rendering, ordered by category
+pub const SYMBOLS_STYLES: [(Color, &str); 9] = [
+    // KEYWORDS
     (
-        Color::KEYWORD,
+        Color::Keyword,
         "font-family: \"NewComputerModernMath\"; font-weight: bold;",
     ),
+    // COMPARISON
     (
-        Color::COMPARISON,
+        Color::Comparison,
         "font-family: \"NewComputerModernMath\"; font-weight: bold;",
     ),
-    (Color::OPERATOR, "font-family: \"Fira Math\";"),
-    (Color::NUMBER, "font-family: \"NewComputerModernMath\";"),
-    (Color::LETTER, "font-family: \"JuliaMono\";"),
-    (Color::SET, "font-family: \"Fira Math\";"),
+    // OPERATORS
+    (Color::Operator, "font-family: \"Fira Math\";"),
+    // NUMBERS
+    (Color::Number, "font-family: \"NewComputerModernMath\";"),
+    // GREEK LETTERS
+    (Color::Letter, "font-family: \"JuliaMono\";"),
+    // BIG GREEK LETTERS
+    (Color::Letter, "font-family: \"NewComputerModernMath\";"),
+    // SETS
+    (Color::Set, "font-family: \"Fira Math\";"),
+    // SPACES
+    (
+        Color::Number,
+        "box-shadow: 0px 0px 0px 1px rgba(128, 128, 128, 0.5); background-color: #80808080",
+    ),
     // DEFAULT
-    (Color::NUMBER, ""),
+    (Color::Number, "font-family: \"NewComputerModernMath\";"),
 ];

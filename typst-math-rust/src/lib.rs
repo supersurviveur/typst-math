@@ -4,24 +4,24 @@ mod utils;
 
 use std::collections::HashMap;
 
-use interface::Decoration;
-// use js::{logger, LogOutputChannel};
+use interface::{Decoration, Options};
 use crate::parser::State;
 use parser::ast_dfs;
 use utils::hook::set_panic_hook;
 use wasm_bindgen::prelude::*;
-mod js;
 
+/// Initialize the WASM library
 #[wasm_bindgen]
 pub fn init_lib() {
     set_panic_hook();
 }
 
+/// Parse a document and return the decorations to apply
 #[wasm_bindgen]
-pub fn parse_document(content: &str) -> Vec<Decoration> {
+pub fn parse_document(content: &str, rendering_mode: u8, render_outside_math: bool, render_spaces: bool) -> Vec<Decoration> {
     // Generate a fake source
     let source = typst_syntax::Source::detached(content.to_string());
-    println!("{:#?}", source.root());
+    // println!("{:#?}", source.root());
 
     // Parse the AST produced by typst
     let mut result: HashMap<String, Decoration> = HashMap::new();
@@ -33,8 +33,13 @@ pub fn parse_document(content: &str) -> Vec<Decoration> {
             is_base: false,
             is_attachment: false,
         },
+        &Options {
+            rendering_mode,
+            render_outside_math,
+            render_spaces,
+        },
     );
 
     // Convert the hasmap into an array
-    result.values().cloned().collect()
+    result.into_values().collect()
 }
