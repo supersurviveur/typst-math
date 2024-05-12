@@ -31,7 +31,7 @@ By default, the extension will use the monokai theme colors.
 # Issues
 If you encounter any issues, please report them on the [GitHub repository](https://github.com/supersurviveur/typst-math/issues).
 
-Feel free to contribute to the project !
+Feel free to contribute to the project ! See the [CONTRIBUTING.md](./CONTRIBUTING.md) file for instructions on how to build the project.
 
 # Acknowledgements
 - Thanks to [Enter-tainer](https://github.com/Enter-tainer) for his advices

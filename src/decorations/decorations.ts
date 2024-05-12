@@ -79,7 +79,7 @@ export class Decorations {
     }
     // Pass the current doc to typst to get symbols, and then render them
     reloadDecorations() {
-        if (this.activeEditor && this.activeEditor.document.languageId === "typst" && this.rendering) {
+        if (this.activeEditor && this.activeEditor.document.languageId === "typst" && this.rendering && this.renderingMode > 0) {
             console.time("reloadDecorations");
             // Reset ranges
             for (let t in this.allDecorations) {
@@ -117,7 +117,7 @@ export class Decorations {
 
     // When the selection change, check if a reload and/or a render is needed
     onSelectionChange(event: vscode.TextEditorSelectionChangeEvent) {
-        if (this.activeEditor && event.textEditor === this.activeEditor && this.activeEditor.document.languageId === "typst" && this.rendering) {
+        if (this.activeEditor && event.textEditor === this.activeEditor && this.activeEditor.document.languageId === "typst" && this.rendering && this.renderingMode > 0) {
             if (this.last_selection_line.start !== event.selections[0].start.line || this.last_selection_line.end !== event.selections[0].end.line) { // The cursor changes of line
                 this.last_selection_line.start = event.selections[0].start.line;
                 this.last_selection_line.end = event.selections[0].end.line;
