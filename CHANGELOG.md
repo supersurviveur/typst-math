@@ -4,6 +4,11 @@ All notable changes to the "typst-math" extension will be documented in this fil
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## [v0.1.0]
+- Migration to a rust backend
+- Improve performance and rendering
+- Fix issues #8, #12-18
+
 ## [v0.0.12]
 - Fix issue #11
 - Correction of spelling mistakes
