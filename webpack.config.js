@@ -68,18 +68,6 @@ const extensionConfig = {
           to: ''
         }
       ]
-    }),
-    new CopyWebpackPlugin({
-      patterns: [
-        {
-          from: "symbols.json",
-          to: ""
-        },
-        {
-          from: "othersymbols.json",
-          to: ""
-        }
-      ]
     })
   ]
 };

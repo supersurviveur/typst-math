@@ -155,5 +155,6 @@ export class Decorations {
         if (this.activeEditor) {
             this.reloadDecorations();
         }
+        updateStatusBarItem(this);
     }
 }

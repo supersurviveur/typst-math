@@ -111,6 +111,22 @@ fn inner_ast_dfs(
                     );
                 }
             }
+            // Compute specific offset and style with rendering mode
+            let offset = if options.rendering_mode > 1 {
+                (offset.0 + 1, offset.1)
+            } else {
+                offset
+            };
+            let top_decor = if options.rendering_mode > 1 {
+                "font-size: 0.8em; transform: translateY(-30%); display: inline-block;"
+            } else {
+                ""
+            };
+            let bottom_decor = if options.rendering_mode > 1 {
+                "font-size: 0.8em; transform: translateY(20%); display: inline-block;"
+            } else {
+                ""
+            };
             if let Some(top) = attachment.top() {
                 inner_ast_dfs(
                     source,
@@ -119,11 +135,11 @@ fn inner_ast_dfs(
                     result,
                     State {
                         is_base: false,
-                        is_attachment: true,
+                        is_attachment: options.rendering_mode > 1,
                     },
                     "top-",
-                    "font-size: 0.8em; transform: translateY(-30%); display: inline-block;",
-                    (1, 0),
+                    top_decor,
+                    offset,
                     options,
                 )
             }
@@ -135,11 +151,11 @@ fn inner_ast_dfs(
                     result,
                     State {
                         is_base: false,
-                        is_attachment: true,
+                        is_attachment: options.rendering_mode > 1,
                     },
                     "bottom-",
-                    "font-size: 0.8em; transform: translateY(20%); display: inline-block;",
-                    (1, 0),
+                    bottom_decor,
+                    offset,
                     options,
                 )
             }
@@ -336,6 +352,7 @@ fn inner_ast_dfs(
                 && children[0].kind() == SyntaxKind::LeftParen
                 && (children[1].kind() == SyntaxKind::Text || children[1].kind() == SyntaxKind::Str)
                 && children[2].kind() == SyntaxKind::RightParen
+                && options.rendering_mode > 1
             {
                 let text = children[1];
                 let text_content = match text.kind() {
@@ -378,18 +395,19 @@ fn inner_ast_dfs(
                     _ => {}
                 }
             }
-            if let Some((span, content)) = match func.callee() {
-                Expr::MathIdent(ident) => Some((ident.span(), ident.to_string())),
-                Expr::FieldAccess(access) => {
-                    if let Some(content) = field_access_recursive(access) {
-                        Some((access.span(), content))
-                    } else {
-                        None
+            if options.rendering_mode > 2 {
+                if let Some((span, content)) = match func.callee() {
+                    Expr::MathIdent(ident) => Some((ident.span(), ident.to_string())),
+                    Expr::FieldAccess(access) => {
+                        if let Some(content) = field_access_recursive(access) {
+                            Some((access.span(), content))
+                        } else {
+                            None
+                        }
                     }
-                }
-                _ => None,
-            } {
-                if let Some((symbol, decoration)) = match content.as_str() {
+                    _ => None,
+                } {
+                    if let Some((symbol, decoration)) = match content.as_str() {
                     "arrow" => Some((
                         '→',
                         "font-family: \"NewComputerModernMath\"; transform: translate(-0.1em, -0.9em); font-size: 0.8em; display: inline-block; position: absolute;",
@@ -465,8 +483,8 @@ fn inner_ast_dfs(
                 } else if content.as_str() == "sqrt" && args.children().len() == 3 && children[0].kind() == SyntaxKind::LeftParen && children[2].kind() == SyntaxKind::RightParen {
                     let mut root_size = None;
                     if children[1].kind() == SyntaxKind::MathIdent || children[1].kind() == SyntaxKind::Text {
-                        root_size = Some(1.2); 
-                    } else if children[1].kind() == SyntaxKind::MathAttach && children[1].children().len() == 3  && 
+                        root_size = Some(1.2);
+                    } else if children[1].kind() == SyntaxKind::MathAttach && children[1].children().len() == 3 &&
                         (children[1].children().nth(2).unwrap().kind() == SyntaxKind::MathIdent
                         || children[1].children().nth(2).unwrap().kind() == SyntaxKind::Text
                     ) {
@@ -503,6 +521,7 @@ fn inner_ast_dfs(
                     }
                 } else {
                     inner_ast_dfs(source, func.callee(), Some(func.callee().to_untyped()), result, state.clone(), uuid, added_text_decoration, offset, options);
+                }
                 }
             }
             ast_dfs(source, func.args().to_untyped(), result, state, options);
