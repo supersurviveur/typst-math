@@ -45,13 +45,16 @@ const extensionConfig = {
   infrastructureLogging: {
     level: "log", // enables logging required for problem matchers
   },
+  experiments: {
+    asyncWebAssembly: true
+  },
 
   // Add fonts to the bundle, and also vbscript
   plugins: [
     new CopyWebpackPlugin({
       patterns: [
         {
-          context: 'fonts',
+          context: 'assets/fonts',
           from: '*.(ttf|otf)',
           to: 'fonts'
         }
@@ -63,18 +66,6 @@ const extensionConfig = {
           context: 'src/installfontLib/',
           from: '*.vbs',
           to: ''
-        }
-      ]
-    }),
-    new CopyWebpackPlugin({
-      patterns: [
-        {
-          from: "symbols.json",
-          to: ""
-        },
-        {
-          from: "othersymbols.json",
-          to: ""
         }
       ]
     })

@@ -15,26 +15,18 @@
 			"group": {
 				"kind": "build",
 				"isDefault": true
-			}
-		},
-		{
-			"type": "npm",
-			"script": "watch-tests",
-			"problemMatcher": "$tsc-watch",
-			"isBackground": true,
-			"presentation": {
-				"reveal": "never",
-				"group": "watchers"
 			},
-			"group": "build"
+			"dependsOn": [
+				"Build typst-math-rust WASM"
+			],
 		},
 		{
-			"label": "tasks: watch-tests",
-			"dependsOn": [
-				"npm: watch",
-				"npm: watch-tests"
-			],
-			"problemMatcher": []
+			"label": "Build typst-math-rust WASM",
+			"type": "shell",
+			"options": {
+				"cwd": "typst-math-rust"
+			},
+			"command": "wasm-pack build"
 		}
 	]
 }

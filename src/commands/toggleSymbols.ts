@@ -1,8 +1,8 @@
 import * as vscode from 'vscode';
-import { toggleSymbols } from '../decorations/generateDecorations';
-import { regenerateDecorations } from '../extension';
+import { Decorations } from '../decorations/decorations';
 
-export const toggleSymbolsCommand = vscode.commands.registerCommand('typst-math.toggle-symbols', async () => {
-    toggleSymbols();
-    regenerateDecorations();
-});
+export const toggleSymbolsCommand = (decorations: Decorations) => {
+    return vscode.commands.registerCommand('typst-math.toggle-symbols', async () => {
+        decorations.toggleRendering();
+    });
+};
