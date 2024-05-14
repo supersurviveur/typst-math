@@ -1,9 +1,10 @@
 import * as vscode from 'vscode';
 import { createDecorationType } from './helpers';
 import { Logger } from '../logger';
-import { blacklistedSymbols, getColors, getRenderingMode, isPhysica, renderSpaces, renderSymbolsOutsideMath } from '../utils';
+import { blacklistedSymbols, getColors, getRenderingMode, customSymbols, renderSpaces, renderSymbolsOutsideMath } from '../utils';
 import getWASM from '../wasmHelper';
 import { updateStatusBarItem } from '../statusbar';
+import { CustomSymbol } from 'typst-math-rust';
 
 export class Decorations {
     allDecorations: {
@@ -22,8 +23,16 @@ export class Decorations {
     renderOutsideMath = renderSymbolsOutsideMath();
     renderSpaces = renderSpaces();
     blacklistedSymbols = blacklistedSymbols();
-    isPhysica = isPhysica();
+    customSymbols: CustomSymbol[] = [];
 
+    //
+    generateCustomSymbols() {
+        this.customSymbols = [];
+        let custom = customSymbols();
+        for (let value of custom) {
+            this.customSymbols.push(getWASM().generate_custom_symbol(value.name, value.symbol, value.category));
+        }
+    }
     // Render decorations, while revealing current line
     renderDecorations() {
         console.time("renderDecorations");
@@ -76,7 +85,7 @@ export class Decorations {
             this.renderOutsideMath = renderSymbolsOutsideMath();
             this.renderSpaces = renderSpaces();
             this.blacklistedSymbols = blacklistedSymbols();
-            this.isPhysica = isPhysica();
+            this.generateCustomSymbols();
             this.clearDecorations();
         }
     }
@@ -91,7 +100,7 @@ export class Decorations {
             let editor = this.activeEditor; // Make typescript happy
 
             // Get symbols list
-            let decorations = getWASM().parse_document(this.activeEditor.document.getText() as string, this.renderingMode, this.renderOutsideMath, this.renderSpaces, this.blacklistedSymbols, this.isPhysica);
+            let decorations = getWASM().parse_document(this.activeEditor.document.getText() as string, this.renderingMode, this.renderOutsideMath, this.renderSpaces, this.blacklistedSymbols, this.customSymbols);
             for (let decoration of decorations) {
                 if (!this.allDecorations.hasOwnProperty(decoration.uuid)) {
                     this.allDecorations[decoration.uuid] = {

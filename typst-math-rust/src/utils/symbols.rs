@@ -30,6 +30,20 @@ pub enum Category {
     Default,
 }
 
+pub fn get_category_by_name(name: &String) -> Category {
+    return match name.to_lowercase().as_str() {
+        "keyword" => Category::Keyword,
+        "comparison" => Category::Comparison,
+        "operator" => Category::Operator,
+        "number" => Category::Number,
+        "letter" => Category::Letter,
+        "bigletter" => Category::BigLetter,
+        "set" => Category::Set,
+        "space" => Category::Space,
+        _ => Category::Default,
+    };
+}
+
 /// Represents a symbol color, passed to the frontend for styling.
 #[derive(Debug, Clone, Copy)]
 #[wasm_bindgen]
@@ -934,15 +948,6 @@ pub const SYMBOLS: phf::Map<&str, Symbol> = symbols! {
     Re: 'ℜ'; Default,
     Im: 'ℑ'; Default,
     dotless: [i: '𝚤', j: '𝚥']; Letter,
-};
-
-
-
-/// The list of symbols for the physica package
-pub const PHYSICA_SYMBOLS: phf::Map<&str, (&str, Category)> = phf_map! {
-    "grad" => ("∇", Category::Default),
-    "div" => ("∇⋅", Category::Default),
-    "curl" => ("∇×", Category::Default),
 };
 
 /// The list of caligraphic letters.

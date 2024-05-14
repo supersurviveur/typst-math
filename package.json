@@ -77,6 +77,38 @@
           "default": false,
           "markdownDescription": "If true, physica package symbols will be rendered."
         },
+        "typst-math.customSymbols": {
+          "type": "array",
+          "markdownDescription": "List of custom symbols that will be rendered.",
+          "items":  {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "The name of the symbol"
+              },
+              "symbol": {
+                "type": "string",
+                "description": "The symbol to render"
+              },
+              "category": {
+                "type": "string",
+                "enum": [
+                  "keyword",
+                  "number",
+                  "comparison",
+                  "operator",
+                  "letter",
+                  "bigLetter",
+                  "set",
+                  "space",
+                  "default"
+                ],
+                "description": "The category of the symbol (keyword, number, comparison, operator, letter, bigLetter, set, space, default)"
+              }
+            }
+          }
+        },
         "typst-math.renderingMode": {
           "markdownDescription": "This mode let you select if you want to render complex symbols and combinations, or just simple ones like powers (Experimental)",
           "type": "string",

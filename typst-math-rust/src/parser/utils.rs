@@ -8,7 +8,7 @@ use crate::{
     interface::{Decoration, Options, Position},
     utils::{
         styles::SYMBOLS_STYLES,
-        symbols::{Category, Color, PHYSICA_SYMBOLS, SYMBOLS},
+        symbols::{get_category_by_name, Category, Color, SYMBOLS},
     },
 };
 
@@ -91,11 +91,11 @@ pub fn insert_result_symbol(
 ) {
     let mut category = None;
     let mut symbol = None;
-    if options.is_physica {
-        if let Some(entry) = PHYSICA_SYMBOLS.get_entry(&content.as_str()) {
-            category = Some(entry.1 .1);
-            symbol = Some(entry.1 .0.to_string());
-        }
+
+    // Check if the symbol is defined by the user
+    if let Some(entry) = options.custom_symbols.get(&content) {
+        category = Some(get_category_by_name(&entry.category));
+        symbol = Some(entry.symbol.clone());
     }
     // Check if the symbol is in the symbols list
     else if let Some(entry) = SYMBOLS.get_entry(&content.as_str()) {

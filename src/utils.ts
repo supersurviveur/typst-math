@@ -83,6 +83,30 @@ export function isPhysica() {
     const config = vscode.workspace.getConfiguration('typst-math');
     return config.get<boolean>('physica') || false;
 }
+// Retreive the settings for custom symbols
+export function customSymbols(): {
+    name: string,
+    symbol: string
+    category: string
+}[] {
+    const config = vscode.workspace.getConfiguration('typst-math');
+    let user = config.get<{
+        name: string,
+        symbol: string
+        category: string
+    }[]>('customSymbols') || [];
+
+    // Check if the custom symbols are valid
+    if (typeof user !== "object") {
+        throw new Error("Invalid custom symbols");
+    }
+    for (let i = 0; i < user.length; i++) {
+        if (typeof user[i] !== "object" || typeof user[i].name !== "string" || typeof user[i].symbol !== "string" || typeof user[i].category !== "string") {
+            throw new Error(`Invalid custom symbols "${user[i]}" at index ${i}`);
+        }
+    }
+    return user;
+}
 // Retreive blacklisted symbols
 export function blacklistedSymbols() {
     const config = vscode.workspace.getConfiguration('typst-math');

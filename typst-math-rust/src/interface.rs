@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use wasm_bindgen::prelude::*;
 
 use crate::utils::symbols::Color;
@@ -30,5 +32,14 @@ pub struct Options {
     pub render_outside_math: bool,
     pub render_spaces: bool,
     pub blacklisted_symbols: Vec<String>,
-    pub is_physica: bool
+    pub custom_symbols: HashMap<String, CustomSymbol>
+}
+
+/// Represents a user defined symbol that can be used trough WASM
+#[derive(Debug)]
+#[wasm_bindgen(getter_with_clone)]
+pub struct CustomSymbol {
+    pub name: String,
+    pub symbol: String,
+    pub category: String
 }

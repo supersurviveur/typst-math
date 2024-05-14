@@ -14,6 +14,7 @@ export async function activate(context: vscode.ExtensionContext) {
     // Init decorations module and WASM
     await initWASM(); // Wait for initialisation
     const decorations = new Decorations();
+    decorations.generateCustomSymbols();
 
     // Only on the first launch
     // context.globalState.update("firstLaunch", undefined);

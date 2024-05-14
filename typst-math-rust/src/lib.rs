@@ -6,7 +6,7 @@ use std::collections::HashMap;
 // use std::time::Instant;
 
 use crate::parser::parser::State;
-use interface::{Decoration, Options};
+use interface::{CustomSymbol, Decoration, Options};
 use parser::parser::ast_dfs;
 use utils::hook::set_panic_hook;
 use wasm_bindgen::prelude::*;
@@ -25,7 +25,7 @@ pub fn parse_document(
     render_outside_math: bool,
     render_spaces: bool,
     blacklisted_symbols: Vec<String>,
-    is_physica: bool
+    custom_symbols: Vec<CustomSymbol>,
 ) -> Vec<Decoration> {
     // Generate a fake source
     // let now = Instant::now();
@@ -33,6 +33,22 @@ pub fn parse_document(
     // let elapsed_time = now.elapsed();
     // println!("Running slow_function() took {} miliseconds.", elapsed_time.as_millis());
     // println!("{:#?}", source.root());
+
+    // Generate custom symbols hashmap
+    let custom_symbols = custom_symbols
+        .iter()
+        .map(|pair| {
+            return (
+                pair.name.clone(),
+                CustomSymbol {
+                    name: pair.name.clone(),
+                    symbol: pair.symbol.clone(),
+                    category: pair.category.clone(),
+                },
+            );
+        })
+        .collect();
+    
 
     // Parse the AST produced by typst
     let mut result: HashMap<String, Decoration> = HashMap::new();
@@ -49,10 +65,25 @@ pub fn parse_document(
             render_outside_math,
             render_spaces,
             blacklisted_symbols,
-            is_physica
+            custom_symbols,
         },
     );
 
     // Convert the hasmap into an array
     result.into_values().collect()
+}
+
+
+/// Generate a custom symbol struct easily from JS
+#[wasm_bindgen]
+pub fn generate_custom_symbol(
+    name: String,
+    symbol: String,
+    category: String,
+) -> CustomSymbol {
+    return CustomSymbol {
+        name,
+        symbol,
+        category,
+    };
 }
