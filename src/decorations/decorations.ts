@@ -85,7 +85,6 @@ export class Decorations {
             this.renderOutsideMath = renderSymbolsOutsideMath();
             this.renderSpaces = renderSpaces();
             this.blacklistedSymbols = blacklistedSymbols();
-            this.generateCustomSymbols();
             this.clearDecorations();
         }
     }
@@ -100,6 +99,7 @@ export class Decorations {
             let editor = this.activeEditor; // Make typescript happy
 
             // Get symbols list
+            this.generateCustomSymbols();
             let decorations = getWASM().parse_document(this.activeEditor.document.getText() as string, this.renderingMode, this.renderOutsideMath, this.renderSpaces, this.blacklistedSymbols, this.customSymbols);
             for (let decoration of decorations) {
                 if (!this.allDecorations.hasOwnProperty(decoration.uuid)) {

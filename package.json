@@ -72,11 +72,6 @@
           "default": false,
           "markdownDescription": "If true, space symbols like space, space.quad, wjoin... will be rendered."
         },
-        "typst-math.physica": {
-          "type": "boolean",
-          "default": false,
-          "markdownDescription": "If true, physica package symbols will be rendered."
-        },
         "typst-math.customSymbols": {
           "type": "array",
           "markdownDescription": "List of custom symbols that will be rendered.",
