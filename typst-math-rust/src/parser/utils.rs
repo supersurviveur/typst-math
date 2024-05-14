@@ -8,7 +8,7 @@ use crate::{
     interface::{Decoration, Options, Position},
     utils::{
         styles::SYMBOLS_STYLES,
-        symbols::{Category, Color, SYMBOLS},
+        symbols::{Category, Color, PHYSICA_SYMBOLS, SYMBOLS},
     },
 };
 
@@ -89,13 +89,27 @@ pub fn insert_result_symbol(
     additional_content: (&str, &str),
     options: &Options,
 ) {
+    let mut category = None;
+    let mut symbol = None;
+    if options.is_physica {
+        if let Some(entry) = PHYSICA_SYMBOLS.get_entry(&content.as_str()) {
+            category = Some(entry.1 .1);
+            symbol = Some(entry.1 .0.to_string());
+        }
+    }
     // Check if the symbol is in the symbols list
-    if let Some(entry) = SYMBOLS.get_entry(&content.as_str()) {
+    else if let Some(entry) = SYMBOLS.get_entry(&content.as_str()) {
+        category = Some(entry.1.category);
+        symbol = Some(format!("{}", entry.1.symbol));
+    }
+    if category.is_some() {
+        let category = category.unwrap();
+        let symbol = symbol.unwrap();
         // If we are in a space and we don't want to render them, return
-        if !options.render_spaces && entry.1.category == Category::Space {
+        if !options.render_spaces && category == Category::Space {
             return;
         }
-        let (color, text_decoration) = get_style_from_category(entry.1.category);
+        let (color, text_decoration) = get_style_from_category(category);
         insert_result(
             source,
             span,
@@ -103,7 +117,7 @@ pub fn insert_result_symbol(
             format!(
                 "{}{}{}",
                 additional_content.0,
-                entry.1.symbol.to_string(),
+                symbol.to_string(),
                 additional_content.1,
             ),
             color,

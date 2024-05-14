@@ -30,4 +30,5 @@ pub struct Options {
     pub render_outside_math: bool,
     pub render_spaces: bool,
     pub blacklisted_symbols: Vec<String>,
+    pub is_physica: bool
 }

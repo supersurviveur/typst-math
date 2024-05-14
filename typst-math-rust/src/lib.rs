@@ -3,6 +3,7 @@ mod parser;
 mod utils;
 
 use std::collections::HashMap;
+// use std::time::Instant;
 
 use crate::parser::parser::State;
 use interface::{Decoration, Options};
@@ -24,9 +25,13 @@ pub fn parse_document(
     render_outside_math: bool,
     render_spaces: bool,
     blacklisted_symbols: Vec<String>,
+    is_physica: bool
 ) -> Vec<Decoration> {
     // Generate a fake source
+    // let now = Instant::now();
     let source = typst_syntax::Source::detached(content.to_string());
+    // let elapsed_time = now.elapsed();
+    // println!("Running slow_function() took {} miliseconds.", elapsed_time.as_millis());
     // println!("{:#?}", source.root());
 
     // Parse the AST produced by typst
@@ -44,6 +49,7 @@ pub fn parse_document(
             render_outside_math,
             render_spaces,
             blacklisted_symbols,
+            is_physica
         },
     );
 

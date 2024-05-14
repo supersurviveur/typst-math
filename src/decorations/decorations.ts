@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import { createDecorationType } from './helpers';
 import { Logger } from '../logger';
-import { blacklistedSymbols, getColors, getRenderingMode, renderSpaces, renderSymbolsOutsideMath } from '../utils';
+import { blacklistedSymbols, getColors, getRenderingMode, isPhysica, renderSpaces, renderSymbolsOutsideMath } from '../utils';
 import getWASM from '../wasmHelper';
 import { updateStatusBarItem } from '../statusbar';
 
@@ -16,11 +16,13 @@ export class Decorations {
     last_selection_line = { start: -1, end: -1 };
     editing = false;
     rendering = true;
+    activeEditor = vscode.window.activeTextEditor;
+    // VSCode settings
     renderingMode = getRenderingMode();
     renderOutsideMath = renderSymbolsOutsideMath();
     renderSpaces = renderSpaces();
     blacklistedSymbols = blacklistedSymbols();
-    activeEditor = vscode.window.activeTextEditor;
+    isPhysica = isPhysica();
 
     // Render decorations, while revealing current line
     renderDecorations() {
@@ -74,6 +76,7 @@ export class Decorations {
             this.renderOutsideMath = renderSymbolsOutsideMath();
             this.renderSpaces = renderSpaces();
             this.blacklistedSymbols = blacklistedSymbols();
+            this.isPhysica = isPhysica();
             this.clearDecorations();
         }
     }
@@ -88,7 +91,7 @@ export class Decorations {
             let editor = this.activeEditor; // Make typescript happy
 
             // Get symbols list
-            let decorations = getWASM().parse_document(this.activeEditor.document.getText() as string, this.renderingMode, this.renderOutsideMath, this.renderSpaces, this.blacklistedSymbols);
+            let decorations = getWASM().parse_document(this.activeEditor.document.getText() as string, this.renderingMode, this.renderOutsideMath, this.renderSpaces, this.blacklistedSymbols, this.isPhysica);
             for (let decoration of decorations) {
                 if (!this.allDecorations.hasOwnProperty(decoration.uuid)) {
                     this.allDecorations[decoration.uuid] = {

@@ -936,6 +936,15 @@ pub const SYMBOLS: phf::Map<&str, Symbol> = symbols! {
     dotless: [i: '𝚤', j: '𝚥']; Letter,
 };
 
+
+
+/// The list of symbols for the physica package
+pub const PHYSICA_SYMBOLS: phf::Map<&str, (&str, Category)> = phf_map! {
+    "grad" => ("∇", Category::Default),
+    "div" => ("∇⋅", Category::Default),
+    "curl" => ("∇×", Category::Default),
+};
+
 /// The list of caligraphic letters.
 pub const CAL_LETTERS: phf::Map<char, char> = phf_map! {
     'A' => '𝒜',

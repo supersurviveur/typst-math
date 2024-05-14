@@ -78,6 +78,11 @@ export function renderSpaces() {
     const config = vscode.workspace.getConfiguration('typst-math');
     return config.get<boolean>('renderSpaces') || false;
 }
+// Retreive the settings for space rendering
+export function isPhysica() {
+    const config = vscode.workspace.getConfiguration('typst-math');
+    return config.get<boolean>('physica') || false;
+}
 // Retreive blacklisted symbols
 export function blacklistedSymbols() {
     const config = vscode.workspace.getConfiguration('typst-math');
