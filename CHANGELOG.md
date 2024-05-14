@@ -4,6 +4,9 @@ All notable changes to the "typst-math" extension will be documented in this fil
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## [v0.1.1]
+- Add custom symbols in settings
+
 ## [v0.1.0]
 - Migration to a rust backend
 - Improve performance and rendering

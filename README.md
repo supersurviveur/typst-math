@@ -27,6 +27,14 @@ By default, the extension will use the monokai theme colors.
 - **RenderSymbolsOutsideMath**: If set to true, the extension will render symbols everywhere in the document, not only in math equations.
 - **RenderSpaces**: If set to true, the extension will render space symbols like space, wj, space.quad...
 - **RenderingMode**: Choose whether to render only simple symbols or also complex equations.
+- **CustomSymbols**: You can add or override symbols with your own. The format is
+```json
+{
+  "name": "mySymbol",
+  "symbol": "|some chars|",
+  "category": "operator" // Can be keyword, operator, comparison, number, letter, bigletter, set, space, default 
+}
+```
 
 # Issues
 If you encounter any issues, please report them on the [GitHub repository](https://github.com/supersurviveur/typst-math/issues).

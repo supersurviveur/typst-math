@@ -1,6 +1,6 @@
 [package]
 name = "typst-math-rust"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["supersurviveur <julien.thillard38@gmail.com>"]
 edition = "2018"
 
