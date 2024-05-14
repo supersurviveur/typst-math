@@ -32,9 +32,10 @@ By default, the extension will use the monokai theme colors.
 {
   "name": "mySymbol",
   "symbol": "|some chars|",
-  "category": "operator" // Can be keyword, operator, comparison, number, letter, bigletter, set, space, default 
+  "category": "operator"
 }
 ```
+`category` can be `keyword`, `operator`, `comparison`, `number`, `letter`, `bigletter`, `set`, `space` or `default`.
 
 # Issues
 If you encounter any issues, please report them on the [GitHub repository](https://github.com/supersurviveur/typst-math/issues).
