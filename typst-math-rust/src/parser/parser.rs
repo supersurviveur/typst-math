@@ -113,7 +113,7 @@ fn inner_ast_dfs(
             }
             // Compute specific offset and style with rendering mode
             let offset = if options.rendering_mode > 1 {
-                (offset.0 + 1, offset.1)
+                (1, 0)
             } else {
                 offset
             };
