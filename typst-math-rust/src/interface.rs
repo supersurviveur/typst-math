@@ -52,5 +52,6 @@ pub struct Parsed {
     pub edit_start_line: usize,
     pub edit_end_line: usize,
     pub edit_start_column: usize,
-    pub edit_end_column: usize
+    pub edit_end_column: usize,
+    pub erroneous: bool
 }

@@ -116,7 +116,7 @@ export class Decorations {
                 for (let t in this.allDecorations) {
                     // Translate ones that are after the edition
                     this.allDecorations[t].ranges = this.allDecorations[t].ranges.map(range => {
-                        if (range.range.end.line >= parsed.edit_end_line + (this.offset < 0 ? 0 : - this.offset +1)) {
+                        if (range.range.end.line >= parsed.edit_end_line + (this.offset < 0 ? 0 : - this.offset)) {
                             return {
                                 range: new vscode.Range(range.range.start.translate(this.offset), range.range.end.translate(this.offset)),
                             };
@@ -159,9 +159,10 @@ export class Decorations {
                 this.allDecorations[decoration.uuid].ranges.push(...ranges);
             }
             // Reset edited line
+            // If there is an error in AST, force complete rendering next time, otherwise some symbols are never renderer after errors like missing $
             this.edited_line = {
-                start: -1,
-                end: -1,
+                start: parsed.erroneous ? -2 : -1,
+                end: parsed.erroneous ? -2 : -1,
             };
             console.timeEnd("reloadDecorations");
             this.renderDecorations();

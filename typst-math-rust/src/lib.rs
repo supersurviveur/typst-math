@@ -171,6 +171,7 @@ pub fn parse_document(
         edit_end_line,
         edit_start_column,
         edit_end_column,
+        erroneous: source.root().erroneous()
     }
 }
 
