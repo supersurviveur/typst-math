@@ -932,5 +932,5 @@ fn main() {
       Im: \"ℑ,\"\\
       dotless.i: \"𝚤,\"\\
       dotless.j: \"𝚥\"
-    $", 3, true, true, vec![], vec![]);
+    $", -1, -1, 3, true, true, vec![], vec![]);
 }

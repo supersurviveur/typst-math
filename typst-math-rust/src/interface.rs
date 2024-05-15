@@ -49,8 +49,8 @@ pub struct CustomSymbol {
 #[wasm_bindgen(getter_with_clone)]
 pub struct Parsed {
     pub decorations: Vec<Decoration>,
-    pub edit_start: usize,
-    pub edit_end: usize,
-    pub edit_start2: usize,
-    pub edit_end2: usize
+    pub edit_start_line: usize,
+    pub edit_end_line: usize,
+    pub edit_start_column: usize,
+    pub edit_end_column: usize
 }

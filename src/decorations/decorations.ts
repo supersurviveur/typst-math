@@ -43,7 +43,7 @@ export class Decorations {
         console.time("renderDecorations");
         if (this.activeEditor?.selection) {
             // Generate ranges to reveal
-            let reveal_selections = [];
+            let reveal_selections: vscode.Range[] = [];
             for (let selection of this.activeEditor.selections) {
                 reveal_selections.push(new vscode.Range(
                     new vscode.Position(selection.start.line, 0),
@@ -116,7 +116,7 @@ export class Decorations {
                 for (let t in this.allDecorations) {
                     // Translate ones that are after the edition
                     this.allDecorations[t].ranges = this.allDecorations[t].ranges.map(range => {
-                        if (range.range.end.line >= parsed.edit_end - 1) {
+                        if (range.range.end.line >= parsed.edit_end_line - 1) {
                             return {
                                 range: new vscode.Range(range.range.start.translate(this.offset), range.range.end.translate(this.offset)),
                             };
@@ -126,13 +126,14 @@ export class Decorations {
                     });
                     // Remove ones that are in the edition
                     this.allDecorations[t].ranges = this.allDecorations[t].ranges.filter(range => {
-                        if (range.range.start.line === parsed.edit_end - 1) {
-                            return parsed.edit_end2 < range.range.start.character;
-                        } else if (range.range.end.line === parsed.edit_start) {
-                            return parsed.edit_start2 > range.range.end.character;
+                        if (range.range.start.line === parsed.edit_end_line - 1) { // Touch line at the end, check if columns intersect
+                            return parsed.edit_end_column < range.range.start.character;
+                        } else if (range.range.end.line === parsed.edit_start_line) { // Touch line at the start, check if columns intersect
+                            return parsed.edit_start_column > range.range.end.character;
                         }
+                        // Check if lines intersect
                         return !(
-                            range.range.start.line < parsed.edit_end && range.range.end.line > parsed.edit_start
+                            range.range.start.line < parsed.edit_end_line && range.range.end.line > parsed.edit_start_line
                         );
                     });
                 }

@@ -20,12 +20,13 @@ pub fn init_lib() {
     set_panic_hook();
 }
 
-pub fn test(range: Range<usize>, current: LinkedNode, result: &mut Vec<SyntaxNode>) {
+/// Retrieve all nodes in a given range
+pub fn find_node(range: Range<usize>, current: LinkedNode, nodes: &mut Vec<SyntaxNode>) {
     if current.range().start >= range.start && current.range().end <= range.end {
-        result.push(current.get().clone())
+        nodes.push(current.get().clone())
     } else {
         for child in current.children() {
-            test(range.clone(), child, result);
+            find_node(range.clone(), child, nodes);
         }
     }
 }
@@ -51,68 +52,41 @@ pub fn parse_document(
     // println!("Running slow_function() took {} miliseconds.", elapsed_time.as_millis());
     // logger::info(format!("Hello from Rust! {}ms", elapsed_time.as_millis()).as_str());
     console::time_with_label("rust");
-    let mut edit_start = 0;
-    let mut edit_end = 0;
-    let mut edit_start2 = 0;
-    let mut edit_end2 = 0;
-    // let mut root = source.root();
+    // These variable contains the range of the document that was parsed incrementally and will be returned to the extension
+    let mut edit_start_line = 0;
+    let mut edit_end_line = 0;
+    let mut edit_start_column = 0;
+    let mut edit_end_column = 0;
+    // List of nodes to parse again
     let mut nodes = vec![];
     if edited_line_start >= 0 {
+        // if edited_line_start is -1, we render the complete text
         let edited_range = source
             .line_to_range(edited_line_start as usize)
             .unwrap()
             .start
-            ..source
-                .line_to_range(edited_line_end as usize)
-                .unwrap()
-                .end;
+            ..source.line_to_range(edited_line_end as usize).unwrap().end;
+
+        // Create a "fake" edit of the document (We don't change the content) to get the part which was reparsed
         let txt = source.get(edited_range.clone()).unwrap().to_string();
-        // console::log_1(&format!("{}", txt).as_str().into());
         let range = source.edit(edited_range, txt.as_str());
-        test(
+
+        // Find all nodes in this range
+        find_node(
             range.clone(),
             source.find(source.root().span()).unwrap(),
             &mut nodes,
         );
-        // root = node.get();
-        // console::log_1(&format!("{:#?}", nodes).as_str().into());
-        edit_start = source
-            .byte_to_line(
-                source
-                    .find(nodes.first().unwrap().span())
-                    .unwrap()
-                    .range()
-                    .start,
-            )
-            .unwrap();
-        edit_end = source
-            .byte_to_line(
-                source
-                    .find(nodes.last().unwrap().span())
-                    .unwrap()
-                    .range()
-                    .end,
-            )
-            .unwrap();
-        edit_start2 = source
-            .byte_to_column(
-                source
-                    .find(nodes.first().unwrap().span())
-                    .unwrap()
-                    .range()
-                    .start,
-            )
-            .unwrap();
-        edit_end2 = source
-            .byte_to_column(
-                source
-                    .find(nodes.last().unwrap().span())
-                    .unwrap()
-                    .range()
-                    .end,
-            )
-            .unwrap();
+
+        // Get the range of part which will be reparsed
+        let first = source.find(nodes.first().unwrap().span()).unwrap().range();
+        let last = source.find(nodes.last().unwrap().span()).unwrap().range();
+        edit_start_line = source.byte_to_line(first.start).unwrap();
+        edit_end_line = source.byte_to_line(last.end).unwrap();
+        edit_start_column = source.byte_to_column(first.start).unwrap();
+        edit_end_column = source.byte_to_column(last.end).unwrap();
     } else {
+        // Parse the entire document
         nodes.push(source.root().clone());
     }
     console::time_end_with_label("rust");
@@ -132,7 +106,6 @@ pub fn parse_document(
         })
         .collect();
 
-    // Parse the AST produced by typst
     let mut result: HashMap<String, Decoration> = HashMap::new();
     let options = Options {
         rendering_mode,
@@ -141,6 +114,7 @@ pub fn parse_document(
         blacklisted_symbols,
         custom_symbols,
     };
+    // Parse the AST produced by typst over nodes
     for node in nodes {
         if let Some(expr) = node.cast::<Expr>() {
             inner_ast_dfs(
@@ -169,25 +143,15 @@ pub fn parse_document(
                 &options,
             );
         }
-        // ast_dfs(
-        //     &source,
-        //     &node,
-        //     &mut result,
-        //     State {
-        //         is_base: false,
-        //         is_attachment: false,
-        //     },
-        //     &options,
-        // );
     }
 
     // Convert the hasmap into an array
     Parsed {
         decorations: result.into_values().collect(),
-        edit_start,
-        edit_end,
-        edit_start2,
-        edit_end2,
+        edit_start_line,
+        edit_end_line,
+        edit_start_column,
+        edit_end_column,
     }
 }
 
