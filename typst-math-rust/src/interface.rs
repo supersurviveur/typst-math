@@ -43,3 +43,14 @@ pub struct CustomSymbol {
     pub symbol: String,
     pub category: String
 }
+
+
+/// Represents the result of the parsing function
+#[wasm_bindgen(getter_with_clone)]
+pub struct Parsed {
+    pub decorations: Vec<Decoration>,
+    pub edit_start: usize,
+    pub edit_end: usize,
+    pub edit_start2: usize,
+    pub edit_end2: usize
+}

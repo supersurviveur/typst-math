@@ -20,7 +20,7 @@ pub struct State {
 /// Inner code of the DFS, used to traverse the AST and apply style
 /// Most complex part of the code, match the current expression and then,
 /// compute the appropriate style and/or if we need to continue over children
-fn inner_ast_dfs(
+pub fn inner_ast_dfs(
     source: &typst_syntax::Source,
     expr: Expr,
     child: Option<&SyntaxNode>,

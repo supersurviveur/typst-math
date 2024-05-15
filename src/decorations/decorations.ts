@@ -12,12 +12,17 @@ export class Decorations {
             decorationType: vscode.TextEditorDecorationType,
             ranges: vscode.DecorationOptions[],
         }
-    } = {};
+    } = {}; // Keep decorations and ranges in this variable
     selection_timeout: NodeJS.Timeout | undefined = undefined;
-    last_selection_line = { start: -1, end: -1 };
-    editing = false;
-    rendering = true;
+    last_selection_line = { start: -1, end: -1 }; // Keep the position of the last edited line
+    editing = false; // Used to know if the document was edited
+    edited_line = {
+        start: -1,
+        end: -1,
+    }; // Range of lines edited
+    offset = 0; // Line offset of the edition, used to translate symbols
     activeEditor = vscode.window.activeTextEditor;
+    rendering = true;
     // VSCode settings
     renderingMode = getRenderingMode();
     renderOutsideMath = renderSymbolsOutsideMath();
@@ -25,7 +30,7 @@ export class Decorations {
     blacklistedSymbols = blacklistedSymbols();
     customSymbols: CustomSymbol[] = [];
 
-    //
+    // generate a list of custom symbols
     generateCustomSymbols() {
         this.customSymbols = [];
         let custom = customSymbols();
@@ -37,16 +42,19 @@ export class Decorations {
     renderDecorations() {
         console.time("renderDecorations");
         if (this.activeEditor?.selection) {
-            let selection = this.activeEditor.selection;
-            let reveal_selection = new vscode.Range(
-                new vscode.Position(selection.start.line, 0),
-                new vscode.Position(selection.end.line, this.activeEditor.document.lineAt(selection.end.line).text.length));
+            // Generate ranges to reveal
+            let reveal_selections = [];
+            for (let selection of this.activeEditor.selections) {
+                reveal_selections.push(new vscode.Range(
+                    new vscode.Position(selection.start.line, 0),
+                    new vscode.Position(selection.end.line, this.activeEditor.document.lineAt(selection.end.line).text.length)));
+            }
 
             for (let t in this.allDecorations) {
                 this.activeEditor?.setDecorations(
                     this.allDecorations[t].decorationType,
                     this.allDecorations[t].ranges.filter(range => {
-                        return range.range.intersection(reveal_selection) === undefined;
+                        return reveal_selections.every(reveal_selection => range.range.intersection(reveal_selection) === undefined);
                     })
                 );
             }
@@ -72,9 +80,7 @@ export class Decorations {
     clearDecorations() {
         // Reset decorations on all editors
         for (const key in this.allDecorations) {
-            vscode.window.visibleTextEditors.forEach(editor => {
-                editor.setDecorations(this.allDecorations[key].decorationType, []);
-            });
+            this.allDecorations[key].decorationType.dispose();
         }
         this.allDecorations = {};
         this.reloadDecorations();
@@ -92,16 +98,47 @@ export class Decorations {
     reloadDecorations() {
         if (this.activeEditor && this.activeEditor.document.languageId === "typst" && this.rendering && this.renderingMode > 0) {
             console.time("reloadDecorations");
-            // Reset ranges
-            for (let t in this.allDecorations) {
-                this.allDecorations[t].ranges = [];
-            }
             let editor = this.activeEditor; // Make typescript happy
 
             // Get symbols list
             this.generateCustomSymbols();
-            let decorations = getWASM().parse_document(this.activeEditor.document.getText() as string, this.renderingMode, this.renderOutsideMath, this.renderSpaces, this.blacklistedSymbols, this.customSymbols);
-            for (let decoration of decorations) {
+
+            let parsed = getWASM().parse_document(this.activeEditor.document.getText() as string, this.edited_line.start, this.edited_line.end, this.renderingMode, this.renderOutsideMath, this.renderSpaces, this.blacklistedSymbols, this.customSymbols);
+
+            // If edited lines aren't defined, we clear all ranges
+            // If they are defined, remove symbols whiwh were rendered again, and trnaslate ones after the edition
+            if (this.edited_line.start < 0) {
+                // Reset ranges
+                for (let t in this.allDecorations) {
+                    this.allDecorations[t].ranges = [];
+                }
+            } else {
+                for (let t in this.allDecorations) {
+                    // Translate ones that are after the edition
+                    this.allDecorations[t].ranges = this.allDecorations[t].ranges.map(range => {
+                        if (range.range.end.line >= parsed.edit_end - 1) {
+                            return {
+                                range: new vscode.Range(range.range.start.translate(this.offset), range.range.end.translate(this.offset)),
+                            };
+                        } else {
+                            return range;
+                        }
+                    });
+                    // Remove ones that are in the edition
+                    this.allDecorations[t].ranges = this.allDecorations[t].ranges.filter(range => {
+                        if (range.range.start.line === parsed.edit_end - 1) {
+                            return parsed.edit_end2 < range.range.start.character;
+                        } else if (range.range.end.line === parsed.edit_start) {
+                            return parsed.edit_start2 > range.range.end.character;
+                        }
+                        return !(
+                            range.range.start.line < parsed.edit_end && range.range.end.line > parsed.edit_start
+                        );
+                    });
+                }
+            }
+
+            for (let decoration of parsed.decorations) {
                 if (!this.allDecorations.hasOwnProperty(decoration.uuid)) {
                     this.allDecorations[decoration.uuid] = {
                         decorationType: createDecorationType({
@@ -118,8 +155,13 @@ export class Decorations {
                         range: new vscode.Range(editor.document.positionAt(pos.start), editor.document.positionAt(pos.end)),
                     };
                 });
-                this.allDecorations[decoration.uuid].ranges = ranges;
+                this.allDecorations[decoration.uuid].ranges.push(...ranges);
             }
+            // Reset edited line
+            this.edited_line = {
+                start: -1,
+                end: -1,
+            };
             console.timeEnd("reloadDecorations");
             this.renderDecorations();
             updateStatusBarItem(this);
@@ -130,7 +172,7 @@ export class Decorations {
     // When the selection change, check if a reload and/or a render is needed
     onSelectionChange(event: vscode.TextEditorSelectionChangeEvent) {
         if (this.activeEditor && event.textEditor === this.activeEditor && this.activeEditor.document.languageId === "typst" && this.rendering && this.renderingMode > 0) {
-            if (this.last_selection_line.start !== event.selections[0].start.line || this.last_selection_line.end !== event.selections[0].end.line) { // The cursor changes of line
+            if (this.last_selection_line.start !== event.selections[0].start.line || this.last_selection_line.end !== event.selections[0].end.line || event.selections.length > 1) { // The cursor changes of line or ther is more than one selection
                 this.last_selection_line.start = event.selections[0].start.line;
                 this.last_selection_line.end = event.selections[0].end.line;
 
@@ -158,6 +200,53 @@ export class Decorations {
         if (this.activeEditor && event.document === this.activeEditor.document) {
             if (event.contentChanges.length === 0) { return; }
             this.editing = true;
+
+            // This part compute the edited range and update it for incremental rendering
+            // negative values mean that next rendering will be complete, but -2 force it while -1 let the next edition change the edition range
+            if (event.contentChanges.length > 1) { // too many changes, next rendering will be complete
+                this.offset = 0;
+                this.edited_line = {
+                    start: -2,
+                    end: -2
+                };
+            } else if (this.edited_line.start === -1) { // First change since last rendering
+                if (event.contentChanges[0].text === "") {
+                    this.offset = -(event.contentChanges[0].range.end.line - event.contentChanges[0].range.start.line);
+                } else {
+                    this.offset = event.contentChanges[0].text.split("\n").length - 1 - (event.contentChanges[0].range.end.line - event.contentChanges[0].range.start.line);
+                }
+                this.edited_line = {
+                    start: event.contentChanges[0].range.start.line,
+                    end: event.contentChanges[0].range.end.line
+                };
+            } else if (this.edited_line.start !== -1) { // Not the first change
+                // Compute aditionnal offset
+                if (event.contentChanges[0].text === "") {
+                    this.offset += -(event.contentChanges[0].range.end.line - event.contentChanges[0].range.start.line);
+                } else {
+                    this.offset += event.contentChanges[0].text.split("\n").length - 1 - (event.contentChanges[0].range.end.line - event.contentChanges[0].range.start.line);
+                }
+
+                if (event.contentChanges[0].range.start.line === this.edited_line.start
+                    && event.contentChanges[0].range.end.line >= this.edited_line.end) { // Not the first change, but just extend at the end
+                    this.edited_line.end = event.contentChanges[0].range.end.line;
+                } else if (event.contentChanges[0].range.end.line === this.edited_line.end
+                    && event.contentChanges[0].range.start.line <= this.edited_line.start) { // Not the first change, but extend at the start
+                    this.edited_line.start = event.contentChanges[0].range.start.line;
+                } else { // Not the first change, next rendering will be complete 
+                    this.offset = 0;
+                    this.edited_line = {
+                        start: -2,
+                        end: -2
+                    };
+                }
+            } else { // By default, next one will be complete, but let the next editing update these values
+                this.offset = 0;
+                this.edited_line = {
+                    start: -1,
+                    end: -1
+                };
+            }
         }
     }
 
