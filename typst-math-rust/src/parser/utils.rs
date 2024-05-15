@@ -77,6 +77,23 @@ pub fn insert_void(
         options,
     )
 }
+
+/// Get symbol from it's name
+pub fn get_symbol(
+    content: String,
+    options: &Options,
+) -> Option<(Category, String)> {
+    // Check if the symbol is defined by the user
+    if let Some(entry) = options.custom_symbols.get(&content) {
+        return Some((get_category_by_name(&entry.category), entry.symbol.clone()));
+    }
+    // Check if the symbol is in the symbols list
+    else if let Some(entry) = SYMBOLS.get_entry(&content.as_str()) {
+        return Some((entry.1.category, format!("{}", entry.1.symbol)));
+    }
+    return None;
+}
+
 /// Helper function to insert a new symbol in the symbols hashmap, with a symbol directly from the typst sym module
 pub fn insert_result_symbol(
     source: &typst_syntax::Source,
@@ -89,22 +106,7 @@ pub fn insert_result_symbol(
     additional_content: (&str, &str),
     options: &Options,
 ) {
-    let mut category = None;
-    let mut symbol = None;
-
-    // Check if the symbol is defined by the user
-    if let Some(entry) = options.custom_symbols.get(&content) {
-        category = Some(get_category_by_name(&entry.category));
-        symbol = Some(entry.symbol.clone());
-    }
-    // Check if the symbol is in the symbols list
-    else if let Some(entry) = SYMBOLS.get_entry(&content.as_str()) {
-        category = Some(entry.1.category);
-        symbol = Some(format!("{}", entry.1.symbol));
-    }
-    if category.is_some() {
-        let category = category.unwrap();
-        let symbol = symbol.unwrap();
+    if let Some((category, symbol)) = get_symbol(content, options) {
         // If we are in a space and we don't want to render them, return
         if !options.render_spaces && category == Category::Space {
             return;

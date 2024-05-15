@@ -2,13 +2,13 @@
 
 use crate::interface::{Decoration, Options};
 use std::collections::HashMap;
-use typst_syntax::ast::{AstNode, FieldAccess, Str, Text};
+use typst_syntax::ast::{AstNode, FieldAccess, MathIdent, Str, Text};
 use typst_syntax::{ast::Expr, SyntaxNode};
 use typst_syntax::{LinkedNode, SyntaxKind};
 
 use crate::utils::symbols::{Color, BLACKBOLD_LETTERS, CAL_LETTERS, FRAK_LETTERS};
 
-use super::utils::{insert_result, insert_result_symbol, insert_void};
+use super::utils::{get_symbol, insert_result, insert_result_symbol, insert_void};
 
 /// State of the parser, used to know if we are in a base, attachment, or other
 #[derive(Clone)]
@@ -221,22 +221,47 @@ pub fn inner_ast_dfs(
                     let mut propagate_style = false;
                     let sub_children: Vec<LinkedNode> = children[1].children().collect();
 
-                    // Check if it's just a symbol or a text
+                    // Check if it's just a text
                     if sub_children.len() == 1
-                        && (sub_children[0].kind() == SyntaxKind::MathIdent
-                            || sub_children[0].kind() == SyntaxKind::Text
+                        && (sub_children[0].kind() == SyntaxKind::Text
                             || sub_children[0].kind() == SyntaxKind::Str)
                     {
                         propagate_style = true;
                     }
-                    // Check if it's a symbol or a text with a minus sign
+                    // Check if it's just a symbol
+                    else if sub_children.len() == 1
+                        && sub_children[0].kind() == SyntaxKind::MathIdent
+                    {
+                        if get_symbol(
+                            sub_children[0].cast::<MathIdent>().unwrap().to_string(),
+                            options,
+                        )
+                        .is_some()
+                        {
+                            propagate_style = true;
+                        }
+                    }
+                    // Check if it's a text with a sign
                     else if sub_children.len() == 2
                         && sub_children[0].kind() == SyntaxKind::Shorthand
-                        && (sub_children[1].kind() == SyntaxKind::MathIdent
-                            || sub_children[1].kind() == SyntaxKind::Text
+                        && (sub_children[1].kind() == SyntaxKind::Text
                             || sub_children[1].kind() == SyntaxKind::Str)
                     {
                         propagate_style = true;
+                    }
+                    // Check if it's a symbol with a sign
+                    else if sub_children.len() == 2
+                        && sub_children[0].kind() == SyntaxKind::Shorthand
+                        && sub_children[1].kind() == SyntaxKind::MathIdent
+                    {
+                        if get_symbol(
+                            sub_children[1].cast::<MathIdent>().unwrap().to_string(),
+                            options,
+                        )
+                        .is_some()
+                        {
+                            propagate_style = true;
+                        }
                     }
 
                     // We can propagate, hide paren and then continue over children (With a for loop and a call to inner, to keep current style)
