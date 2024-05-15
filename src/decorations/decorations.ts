@@ -116,7 +116,7 @@ export class Decorations {
                 for (let t in this.allDecorations) {
                     // Translate ones that are after the edition
                     this.allDecorations[t].ranges = this.allDecorations[t].ranges.map(range => {
-                        if (range.range.end.line >= parsed.edit_end_line - 1) {
+                        if (range.range.end.line >= parsed.edit_end_line + (this.offset < 0 ? 0 : - this.offset +1)) {
                             return {
                                 range: new vscode.Range(range.range.start.translate(this.offset), range.range.end.translate(this.offset)),
                             };
@@ -126,7 +126,7 @@ export class Decorations {
                     });
                     // Remove ones that are in the edition
                     this.allDecorations[t].ranges = this.allDecorations[t].ranges.filter(range => {
-                        if (range.range.start.line === parsed.edit_end_line - 1) { // Touch line at the end, check if columns intersect
+                        if (range.range.start.line === parsed.edit_end_line) { // Touch line at the end, check if columns intersect
                             return parsed.edit_end_column < range.range.start.character;
                         } else if (range.range.end.line === parsed.edit_start_line) { // Touch line at the start, check if columns intersect
                             return parsed.edit_start_column > range.range.end.character;
@@ -228,10 +228,10 @@ export class Decorations {
                     this.offset += event.contentChanges[0].text.split("\n").length - 1 - (event.contentChanges[0].range.end.line - event.contentChanges[0].range.start.line);
                 }
 
-                if (event.contentChanges[0].range.start.line === this.edited_line.start
+                if (event.contentChanges[0].range.start.line >= this.edited_line.start
                     && event.contentChanges[0].range.end.line >= this.edited_line.end) { // Not the first change, but just extend at the end
                     this.edited_line.end = event.contentChanges[0].range.end.line;
-                } else if (event.contentChanges[0].range.end.line === this.edited_line.end
+                } else if (event.contentChanges[0].range.end.line <= this.edited_line.end
                     && event.contentChanges[0].range.start.line <= this.edited_line.start) { // Not the first change, but extend at the start
                     this.edited_line.start = event.contentChanges[0].range.start.line;
                 } else { // Not the first change, next rendering will be complete 

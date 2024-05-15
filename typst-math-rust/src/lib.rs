@@ -63,12 +63,26 @@ pub fn parse_document(
         // if edited_line_start is -1, we render the complete text
         let edited_range = source
             .line_to_range(edited_line_start as usize)
-            .unwrap()
+            .unwrap_or(
+                source
+                    .line_to_range(0)
+                    .expect("No lines in the current source"),
+            )
             .start
-            ..source.line_to_range(edited_line_end as usize).unwrap().end;
+            ..source
+                .line_to_range(edited_line_end as usize)
+                .unwrap_or(
+                    source
+                        .line_to_range(source.len_lines() - 1)
+                        .expect("Unreachable"),
+                )
+                .end;
 
         // Create a "fake" edit of the document (We don't change the content) to get the part which was reparsed
-        let txt = source.get(edited_range.clone()).unwrap().to_string();
+        let txt = source
+            .get(edited_range.clone())
+            .expect("Edited range outside source")
+            .to_string();
         let range = source.edit(edited_range, txt.as_str());
 
         // Find all nodes in this range
@@ -78,13 +92,18 @@ pub fn parse_document(
             &mut nodes,
         );
 
-        // Get the range of part which will be reparsed
-        let first = source.find(nodes.first().unwrap().span()).unwrap().range();
-        let last = source.find(nodes.last().unwrap().span()).unwrap().range();
-        edit_start_line = source.byte_to_line(first.start).unwrap();
-        edit_end_line = source.byte_to_line(last.end).unwrap();
-        edit_start_column = source.byte_to_column(first.start).unwrap();
-        edit_end_column = source.byte_to_column(last.end).unwrap();
+        if nodes.is_empty() {
+            // If no nodes were found, parse the entire document
+            nodes.push(source.root().clone());
+        } else {
+            // Get the range of part which will be reparsed
+            let first = source.find(nodes.first().unwrap().span()).unwrap().range();
+            let last = source.find(nodes.last().unwrap().span()).unwrap().range();
+            edit_start_line = source.byte_to_line(first.start).unwrap();
+            edit_end_line = source.byte_to_line(last.end).unwrap();
+            edit_start_column = source.byte_to_column(first.start).unwrap();
+            edit_end_column = source.byte_to_column(last.end).unwrap();
+        }
     } else {
         // Parse the entire document
         nodes.push(source.root().clone());
