@@ -19,6 +19,7 @@ export class Decorations {
     edited_line = {
         start: -1,
         end: -1,
+        start_col: 0
     }; // Range of lines edited
     offset = 0; // Line offset of the edition, used to translate symbols
     activeEditor = vscode.window.activeTextEditor;
@@ -105,6 +106,7 @@ export class Decorations {
 
             let parsed = getWASM().parse_document(this.activeEditor.document.getText() as string, this.edited_line.start, this.edited_line.end, this.renderingMode, this.renderOutsideMath, this.renderSpaces, this.blacklistedSymbols, this.customSymbols);
 
+            console.log(parsed.edit_start_line, parsed.edit_start_column, parsed.edit_end_line, parsed.edit_end_column);
             // If edited lines aren't defined, we clear all ranges
             // If they are defined, remove symbols whiwh were rendered again, and trnaslate ones after the edition
             if (this.edited_line.start < 0) {
@@ -116,7 +118,7 @@ export class Decorations {
                 for (let t in this.allDecorations) {
                     // Translate ones that are after the edition
                     this.allDecorations[t].ranges = this.allDecorations[t].ranges.map(range => {
-                        if (range.range.end.line >= parsed.edit_end_line + (this.offset < 0 ? 0 : - this.offset)) {
+                        if (range.range.end.line > this.edited_line.start || (range.range.end.line === this.edited_line.start && range.range.end.character >= this.edited_line.start_col)) {
                             return {
                                 range: new vscode.Range(range.range.start.translate(this.offset), range.range.end.translate(this.offset)),
                             };
@@ -163,6 +165,7 @@ export class Decorations {
             this.edited_line = {
                 start: parsed.erroneous ? -2 : -1,
                 end: parsed.erroneous ? -2 : -1,
+                start_col: 0
             };
             console.timeEnd("reloadDecorations");
             this.renderDecorations();
@@ -209,7 +212,8 @@ export class Decorations {
                 this.offset = 0;
                 this.edited_line = {
                     start: -2,
-                    end: -2
+                    end: -2,
+                    start_col: 0
                 };
             } else if (this.edited_line.start === -1) { // First change since last rendering
                 if (event.contentChanges[0].text === "") {
@@ -219,7 +223,8 @@ export class Decorations {
                 }
                 this.edited_line = {
                     start: event.contentChanges[0].range.start.line,
-                    end: event.contentChanges[0].range.end.line
+                    end: event.contentChanges[0].range.end.line,
+                    start_col: event.contentChanges[0].range.start.character
                 };
             } else if (this.edited_line.start !== -1) { // Not the first change
                 // Compute aditionnal offset
@@ -239,14 +244,16 @@ export class Decorations {
                     this.offset = 0;
                     this.edited_line = {
                         start: -2,
-                        end: -2
+                        end: -2,
+                        start_col: 0,
                     };
                 }
             } else { // By default, next one will be complete, but let the next editing update these values
                 this.offset = 0;
                 this.edited_line = {
                     start: -1,
-                    end: -1
+                    end: -1,
+                    start_col: 0,
                 };
             }
         }
