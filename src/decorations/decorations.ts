@@ -84,6 +84,11 @@ export class Decorations {
             this.allDecorations[key].decorationType.dispose();
         }
         this.allDecorations = {};
+        this.edited_line = { // Force complete rendering next time
+            start: -2,
+            end: -2,
+            start_col: 0
+        };
         this.reloadDecorations();
     }
     onConfigChange(event: vscode.ConfigurationChangeEvent) {
@@ -106,7 +111,6 @@ export class Decorations {
 
             let parsed = getWASM().parse_document(this.activeEditor.document.getText() as string, this.edited_line.start, this.edited_line.end, this.renderingMode, this.renderOutsideMath, this.renderSpaces, this.blacklistedSymbols, this.customSymbols);
 
-            console.log(parsed.edit_start_line, parsed.edit_start_column, parsed.edit_end_line, parsed.edit_end_column);
             // If edited lines aren't defined, we clear all ranges
             // If they are defined, remove symbols whiwh were rendered again, and trnaslate ones after the edition
             if (this.edited_line.start < 0) {
@@ -263,6 +267,7 @@ export class Decorations {
     onActiveTextEditorChange(editor: vscode.TextEditor | undefined) {
         this.activeEditor = editor;
         if (this.activeEditor) {
+            this.clearDecorations(); // Clear decorations on the previous editor
             this.reloadDecorations();
         }
         updateStatusBarItem(this);

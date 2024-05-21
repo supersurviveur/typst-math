@@ -26,8 +26,8 @@ pub fn inner_ast_dfs(
     child: Option<&SyntaxNode>,
     result: &mut HashMap<String, Decoration>,
     state: State,
-    uuid: &str,
-    added_text_decoration: &str,
+    mut uuid: &str,
+    mut added_text_decoration: &str,
     offset: (usize, usize),
     options: &Options,
 ) {
@@ -107,6 +107,21 @@ pub fn inner_ast_dfs(
                         uuid,
                         added_text_decoration,
                         offset,
+                        options,
+                    );
+                } else {
+                    inner_ast_dfs(
+                        source,
+                        attachment.base(),
+                        None,
+                        result,
+                        State {
+                            is_base: false,
+                            is_attachment: false,
+                        },
+                        "",
+                        "",
+                        (0, 0),
                         options,
                     );
                 }
@@ -286,7 +301,7 @@ pub fn inner_ast_dfs(
                         return;
                     }
                 }
-                ast_dfs(source, &child, result, state, options); // Propagate the function
+                ast_dfs(source, &child, result, state, "", "", options); // Propagate the function
             }
         }
         // Typst shorthands
@@ -470,19 +485,21 @@ pub fn inner_ast_dfs(
                             format!("{uuid}-func-{}", symbol),
                             symbol.to_string(),
                             Color::Number,
-                            format!("{}{}", added_text_decoration, decoration),
+                            format!("{}", decoration),
                             result,
-                            (offset.0, 1 + offset.1),
+                            (0, 1),
                             options,
                         );
-                        insert_void(source, children[2].span(), result, offset, options);
+                        insert_void(source, children[2].span(), result, (0, 0), options);
+                        added_text_decoration = "";
+                        uuid = "";
                     }
                 } else if let Some(symbol) = match content.as_str() {
                     "abs" => Some('|'),
                     "norm" => Some('‖'),
                     _ => None,
                 } {
-                    insert_void(source, span, result, offset, options);
+                    insert_void(source, span, result, (offset.0, 0), options);
                     insert_result(
                         source,
                         children[0].span(),
@@ -491,7 +508,7 @@ pub fn inner_ast_dfs(
                         Color::Operator,
                         format!("{}", added_text_decoration),
                         result,
-                        offset,
+                        (0,0),
                         options,
                     );
                     insert_result(
@@ -502,7 +519,7 @@ pub fn inner_ast_dfs(
                         Color::Operator,
                         format!("{}", added_text_decoration),
                         result,
-                        offset,
+                        (0, offset.1),
                         options,
                     );
                 } else if content.as_str() == "sqrt" && args.children().len() == 3 && children[0].kind() == SyntaxKind::LeftParen && children[2].kind() == SyntaxKind::RightParen {
@@ -523,12 +540,11 @@ pub fn inner_ast_dfs(
                             '\u{0305}'.to_string(),
                             Color::Operator,
                             format!(
-                                "{}font-family: JuliaMono; transform: scaleX({:.1}) translate(-0.01em, -0.25em); display: inline-block;",
-                                added_text_decoration,
+                                "font-family: JuliaMono; transform: scaleX({:.1}) translate(-0.01em, -0.25em); display: inline-block;",
                                 root_size.unwrap()
                             ),
                             result,
-                            offset,
+                            (0, 0),
                             options,
                         );
                         insert_result(
@@ -537,23 +553,41 @@ pub fn inner_ast_dfs(
                             format!("{uuid}-func-{}", '√'),
                             '√'.to_string(),
                             Color::Operator,
-                            format!("{}font-family: JuliaMono; display: inline-block; transform: translate(0.1em, -0.1em);", added_text_decoration),
+                            format!("font-family: JuliaMono; display: inline-block; transform: translate(0.1em, -0.1em);"),
                             result,
-                            offset,
+                            (0, 0),
                             options,
                         );
-                        insert_void(source, children[2].span(), result, offset, options);
+                        insert_void(source, children[2].span(), result, (0, 0), options);
+                        added_text_decoration = "";
+                        uuid = "";
                     }
                 } else {
                     inner_ast_dfs(source, func.callee(), Some(func.callee().to_untyped()), result, state.clone(), uuid, added_text_decoration, offset, options);
                 }
                 }
             }
-            ast_dfs(source, func.args().to_untyped(), result, state, options);
+            ast_dfs(
+                source,
+                func.args().to_untyped(),
+                result,
+                state,
+                uuid,
+                added_text_decoration,
+                options,
+            );
         }
         _ => {
             if let Some(child) = child {
-                ast_dfs(source, child, result, state, options); // Propagate the function
+                ast_dfs(
+                    source,
+                    child,
+                    result,
+                    state,
+                    uuid,
+                    added_text_decoration,
+                    options,
+                ); // Propagate the function
             }
         }
     }
@@ -565,6 +599,8 @@ pub fn ast_dfs(
     node: &SyntaxNode,
     result: &mut HashMap<String, Decoration>,
     state: State,
+    uuid: &str,
+    added_text_decoration: &str,
     options: &Options,
 ) {
     for child in node.children() {
@@ -575,13 +611,21 @@ pub fn ast_dfs(
                 Some(child),
                 result,
                 state.clone(),
-                "",
-                "",
+                uuid,
+                added_text_decoration,
                 (0, 0),
                 options,
             )
         } else {
-            ast_dfs(source, child, result, state.clone(), options);
+            ast_dfs(
+                source,
+                child,
+                result,
+                state.clone(),
+                uuid,
+                added_text_decoration,
+                options,
+            );
         }
     }
 }

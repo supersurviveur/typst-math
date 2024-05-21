@@ -1,8 +1,6 @@
 mod interface;
 mod parser;
 mod utils;
-extern crate web_sys;
-use web_sys::console;
 
 // use std::time::Instant;
 use std::{collections::HashMap, ops::Range};
@@ -45,13 +43,13 @@ pub fn parse_document(
 ) -> Parsed {
     // Generate a fake source
     let mut source = typst_syntax::Source::detached(content.to_string());
-    // println!("{:#?}", source.root());
+    println!("{:#?}", source.root());
 
     // let now = Instant::now();
     // let elapsed_time = now.elapsed();
     // println!("Running slow_function() took {} miliseconds.", elapsed_time.as_millis());
     // logger::info(format!("Hello from Rust! {}ms", elapsed_time.as_millis()).as_str());
-    console::time_with_label("rust");
+    
     // These variable contains the range of the document that was parsed incrementally and will be returned to the extension
     let mut edit_start_line = 0;
     let mut edit_end_line = 0;
@@ -108,7 +106,6 @@ pub fn parse_document(
         // Parse the entire document
         nodes.push(source.root().clone());
     }
-    console::time_end_with_label("rust");
 
     // Generate custom symbols hashmap
     let custom_symbols = custom_symbols
@@ -159,6 +156,8 @@ pub fn parse_document(
                     is_base: false,
                     is_attachment: false,
                 },
+                "",
+                "",
                 &options,
             );
         }
