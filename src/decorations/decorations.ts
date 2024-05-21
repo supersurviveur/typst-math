@@ -19,7 +19,8 @@ export class Decorations {
     edited_line = {
         start: -1,
         end: -1,
-        start_col: 0
+        start_col: 0,
+        end_col: 0
     }; // Range of lines edited
     offset = 0; // Line offset of the edition, used to translate symbols
     activeEditor = vscode.window.activeTextEditor;
@@ -87,7 +88,8 @@ export class Decorations {
         this.edited_line = { // Force complete rendering next time
             start: -2,
             end: -2,
-            start_col: 0
+            start_col: 0,
+            end_col: 0
         };
         this.reloadDecorations();
     }
@@ -122,9 +124,21 @@ export class Decorations {
                 for (let t in this.allDecorations) {
                     // Translate ones that are after the edition
                     this.allDecorations[t].ranges = this.allDecorations[t].ranges.map(range => {
-                        if (range.range.end.line > this.edited_line.start || (range.range.end.line === this.edited_line.start && range.range.end.character >= this.edited_line.start_col)) {
+                        if (range.range.start.line > this.edited_line.end || (range.range.start.line === this.edited_line.end && range.range.start.character > this.edited_line.end_col)) {
+                            let nstart = range.range.start.line + this.offset < 0 ? new vscode.Position(0, 0) : range.range.start.translate(this.offset);
+                            let nend = range.range.end.line + this.offset < 0 ? new vscode.Position(0, 0) : range.range.end.translate(this.offset);
+                            // Check if nstart is outside doc
+                            if (nstart.line > editor.document.lineCount - 1 || (nstart.line === editor.document.lineCount - 1 && nstart.character > editor.document.lineAt(editor.document.lineCount - 1).range.end.character)) {
+                                nstart = new vscode.Position(editor.document.lineCount - 1, editor.document.lineAt(editor.document.lineCount - 1).range.end.character);
+                                nend = nstart;
+                            }
                             return {
-                                range: new vscode.Range(range.range.start.translate(this.offset), range.range.end.translate(this.offset)),
+                                range: new vscode.Range(nstart, nend),
+                            };
+                        } else if (range.range.start.line > this.edited_line.start || (range.range.start.line === this.edited_line.start && range.range.start.character > this.edited_line.start_col)) {
+                            return {
+                                range: new vscode.Range(new vscode.Position(this.edited_line.start, this.edited_line.start_col),
+                                    new vscode.Position(this.edited_line.start, this.edited_line.start_col)),
                             };
                         } else {
                             return range;
@@ -132,10 +146,14 @@ export class Decorations {
                     });
                     // Remove ones that are in the edition
                     this.allDecorations[t].ranges = this.allDecorations[t].ranges.filter(range => {
-                        if (range.range.start.line === parsed.edit_end_line) { // Touch line at the end, check if columns intersect
-                            return parsed.edit_end_column < range.range.start.character;
+                        if (range.range.start.line === parsed.edit_start_line) { // Touch line at the start, check if columns intersect
+                            return parsed.edit_start_column >= range.range.end.character;
+                        } else if (range.range.end.line === parsed.edit_end_line) { // Touch line at the end, check if columns intersect
+                            return parsed.edit_end_column <= range.range.start.character;
+                        } else if (range.range.start.line === parsed.edit_end_line) { // Touch line at the end, check if columns intersect
+                            return parsed.edit_start_column <= range.range.start.character;
                         } else if (range.range.end.line === parsed.edit_start_line) { // Touch line at the start, check if columns intersect
-                            return parsed.edit_start_column > range.range.end.character;
+                            return parsed.edit_end_column >= range.range.end.character;
                         }
                         // Check if lines intersect
                         return !(
@@ -169,7 +187,8 @@ export class Decorations {
             this.edited_line = {
                 start: parsed.erroneous ? -2 : -1,
                 end: parsed.erroneous ? -2 : -1,
-                start_col: 0
+                start_col: 0,
+                end_col: 0
             };
             console.timeEnd("reloadDecorations");
             this.renderDecorations();
@@ -217,7 +236,8 @@ export class Decorations {
                 this.edited_line = {
                     start: -2,
                     end: -2,
-                    start_col: 0
+                    start_col: 0,
+                    end_col: 0
                 };
             } else if (this.edited_line.start === -1) { // First change since last rendering
                 if (event.contentChanges[0].text === "") {
@@ -228,7 +248,8 @@ export class Decorations {
                 this.edited_line = {
                     start: event.contentChanges[0].range.start.line,
                     end: event.contentChanges[0].range.end.line,
-                    start_col: event.contentChanges[0].range.start.character
+                    start_col: event.contentChanges[0].range.start.character,
+                    end_col: event.contentChanges[0].range.end.character
                 };
             } else if (this.edited_line.start !== -1) { // Not the first change
                 // Compute aditionnal offset
@@ -250,6 +271,7 @@ export class Decorations {
                         start: -2,
                         end: -2,
                         start_col: 0,
+                        end_col: 0
                     };
                 }
             } else { // By default, next one will be complete, but let the next editing update these values
@@ -258,6 +280,7 @@ export class Decorations {
                     start: -1,
                     end: -1,
                     start_col: 0,
+                    end_col: 0
                 };
             }
         }
