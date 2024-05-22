@@ -26,8 +26,8 @@ pub fn inner_ast_dfs(
     child: Option<&SyntaxNode>,
     result: &mut HashMap<String, Decoration>,
     state: State,
-    mut uuid: &str,
-    mut added_text_decoration: &str,
+    uuid: &str,
+    added_text_decoration: &str,
     offset: (usize, usize),
     options: &Options,
 ) {
@@ -386,6 +386,7 @@ pub fn inner_ast_dfs(
         Expr::FuncCall(func) => {
             let args = func.args().to_untyped();
             let children: Vec<&SyntaxNode> = args.children().collect();
+            let mut propagate_style = true;
 
             // If there is just a text, try to apply a text func like blackbold, caligraphy...
             if args.children().len() == 3
@@ -491,8 +492,7 @@ pub fn inner_ast_dfs(
                             options,
                         );
                         insert_void(source, children[2].span(), result, (0, 0), options);
-                        added_text_decoration = "";
-                        uuid = "";
+                        propagate_style = false;
                     }
                 } else if let Some(symbol) = match content.as_str() {
                     "abs" => Some('|'),
@@ -513,7 +513,7 @@ pub fn inner_ast_dfs(
                     );
                     insert_result(
                         source,
-                        children[2].span(),
+                        children.last().unwrap().span(),
                         format!("{uuid}-func-{}", symbol),
                         symbol.to_string(),
                         Color::Operator,
@@ -559,21 +559,27 @@ pub fn inner_ast_dfs(
                             options,
                         );
                         insert_void(source, children[2].span(), result, (0, 0), options);
-                        added_text_decoration = "";
-                        uuid = "";
+                        propagate_style = false;
                     }
                 } else {
                     inner_ast_dfs(source, func.callee(), Some(func.callee().to_untyped()), result, state.clone(), uuid, added_text_decoration, offset, options);
+                    propagate_style = false;
                 }
                 }
+            } else {
+                propagate_style = false;
             }
             ast_dfs(
                 source,
                 func.args().to_untyped(),
                 result,
                 state,
-                uuid,
-                added_text_decoration,
+                if propagate_style { uuid } else { "" },
+                if propagate_style {
+                    added_text_decoration
+                } else {
+                    ""
+                },
                 options,
             );
         }
