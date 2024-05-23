@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { createDecorationType } from './helpers';
+import { createDecorationType, strictIntersection } from './helpers';
 import { Logger } from '../logger';
 import { blacklistedSymbols, getColors, getRenderingMode, customSymbols, renderSpaces, renderSymbolsOutsideMath } from '../utils';
 import getWASM from '../wasmHelper';
@@ -121,44 +121,30 @@ export class Decorations {
                     this.allDecorations[t].ranges = [];
                 }
             } else {
+                let reparsed_range = new vscode.Range(new vscode.Position(parsed.edit_start_line, parsed.edit_start_column), new vscode.Position(parsed.edit_end_line, parsed.edit_end_column));
+                let edited_range = new vscode.Range(this.edited_line.start, this.edited_line.start_col, this.edited_line.end, this.edited_line.end_col);
                 for (let t in this.allDecorations) {
                     // Translate ones that are after the edition
                     this.allDecorations[t].ranges = this.allDecorations[t].ranges.map(range => {
-                        if (range.range.start.line > this.edited_line.end || (range.range.start.line === this.edited_line.end && range.range.start.character > this.edited_line.end_col)) {
+                        if (range.range.start.isAfterOrEqual(edited_range.end)) {
                             let nstart = range.range.start.line + this.offset < 0 ? new vscode.Position(0, 0) : range.range.start.translate(this.offset);
                             let nend = range.range.end.line + this.offset < 0 ? new vscode.Position(0, 0) : range.range.end.translate(this.offset);
-                            // Check if nstart is outside doc
-                            if (nstart.line > editor.document.lineCount - 1 || (nstart.line === editor.document.lineCount - 1 && nstart.character > editor.document.lineAt(editor.document.lineCount - 1).range.end.character)) {
-                                nstart = new vscode.Position(editor.document.lineCount - 1, editor.document.lineAt(editor.document.lineCount - 1).range.end.character);
-                                nend = nstart;
+
+                            // If the range is on the same line as the edition, we need to translate it on columns too
+                            if (range.range.start.line === edited_range.end.line) {
+                                nstart = nstart.translate(0, -edited_range.end.character);
+                                nend = nend.translate(0, -edited_range.end.character);
                             }
                             return {
                                 range: new vscode.Range(nstart, nend),
-                            };
-                        } else if (range.range.start.line > this.edited_line.start || (range.range.start.line === this.edited_line.start && range.range.start.character > this.edited_line.start_col)) {
-                            return {
-                                range: new vscode.Range(new vscode.Position(this.edited_line.start, this.edited_line.start_col),
-                                    new vscode.Position(this.edited_line.start, this.edited_line.start_col)),
                             };
                         } else {
                             return range;
                         }
                     });
-                    // Remove ones that are in the edition
+                    // Remove ones that are in the reparsed range
                     this.allDecorations[t].ranges = this.allDecorations[t].ranges.filter(range => {
-                        if (range.range.start.line === parsed.edit_start_line) { // Touch line at the start, check if columns intersect
-                            return parsed.edit_start_column >= range.range.end.character;
-                        } else if (range.range.end.line === parsed.edit_end_line) { // Touch line at the end, check if columns intersect
-                            return parsed.edit_end_column <= range.range.start.character;
-                        } else if (range.range.start.line === parsed.edit_end_line) { // Touch line at the end, check if columns intersect
-                            return parsed.edit_start_column <= range.range.start.character;
-                        } else if (range.range.end.line === parsed.edit_start_line) { // Touch line at the start, check if columns intersect
-                            return parsed.edit_end_column >= range.range.end.character;
-                        }
-                        // Check if lines intersect
-                        return !(
-                            range.range.start.line < parsed.edit_end_line && range.range.end.line > parsed.edit_start_line
-                        );
+                        return !strictIntersection(reparsed_range, range.range);
                     });
                 }
             }

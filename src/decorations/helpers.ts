@@ -9,3 +9,17 @@ export function createDecorationType(options: vscode.ThemableDecorationAttachmen
         }
     });
 }
+
+/**
+ * Check if ranges intersect and if the intersection is empty.
+ * @param a The first range
+ * @param b The second range
+ * @returns Return `false` if ranges don't intersect or if intersection is empty.
+ */
+export function strictIntersection(a: vscode.Range, b: vscode.Range): boolean {
+    let inter = a.intersection(b);
+    if (inter !== undefined) {
+        return !inter.isEmpty;
+    }
+    return false;
+};
