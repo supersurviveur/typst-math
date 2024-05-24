@@ -43,12 +43,7 @@ pub fn parse_document(
 ) -> Parsed {
     // Generate a fake source
     let mut source = typst_syntax::Source::detached(content.to_string());
-    println!("{:#?}", source.root());
-
-    // let now = Instant::now();
-    // let elapsed_time = now.elapsed();
-    // println!("Running slow_function() took {} miliseconds.", elapsed_time.as_millis());
-    // logger::info(format!("Hello from Rust! {}ms", elapsed_time.as_millis()).as_str());
+    // println!("{:#?}", source.root());
     
     // These variable contains the range of the document that was parsed incrementally and will be returned to the extension
     let mut edit_start_line = 0;
@@ -136,7 +131,6 @@ pub fn parse_document(
             inner_ast_dfs(
                 &source,
                 expr,
-                Some(&node),
                 &mut result,
                 State {
                     is_base: false,

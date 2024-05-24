@@ -146,7 +146,7 @@ export class Decorations {
                     // Remove ones that are in the reparsed range or outside the document
                     let document = this.activeEditor?.document;
                     this.allDecorations[t].ranges = this.allDecorations[t].ranges.filter(range => {
-                        return !strictIntersection(reparsed_range, range.range) && document.lineAt(document.lineCount -1).range.end.isAfter(range.range.end);
+                        return !strictIntersection(reparsed_range, range.range) && document.lineAt(document.lineCount -1).range.end.isAfterOrEqual(range.range.end);
                     });
                 }
             }
