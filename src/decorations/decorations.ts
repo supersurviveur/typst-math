@@ -16,12 +16,15 @@ export class Decorations {
     selection_timeout: NodeJS.Timeout | undefined = undefined;
     last_selection_line = { start: -1, end: -1 }; // Keep the position of the last edited line
     editing = false; // Used to know if the document was edited
-    edited_line = {
-        start: -1,
-        end: -1,
-        start_col: 0,
-        end_col: 0
-    }; // Range of lines edited
+    edition_state: {
+        reload_type: -2 | -1 | 0,
+        edited_range: vscode.Range | undefined,
+        selection_end: vscode.Position | undefined
+    } = {
+            reload_type: -1,
+            edited_range: undefined,
+            selection_end: undefined
+        };
     offset = 0; // Line offset of the edition, used to translate symbols
     activeEditor = vscode.window.activeTextEditor;
     rendering = true;
@@ -85,11 +88,10 @@ export class Decorations {
             this.allDecorations[key].decorationType.dispose();
         }
         this.allDecorations = {};
-        this.edited_line = { // Force complete rendering next time
-            start: -2,
-            end: -2,
-            start_col: 0,
-            end_col: 0
+        this.edition_state = { // Force complete rendering next time
+            reload_type: -2,
+            edited_range: undefined,
+            selection_end: undefined
         };
         this.reloadDecorations();
     }
@@ -111,30 +113,29 @@ export class Decorations {
             // Get symbols list
             this.generateCustomSymbols();
 
-            let parsed = getWASM().parse_document(this.activeEditor.document.getText() as string, this.edited_line.start, this.edited_line.end, this.renderingMode, this.renderOutsideMath, this.renderSpaces, this.blacklistedSymbols, this.customSymbols);
+            let parsed = getWASM().parse_document(this.activeEditor.document.getText() as string, this.edition_state.edited_range?.start.line || -1, this.edition_state.edited_range?.end.line || -1, this.renderingMode, this.renderOutsideMath, this.renderSpaces, this.blacklistedSymbols, this.customSymbols);
 
             // If edited lines aren't defined, we clear all ranges
             // If they are defined, remove symbols whiwh were rendered again, and trnaslate ones after the edition
-            if (this.edited_line.start < 0) {
+            if (this.edition_state.reload_type < 0) {
                 // Reset ranges
                 for (let t in this.allDecorations) {
                     this.allDecorations[t].ranges = [];
                 }
             } else {
                 let reparsed_range = new vscode.Range(new vscode.Position(parsed.edit_start_line, parsed.edit_start_column), new vscode.Position(parsed.edit_end_line, parsed.edit_end_column));
-                let edited_range = new vscode.Range(this.edited_line.start, this.edited_line.start_col, this.edited_line.end, this.edited_line.end_col);
+                let edited_range = this.edition_state.edited_range as vscode.Range;
+                let selection_end = this.edition_state.selection_end as vscode.Position;
                 for (let t in this.allDecorations) {
+                    // Remove ones that are in the reparsed range
+                    this.allDecorations[t].ranges = this.allDecorations[t].ranges.filter(range => {
+                        return !strictIntersection(new vscode.Range(edited_range.start, selection_end), range.range);
+                    });
                     // Translate ones that are after the edition
                     this.allDecorations[t].ranges = this.allDecorations[t].ranges.map(range => {
-                        if (range.range.start.isAfterOrEqual(edited_range.end)) {
+                        if (range.range.start.isAfterOrEqual(selection_end)) {
                             let nstart = range.range.start.line + this.offset < 0 ? new vscode.Position(0, 0) : range.range.start.translate(this.offset);
                             let nend = range.range.end.line + this.offset < 0 ? new vscode.Position(0, 0) : range.range.end.translate(this.offset);
-
-                            // If the range is on the same line as the edition, we need to translate it on columns too
-                            if (range.range.start.line === edited_range.end.line) {
-                                nstart = nstart.translate(0, -edited_range.end.character);
-                                nend = nend.translate(0, -edited_range.end.character);
-                            }
                             return {
                                 range: new vscode.Range(nstart, nend),
                             };
@@ -170,11 +171,10 @@ export class Decorations {
             }
             // Reset edited line
             // If there is an error in AST, force complete rendering next time, otherwise some symbols are never renderer after errors like missing $
-            this.edited_line = {
-                start: parsed.erroneous ? -2 : -1,
-                end: parsed.erroneous ? -2 : -1,
-                start_col: 0,
-                end_col: 0
+            this.edition_state = {
+                reload_type: parsed.erroneous ? -2 : -1,
+                edited_range: undefined,
+                selection_end: undefined
             };
             console.timeEnd("reloadDecorations");
             this.renderDecorations();
@@ -219,55 +219,37 @@ export class Decorations {
             // negative values mean that next rendering will be complete, but -2 force it while -1 let the next edition change the edition range
             if (event.contentChanges.length > 1) { // too many changes, next rendering will be complete
                 this.offset = 0;
-                this.edited_line = {
-                    start: -2,
-                    end: -2,
-                    start_col: 0,
-                    end_col: 0
+                this.edition_state = {
+                    reload_type: -2,
+                    edited_range: undefined,
+                    selection_end: undefined
                 };
-            } else if (this.edited_line.start === -1) { // First change since last rendering
-                if (event.contentChanges[0].text === "") {
-                    this.offset = -(event.contentChanges[0].range.end.line - event.contentChanges[0].range.start.line);
-                } else {
-                    this.offset = event.contentChanges[0].text.split("\n").length - 1 - (event.contentChanges[0].range.end.line - event.contentChanges[0].range.start.line);
-                }
-                this.edited_line = {
-                    start: event.contentChanges[0].range.start.line,
-                    end: event.contentChanges[0].range.end.line,
-                    start_col: event.contentChanges[0].range.start.character,
-                    end_col: event.contentChanges[0].range.end.character
+            } else if (this.edition_state.reload_type === -1) { // First change since last rendering
+                this.offset = event.contentChanges[0].text.split("\n").length - 1 - (event.contentChanges[0].range.end.line - event.contentChanges[0].range.start.line);
+                this.edition_state = {
+                    reload_type: 0,
+                    edited_range: new vscode.Range(event.contentChanges[0].range.start.line, 0, event.contentChanges[0].range.start.line + event.contentChanges[0].text.split("\n").length - 1, this.activeEditor.document.lineAt(event.contentChanges[0].range.start.line + event.contentChanges[0].text.split("\n").length - 1).range.end.character),
+                    selection_end: event.contentChanges[0].range.end
                 };
-            } else if (this.edited_line.start !== -1) { // Not the first change
+            } else if (this.edition_state.reload_type >= 0) { // Not the first change
                 // Compute aditionnal offset
-                if (event.contentChanges[0].text === "") {
-                    this.offset += -(event.contentChanges[0].range.end.line - event.contentChanges[0].range.start.line);
-                } else {
-                    this.offset += event.contentChanges[0].text.split("\n").length - 1 - (event.contentChanges[0].range.end.line - event.contentChanges[0].range.start.line);
-                }
+                this.offset += event.contentChanges[0].text.split("\n").length - 1 - (event.contentChanges[0].range.end.line - event.contentChanges[0].range.start.line);
 
-                if (event.contentChanges[0].range.start.line >= this.edited_line.start
-                    && event.contentChanges[0].range.end.line >= this.edited_line.end) { // Not the first change, but just extend at the end
-                    this.edited_line.end = event.contentChanges[0].range.end.line;
-                } else if (event.contentChanges[0].range.end.line <= this.edited_line.end
-                    && event.contentChanges[0].range.start.line <= this.edited_line.start) { // Not the first change, but extend at the start
-                    this.edited_line.start = event.contentChanges[0].range.start.line;
+                let current = this.edition_state.edited_range as vscode.Range;
+                if (event.contentChanges[0].range.start.line >= current.start.line
+                    && event.contentChanges[0].range.end.line >= current.end.line) { // Not the first change, but just extend at the end
+                    this.edition_state.edited_range = new vscode.Range(this.edition_state.edited_range?.start.line as number, this.edition_state.edited_range?.start.character as number, event.contentChanges[0].range.start.line + event.contentChanges[0].text.split("\n").length - 1, this.activeEditor.document.lineAt(event.contentChanges[0].range.start.line + event.contentChanges[0].text.split("\n").length - 1).range.end.character);
+                } else if (event.contentChanges[0].range.end.line <= current.end.line
+                    && event.contentChanges[0].range.start.line <= current.start.line) { // Not the first change, but extend at the start
+                    this.edition_state.edited_range = new vscode.Range(event.contentChanges[0].range.start.line, 0, this.edition_state.edited_range?.end.line as number, this.edition_state.edited_range?.end.character as number);
                 } else { // Not the first change, next rendering will be complete 
                     this.offset = 0;
-                    this.edited_line = {
-                        start: -2,
-                        end: -2,
-                        start_col: 0,
-                        end_col: 0
+                    this.edition_state = {
+                        reload_type: -2,
+                        edited_range: undefined,
+                        selection_end: undefined
                     };
                 }
-            } else { // By default, next one will be complete, but let the next editing update these values
-                this.offset = 0;
-                this.edited_line = {
-                    start: -1,
-                    end: -1,
-                    start_col: 0,
-                    end_col: 0
-                };
             }
         }
     }
