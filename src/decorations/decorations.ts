@@ -127,7 +127,7 @@ export class Decorations {
                 let edited_range = this.edition_state.edited_range as vscode.Range;
                 let selection_end = this.edition_state.selection_end as vscode.Position;
                 for (let t in this.allDecorations) {
-                    // Remove ones that are in the reparsed range
+                    // Remove ones that are in the edited range
                     this.allDecorations[t].ranges = this.allDecorations[t].ranges.filter(range => {
                         return !strictIntersection(new vscode.Range(edited_range.start, selection_end), range.range);
                     });
@@ -143,9 +143,10 @@ export class Decorations {
                             return range;
                         }
                     });
-                    // Remove ones that are in the reparsed range
+                    // Remove ones that are in the reparsed range or outside the document
+                    let document = this.activeEditor?.document;
                     this.allDecorations[t].ranges = this.allDecorations[t].ranges.filter(range => {
-                        return !strictIntersection(reparsed_range, range.range);
+                        return !strictIntersection(reparsed_range, range.range) && document.lineAt(document.lineCount -1).range.end.isAfter(range.range.end);
                     });
                 }
             }
