@@ -2,6 +2,8 @@ import * as vscode from 'vscode';
 import { Color } from "typst-math-rust";
 import getWASM from './wasmHelper';
 
+const config = vscode.workspace.getConfiguration('typst-math');
+
 interface Colors {
     comparison: string,
     keyword: string,
@@ -49,7 +51,6 @@ function enumToColorName(colorEnum: Color): keyof Colors {
 }
 // Get colors from settings
 export function getColors(colorType: Color) {
-    const config = vscode.workspace.getConfiguration('typst-math');
     const colors = config.get<Colors>('colors');
     if (!colors) {
         throw new Error("Invalid colors");
@@ -70,13 +71,15 @@ export function getColors(colorType: Color) {
 
 // Retreive the settings for decorations outside math mode
 export function renderSymbolsOutsideMath() {
-    const config = vscode.workspace.getConfiguration('typst-math');
     return config.get<boolean>('renderSymbolsOutsideMath') || false;
 }
 // Retreive the settings for space rendering
 export function renderSpaces() {
-    const config = vscode.workspace.getConfiguration('typst-math');
     return config.get<boolean>('renderSpaces') || false;
+}
+// Retreive the settings for space rendering
+export function revealOffset() {
+    return config.get<number>('revealOffset') || 0;
 }
 // Retreive the settings for custom symbols
 export function customSymbols(): {
@@ -84,7 +87,6 @@ export function customSymbols(): {
     symbol: string
     category: string
 }[] {
-    const config = vscode.workspace.getConfiguration('typst-math');
     let user = config.get<{
         name: string,
         symbol: string
@@ -104,13 +106,11 @@ export function customSymbols(): {
 }
 // Retreive blacklisted symbols
 export function blacklistedSymbols() {
-    const config = vscode.workspace.getConfiguration('typst-math');
     return config.get<string[]>('blacklist') || [];
 }
 
 // Get the rendering mode
 export function getRenderingMode() {
-    const config = vscode.workspace.getConfiguration('typst-math');
     let mode = config.get<string>('renderingMode');
     if (mode === "nothing") {
         return 0;

@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import { createDecorationType, strictIntersection } from './helpers';
 import { Logger } from '../logger';
-import { blacklistedSymbols, getColors, getRenderingMode, customSymbols, renderSpaces, renderSymbolsOutsideMath } from '../utils';
+import { blacklistedSymbols, getColors, getRenderingMode, customSymbols, renderSpaces, renderSymbolsOutsideMath, revealOffset } from '../utils';
 import getWASM from '../wasmHelper';
 import { updateStatusBarItem } from '../statusbar';
 import { CustomSymbol } from 'typst-math-rust';
@@ -33,6 +33,7 @@ export class Decorations {
     renderOutsideMath = renderSymbolsOutsideMath();
     renderSpaces = renderSpaces();
     blacklistedSymbols = blacklistedSymbols();
+    reveal_offset = revealOffset();
     customSymbols: CustomSymbol[] = [];
 
     // generate a list of custom symbols
@@ -50,9 +51,11 @@ export class Decorations {
             // Generate ranges to reveal
             let reveal_selections: vscode.Range[] = [];
             for (let selection of this.activeEditor.selections) {
+                let start = selection.start.line - this.reveal_offset < 0 ? 0 : selection.start.line - this.reveal_offset;
+                let end = selection.end.line + this.reveal_offset > this.activeEditor.document.lineCount - 1 ? this.activeEditor.document.lineCount - 1 : selection.end.line + this.reveal_offset;
                 reveal_selections.push(new vscode.Range(
-                    new vscode.Position(selection.start.line, 0),
-                    new vscode.Position(selection.end.line, this.activeEditor.document.lineAt(selection.end.line).text.length)));
+                    new vscode.Position(start, 0),
+                    new vscode.Position(end, this.activeEditor.document.lineAt(end).text.length)));
             }
 
             for (let t in this.allDecorations) {
@@ -101,6 +104,7 @@ export class Decorations {
             this.renderOutsideMath = renderSymbolsOutsideMath();
             this.renderSpaces = renderSpaces();
             this.blacklistedSymbols = blacklistedSymbols();
+            this.reveal_offset = revealOffset();
             this.clearDecorations();
         }
     }

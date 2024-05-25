@@ -72,6 +72,11 @@
           "default": false,
           "markdownDescription": "If true, space symbols like space, space.quad, wjoin... will be rendered."
         },
+        "typst-math.revealOffset": {
+          "type": "number",
+          "default": 0,
+          "markdownDescription": "Reveal n lines before and after your current selection."
+        },
         "typst-math.customSymbols": {
           "type": "array",
           "markdownDescription": "List of custom symbols that will be rendered.",
