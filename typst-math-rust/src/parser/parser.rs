@@ -3,9 +3,9 @@
 use super::utils::{get_symbol, unchecked_cast_expr, InnerParser};
 use crate::utils::symbols::{Color, BLACKBOLD_LETTERS, CAL_LETTERS, FRAK_LETTERS};
 use typst_syntax::ast::{
-    AstNode, Expr, FieldAccess, FuncCall, Linebreak, MathAttach, MathIdent, Shorthand, Str, Text,
+    AstNode, Expr, FieldAccess, FuncCall, MathAttach, MathIdent, Shorthand, Str, Text,
 };
-use typst_syntax::{SyntaxKind, SyntaxNode};
+use typst_syntax::{LinkedNode, SyntaxKind};
 
 /// State of the parser, used to know if we are in a base, attachment, or other
 #[derive(Clone)]
@@ -14,65 +14,48 @@ pub struct State {
     pub is_attachment: bool,
 }
 
-/// Inner code of the DFS, used to traverse the AST and apply style \
+/// Use a recursive DFS to traverse the entire AST and apply style \
 /// Most complex part of the code, match the current expression and then,
 /// compute the appropriate style and/or if we need to continue over children
-pub fn inner_ast_dfs(
+pub fn ast_dfs(
     parser: &mut InnerParser,
-    expr: Expr,
+    expr: &LinkedNode,
     uuid: &str,
     added_text_decoration: &str,
     offset: (usize, usize),
 ) {
     // Create the new parser
-    let mut parser = InnerParser::from(
-        parser,
-        expr.to_untyped(),
-        uuid,
-        added_text_decoration,
-        offset,
-    );
+    let mut parser = InnerParser::from(parser, expr, uuid, added_text_decoration, offset);
     // Math the current expression type
-    if let Some(_) = match expr {
-        // Math identifier, check if it is in the symbols list
-        Expr::MathIdent(_) => Some(math_ident_block(&mut parser)),
-        // Field Access, create a string containing all fields sparated with a dot (alpha.alt), and check if it is in symbols list
-        Expr::FieldAccess(_) => Some(field_access_block(&mut parser)),
-        // Replace linebreak with an arrow
-        Expr::Linebreak(_) => Some(linebreak_block(&mut parser)),
-        // Math attachment, power, subscript, superscript
-        Expr::MathAttach(_) => Some(math_attach_block(&mut parser)),
-        // Math block, continue over children and check current state to apply style
-        Expr::Math(_) => Some(math_block(&mut parser)),
-        // Typst shorthands
-        Expr::Shorthand(_) => Some(shorthand_block(&mut parser)),
-        // Typst text block, some symbols are here instead of shorthand
-        Expr::Text(_) => Some(text_block(&mut parser)),
-        // Typst string block (between quotes)
-        Expr::Str(_) => Some(str_block(&mut parser)),
-        // Typst func, if it's a common func, apply style, else continue over args and callee
-        Expr::FuncCall(_) => Some(func_call_block(&mut parser)),
-        _ => None,
-    } {
+    let result = if let Some(expr) = expr.cast::<Expr>() {
+        match expr {
+            // Math identifier, check if it is in the symbols list
+            Expr::MathIdent(_) => Some(math_ident_block(&mut parser)),
+            // Field Access, create a string containing all fields sparated with a dot (alpha.alt), and check if it is in symbols list
+            Expr::FieldAccess(_) => Some(field_access_block(&mut parser)),
+            // Replace linebreak with an arrow
+            Expr::Linebreak(_) => Some(linebreak_block(&mut parser)),
+            // Math attachment, power, subscript, superscript
+            Expr::MathAttach(_) => Some(math_attach_block(&mut parser)),
+            // Math block, continue over children and check current state to apply style
+            Expr::Math(_) => Some(math_block(&mut parser)),
+            // Typst shorthands
+            Expr::Shorthand(_) => Some(shorthand_block(&mut parser)),
+            // Typst text block, some symbols are here instead of shorthand
+            Expr::Text(_) => Some(text_block(&mut parser)),
+            // Typst string block (between quotes)
+            Expr::Str(_) => Some(str_block(&mut parser)),
+            // Typst func, if it's a common func, apply style, else continue over args and callee
+            Expr::FuncCall(_) => Some(func_call_block(&mut parser)),
+            _ => None,
+        }
     } else {
-        // If there is no math, just iterate over children
-        let expr = parser.expr;
-        ast_dfs(&mut parser, expr, uuid, added_text_decoration); // Propagate the function
-    }
-}
-
-/// Use a recursive DFS to traverse the entire AST
-pub fn ast_dfs(
-    parser: &mut InnerParser,
-    node: &SyntaxNode,
-    uuid: &str,
-    added_text_decoration: &str,
-) {
-    for child in node.children() {
-        if let Some(expr) = child.cast::<Expr>() {
-            inner_ast_dfs(parser, expr, uuid, added_text_decoration, (0, 0))
-        } else {
-            ast_dfs(parser, child, uuid, added_text_decoration);
+        None
+    };
+    if result.is_none() {
+        // Propagate the function
+        for child in expr.children() {
+            ast_dfs(&mut parser, &child, uuid, added_text_decoration, (0, 0));
         }
     }
 }
@@ -108,9 +91,9 @@ fn field_access_recursive(access: FieldAccess) -> Option<String> {
 fn math_ident_block(parser: &mut InnerParser) {
     let ident = unchecked_cast_expr::<MathIdent>(parser.expr);
     parser.insert_result_symbol(
-        ident.span(),
+        parser.expr.range(),
         ident.to_string(),
-        format!("{}-{}", parser.uuid, ident.to_string()),
+        format!("{}{}", parser.uuid, ident.to_string()),
         parser.added_text_decoration,
         parser.offset,
         ("", ""),
@@ -130,9 +113,9 @@ fn field_access_block(parser: &mut InnerParser) {
 
         let content = content.replace("sym.", "");
         parser.insert_result_symbol(
-            access.span(),
+            parser.expr.range(),
             content.clone(),
-            format!("{}-{}", parser.uuid, content),
+            format!("{}{}", parser.uuid, content),
             parser.added_text_decoration,
             parser.offset,
             ("", ""),
@@ -140,10 +123,9 @@ fn field_access_block(parser: &mut InnerParser) {
     }
 }
 fn linebreak_block(parser: &mut InnerParser) {
-    let lbreak = unchecked_cast_expr::<Linebreak>(parser.expr);
     parser.insert_result(
-        lbreak.span(),
-        format!("{}-linebreak", parser.uuid),
+        parser.expr.range(),
+        format!("{}linebreak", parser.uuid),
         '⮰'.to_string(),
         Color::Comparison,
         format!(
@@ -161,23 +143,22 @@ fn math_attach_block(parser: &mut InnerParser) {
         is_base: parser.state.is_base,
         is_attachment: parser.state.is_attachment,
     };
-    if let Some(child) = parser.source.find(attachment.span()) {
-        // Check if it is the 'main' base, and render it if true
-        if child.parent_kind() != Some(SyntaxKind::MathAttach) {
-            parser.state.is_base = true;
-            parser.state.is_attachment = false;
-            inner_ast_dfs(
-                parser,
-                attachment.base(),
-                parser.uuid,
-                parser.added_text_decoration,
-                parser.offset,
-            );
-        } else {
-            parser.state.is_base = false;
-            parser.state.is_attachment = false;
-            inner_ast_dfs(parser, attachment.base(), "", "", (0, 0));
-        }
+    let base = parser.expr.find(attachment.base().span()).unwrap();
+    // Check if it is the 'main' base, and render it if true
+    if parser.expr.parent_kind() != Some(SyntaxKind::MathAttach) {
+        parser.state.is_base = true;
+        parser.state.is_attachment = false;
+        ast_dfs(
+            parser,
+            &base,
+            parser.uuid,
+            parser.added_text_decoration,
+            parser.offset,
+        );
+    } else {
+        parser.state.is_base = false;
+        parser.state.is_attachment = false;
+        ast_dfs(parser, &base, "", "", (0, 0));
     }
     // Compute specific offset and style with rendering mode
     if parser.options.rendering_mode > 1 {
@@ -197,10 +178,12 @@ fn math_attach_block(parser: &mut InnerParser) {
     parser.state.is_base = false;
     parser.state.is_attachment = parser.options.rendering_mode > 1;
     if let Some(top) = attachment.top() {
-        inner_ast_dfs(parser, top, "top-", top_decor, parser.offset)
+        let top = parser.expr.find(top.span()).unwrap();
+        ast_dfs(parser, &top, "top-", top_decor, parser.offset)
     }
     if let Some(bottom) = attachment.bottom() {
-        inner_ast_dfs(parser, bottom, "bottom-", bottom_decor, parser.offset)
+        let bottom = parser.expr.find(bottom.span()).unwrap();
+        ast_dfs(parser, &bottom, "bottom-", bottom_decor, parser.offset)
     }
     // Restore the state
     parser.state.is_base = state.is_base;
@@ -208,7 +191,7 @@ fn math_attach_block(parser: &mut InnerParser) {
 }
 
 fn math_block(parser: &mut InnerParser) {
-    let children: Vec<&SyntaxNode> = parser.expr.children().collect();
+    let children: Vec<LinkedNode> = parser.expr.children().collect();
     // If we are in an attachment, check if the current math block is just paren around a symbol
     if children.len() == 3
         && children[0].kind() == SyntaxKind::LeftParen
@@ -217,7 +200,7 @@ fn math_block(parser: &mut InnerParser) {
     {
         // This serie of check aims to verify that the block inside paren is 'simple', wich means that we can propagate style (So top and bottom attachment)
         let mut propagate_style = false;
-        let sub_children: Vec<&SyntaxNode> = children[1].children().collect();
+        let sub_children: Vec<LinkedNode> = children[1].children().collect();
 
         // Check if it's just a text
         if sub_children.len() == 1
@@ -262,23 +245,23 @@ fn math_block(parser: &mut InnerParser) {
 
         // We can propagate, hide paren and then continue over children (With a for loop and a call to inner, to keep current style)
         if propagate_style {
-            parser.insert_void(children[0].span(), (parser.offset.0, 0));
-            parser.insert_void(children[2].span(), (0, parser.offset.1));
+            parser.insert_void(children[0].range(), (parser.offset.0, 0));
+            parser.insert_void(children[2].range(), (0, parser.offset.1));
             for child in children[1].children() {
-                if let Some(expr) = child.cast::<Expr>() {
-                    inner_ast_dfs(
-                        parser,
-                        expr,
-                        parser.uuid,
-                        parser.added_text_decoration,
-                        (0, 0),
-                    );
-                }
+                ast_dfs(
+                    parser,
+                    &child,
+                    parser.uuid,
+                    parser.added_text_decoration,
+                    (0, 0),
+                );
             }
             return;
         }
     }
-    ast_dfs(parser, parser.expr, "", ""); // Propagate the function
+    for child in parser.expr.children() {
+        ast_dfs(parser, &child, "", "", (0, 0)); // Propagate the function
+    }
 }
 
 fn shorthand_block(parser: &mut InnerParser) {
@@ -295,7 +278,7 @@ fn shorthand_block(parser: &mut InnerParser) {
         ),
     };
     parser.insert_result(
-        short.span(),
+        parser.expr.range(),
         format!("{}-{}", parser.uuid, content.to_string()),
         content.to_string(),
         color,
@@ -313,7 +296,7 @@ fn text_block(parser: &mut InnerParser) {
             _ => None,
         } {
             parser.insert_result(
-                text.span(),
+                parser.expr.range(),
                 format!("{}-{}", parser.uuid, text.get().to_string()),
                 text.get().to_string(),
                 color,
@@ -325,7 +308,7 @@ fn text_block(parser: &mut InnerParser) {
     }
     if parser.state.is_attachment {
         parser.insert_result(
-            text.span(),
+            parser.expr.range(),
             format!("{}-text-{}", parser.uuid, text.get().to_string()),
             text.get().to_string(),
             Color::Number,
@@ -338,7 +321,7 @@ fn str_block(parser: &mut InnerParser) {
     let text = unchecked_cast_expr::<Str>(parser.expr);
     if parser.state.is_attachment {
         parser.insert_result(
-            text.span(),
+            parser.expr.range(),
             format!("{}-text-{}", parser.uuid, text.get().to_string()),
             text.get().to_string(),
             Color::Number,
@@ -349,8 +332,9 @@ fn str_block(parser: &mut InnerParser) {
 }
 fn func_call_block(parser: &mut InnerParser) {
     let func = unchecked_cast_expr::<FuncCall>(parser.expr);
-    let args = func.args().to_untyped();
-    let children: Vec<&SyntaxNode> = args.children().collect();
+    let callee = parser.expr.find(func.callee().span()).unwrap();
+    let args = parser.expr.find(func.args().span()).unwrap();
+    let children: Vec<LinkedNode> = args.children().collect();
     let mut propagate_style = true;
 
     // If there is just a text, try to apply a text func like blackbold, caligraphy...
@@ -360,7 +344,7 @@ fn func_call_block(parser: &mut InnerParser) {
         && children[2].kind() == SyntaxKind::RightParen
         && parser.options.rendering_mode > 1
     {
-        let text = children[1];
+        let text = &children[1];
         let text_content = match text.kind() {
             SyntaxKind::Text => text.cast::<Text>().unwrap().get().to_string(),
             SyntaxKind::Str => text.cast::<Str>().unwrap().get().to_string(),
@@ -383,7 +367,7 @@ fn func_call_block(parser: &mut InnerParser) {
                         }
                     }
                     parser.insert_result(
-                        text.span(),
+                        text.range(),
                         format!("{}-{}", parser.uuid, symbol),
                         symbol,
                         Color::Number,
@@ -400,15 +384,9 @@ fn func_call_block(parser: &mut InnerParser) {
         }
     }
     if parser.options.rendering_mode > 2 {
-        if let Some((span, content)) = match func.callee() {
-            Expr::MathIdent(ident) => Some((ident.span(), ident.to_string())),
-            Expr::FieldAccess(access) => {
-                if let Some(content) = field_access_recursive(access) {
-                    Some((access.span(), content))
-                } else {
-                    None
-                }
-            }
+        if let Some(content) = match func.callee() {
+            Expr::MathIdent(ident) => Some(ident.to_string()),
+            Expr::FieldAccess(access) => field_access_recursive(access),
             _ => None,
         } {
             if let Some((symbol, decoration)) = match content.as_str() {
@@ -441,8 +419,8 @@ fn func_call_block(parser: &mut InnerParser) {
                     && (children[1].kind() == SyntaxKind::MathIdent || children[1].kind() == SyntaxKind::Text || (children[1].kind() == SyntaxKind::MathAttach && children[1].children().len() == 3))
                     && children[2].kind() == SyntaxKind::RightParen
                 {
-                    parser.insert_result(span, format!("{}-func-{}", parser.uuid, symbol), symbol.to_string(), Color::Number, format!("{}", decoration), (0, 1));
-                    parser.insert_void(children[2].span(), (0, 0));
+                    parser.insert_result(callee.range(), format!("{}-func-{}", parser.uuid, symbol), symbol.to_string(), Color::Number, format!("{}", decoration), (0, 1));
+                    parser.insert_void(children[2].range(), (0, 0));
                     propagate_style = false;
                 }
             } else if let Some(symbol) = match content.as_str() {
@@ -450,18 +428,18 @@ fn func_call_block(parser: &mut InnerParser) {
                 "norm" => Some('‖'),
                 _ => None,
             } {
-                parser.insert_void(span, (parser.offset.0, 0));
+                parser.insert_void(callee.range(), (parser.offset.0, 0));
                 parser.insert_result(
-                    children[0].span(),
-                    format!("{}-func-{}", parser.uuid, symbol),
+                    children[0].range(),
+                    format!("{}func-{}", parser.uuid, symbol),
                     symbol.to_string(),
                     Color::Operator,
                     format!("{}", parser.added_text_decoration),
                     (0, 0),
                 );
                 parser.insert_result(
-                    children.last().unwrap().span(),
-                    format!("{}-func-{}", parser.uuid, symbol),
+                    children.last().unwrap().range(),
+                    format!("{}func-{}", parser.uuid, symbol),
                     symbol.to_string(),
                     Color::Operator,
                     format!("{}", parser.added_text_decoration),
@@ -479,8 +457,8 @@ fn func_call_block(parser: &mut InnerParser) {
                 }
                 if root_size.is_some() {
                     parser.insert_result(
-                        children[0].span(),
-                        format!("{}-func-{}-size-{}", parser.uuid, '\u{0305}', root_size.unwrap()),
+                        children[0].range(),
+                        format!("{}func-{}-size-{}", parser.uuid, '\u{0305}', root_size.unwrap()),
                         '\u{0305}'.to_string(),
                         Color::Operator,
                         format!(
@@ -490,18 +468,18 @@ fn func_call_block(parser: &mut InnerParser) {
                         (0, 0),
                     );
                     parser.insert_result(
-                        span,
-                        format!("{}-func-{}", parser.uuid, '√'),
+                        callee.range(),
+                        format!("{}func-{}", parser.uuid, '√'),
                         '√'.to_string(),
                         Color::Operator,
                         format!("font-family: JuliaMono; display: inline-block; transform: translate(0.1em, -0.1em);"),
                         (0, 0),
                     );
-                    parser.insert_void(children[2].span(), (0, 0));
+                    parser.insert_void(children[2].range(), (0, 0));
                     propagate_style = false;
                 }
             } else {
-                inner_ast_dfs(parser, func.callee(), parser.uuid, parser.added_text_decoration, parser.offset);
+                ast_dfs(parser, &callee, parser.uuid, parser.added_text_decoration, parser.offset);
                 propagate_style = false;
             }
         }
@@ -510,12 +488,13 @@ fn func_call_block(parser: &mut InnerParser) {
     }
     ast_dfs(
         parser,
-        func.args().to_untyped(),
+        &args,
         if propagate_style { parser.uuid } else { "" },
         if propagate_style {
             parser.added_text_decoration
         } else {
             ""
         },
+        (0, 0),
     );
 }

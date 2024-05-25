@@ -8,9 +8,9 @@ use crate::{
         symbols::{get_category_by_name, Category, Color, SYMBOLS},
     },
 };
-use std::collections::HashMap;
-use typst_syntax::ast::AstNode;
-use typst_syntax::{Span, SyntaxNode};
+use std::{collections::HashMap, ops::Range};
+use typst_syntax::{ast::AstNode, LinkedNode};
+use typst_syntax::SyntaxNode;
 
 /// Get symbol from it's name
 pub fn get_symbol(content: String, options: &Options) -> Option<(Category, String)> {
@@ -55,7 +55,7 @@ pub struct InnerParser<'a> {
     pub options: &'a Options,
 
     /// Current expression
-    pub expr: &'a SyntaxNode,
+    pub expr: &'a LinkedNode<'a>,
     /// Current uuid applied to sub-decorations
     pub uuid: &'a str,
     /// Current css style applied to sub-decorations
@@ -68,7 +68,7 @@ impl<'a> InnerParser<'a> {
     /// Create a new parser
     pub fn new(
         source: &'a typst_syntax::Source,
-        expr: &'a SyntaxNode,
+        expr: &'a LinkedNode<'a>,
         result: &'a mut HashMap<String, Decoration>,
         state: &'a mut State,
         options: &'a Options,
@@ -87,7 +87,7 @@ impl<'a> InnerParser<'a> {
     /// Create a new parser from another
     pub fn from(
         parser: &'a mut InnerParser,
-        expr: &'a SyntaxNode,
+        expr: &'a LinkedNode<'a>,
         uuid: &'a str,
         added_text_decoration: &'a str,
         offset: (usize, usize),
@@ -106,7 +106,7 @@ impl<'a> InnerParser<'a> {
     /// Helper function to insert a new symbol in the symbols hashmap, with a symbol directly from the typst sym module
     pub fn insert_result_symbol(
         &mut self,
-        span: Span,
+        range: Range<usize>,
         content: String,
         uuid: String,
         added_text_decoration: &str,
@@ -120,7 +120,7 @@ impl<'a> InnerParser<'a> {
             }
             let (color, text_decoration) = get_style_from_category(category);
             self.insert_result(
-                span,
+                range,
                 uuid,
                 format!(
                     "{}{}{}",
@@ -137,15 +137,13 @@ impl<'a> InnerParser<'a> {
     /// Helper function to insert a new symbol in the symbols hashmap
     pub fn insert_result(
         &mut self,
-        span: Span,
+        range: Range<usize>,
         uuid: String,
         symbol: String,
         color: Color,
         text_decoration: String,
         offset: (usize, usize),
     ) {
-        let range = self.source.range(span).expect("Span out of range");
-
         // Convert position to UTF-16, because VSCode uses UTF-16 for positions
         let position = Position {
             start: self.source.byte_to_utf16(range.start).unwrap() - offset.0,
@@ -179,9 +177,9 @@ impl<'a> InnerParser<'a> {
         }
     }
     /// Helper function to insert a new invisible symbol in the symbols hashmap to hide a span
-    pub fn insert_void(&mut self, span: Span, offset: (usize, usize)) {
+    pub fn insert_void(&mut self, range: Range<usize>, offset: (usize, usize)) {
         self.insert_result(
-            span,
+            range,
             "void".to_string(),
             "".to_string(),
             Color::Number,

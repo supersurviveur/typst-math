@@ -7,11 +7,8 @@ use std::{collections::HashMap, ops::Range};
 
 use crate::parser::parser::State;
 use interface::{CustomSymbol, Decoration, Options, Parsed};
-use parser::{
-    parser::{ast_dfs, inner_ast_dfs},
-    utils::InnerParser,
-};
-use typst_syntax::{ast::Expr, LinkedNode, SyntaxNode};
+use parser::{parser::ast_dfs, utils::InnerParser};
+use typst_syntax::LinkedNode;
 use utils::hook::set_panic_hook;
 use wasm_bindgen::prelude::*;
 
@@ -22,9 +19,13 @@ pub fn init_lib() {
 }
 
 /// Retrieve all nodes in a given range
-pub fn find_node(range: Range<usize>, current: LinkedNode, nodes: &mut Vec<SyntaxNode>) {
+pub fn find_node<'a>(
+    range: Range<usize>,
+    current: LinkedNode<'a>,
+    nodes: &mut Vec<LinkedNode<'a>>,
+) {
     if current.range().start >= range.start && current.range().end <= range.end {
-        nodes.push(current.get().clone())
+        nodes.push(current.clone())
     } else {
         for child in current.children() {
             find_node(range.clone(), child, nodes);
@@ -81,16 +82,13 @@ pub fn parse_document(
             .to_string();
         let range = source.edit(edited_range, txt.as_str());
 
+        let root = source.find(source.root().span()).unwrap();
         // Find all nodes in this range
-        find_node(
-            range.clone(),
-            source.find(source.root().span()).unwrap(),
-            &mut nodes,
-        );
+        find_node(range.clone(), root.clone(), &mut nodes);
 
         if nodes.is_empty() {
             // If no nodes were found, parse the entire document
-            nodes.push(source.root().clone());
+            nodes.push(root);
         } else {
             // Get the range of part which will be reparsed
             let first = source.find(nodes.first().unwrap().span()).unwrap().range();
@@ -102,7 +100,8 @@ pub fn parse_document(
         }
     } else {
         // Parse the entire document
-        nodes.push(source.root().clone());
+        let root = source.find(source.root().span()).unwrap();
+        nodes.push(root);
     }
 
     // Generate custom symbols hashmap
@@ -135,11 +134,7 @@ pub fn parse_document(
     // Parse the AST produced by typst over nodes
     for node in nodes {
         let mut parser = InnerParser::new(&source, &node, &mut result, &mut state, &options);
-        if let Some(expr) = node.cast::<Expr>() {
-            inner_ast_dfs(&mut parser, expr, "", "", (0, 0))
-        } else {
-            ast_dfs(&mut parser, &node, "", "");
-        }
+        ast_dfs(&mut parser, &node, "", "", (0, 0));
     }
 
     // Convert the hasmap into an array
