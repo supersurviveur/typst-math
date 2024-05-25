@@ -32,7 +32,7 @@ pub struct Options {
     pub render_outside_math: bool,
     pub render_spaces: bool,
     pub blacklisted_symbols: Vec<String>,
-    pub custom_symbols: HashMap<String, CustomSymbol>
+    pub custom_symbols: HashMap<String, CustomSymbol>,
 }
 
 /// Represents a user defined symbol that can be used trough WASM
@@ -41,9 +41,8 @@ pub struct Options {
 pub struct CustomSymbol {
     pub name: String,
     pub symbol: String,
-    pub category: String
+    pub category: String,
 }
-
 
 /// Represents the result of the parsing function
 #[wasm_bindgen(getter_with_clone)]
@@ -53,5 +52,5 @@ pub struct Parsed {
     pub edit_end_line: usize,
     pub edit_start_column: usize,
     pub edit_end_column: usize,
-    pub erroneous: bool
+    pub erroneous: bool,
 }

@@ -7,7 +7,10 @@ use std::{collections::HashMap, ops::Range};
 
 use crate::parser::parser::State;
 use interface::{CustomSymbol, Decoration, Options, Parsed};
-use parser::parser::{ast_dfs, inner_ast_dfs};
+use parser::{
+    parser::{ast_dfs, inner_ast_dfs},
+    utils::InnerParser,
+};
 use typst_syntax::{ast::Expr, LinkedNode, SyntaxNode};
 use utils::hook::set_panic_hook;
 use wasm_bindgen::prelude::*;
@@ -44,7 +47,7 @@ pub fn parse_document(
     // Generate a fake source
     let mut source = typst_syntax::Source::detached(content.to_string());
     // println!("{:#?}", source.root());
-    
+
     // These variable contains the range of the document that was parsed incrementally and will be returned to the extension
     let mut edit_start_line = 0;
     let mut edit_end_line = 0;
@@ -125,35 +128,17 @@ pub fn parse_document(
         blacklisted_symbols,
         custom_symbols,
     };
+    let mut state = State {
+        is_base: false,
+        is_attachment: false,
+    };
     // Parse the AST produced by typst over nodes
     for node in nodes {
+        let mut parser = InnerParser::new(&source, &node, &mut result, &mut state, &options);
         if let Some(expr) = node.cast::<Expr>() {
-            inner_ast_dfs(
-                &source,
-                expr,
-                &mut result,
-                State {
-                    is_base: false,
-                    is_attachment: false,
-                },
-                "",
-                "",
-                (0, 0),
-                &options,
-            )
+            inner_ast_dfs(&mut parser, expr, "", "", (0, 0))
         } else {
-            ast_dfs(
-                &source,
-                &node,
-                &mut result,
-                State {
-                    is_base: false,
-                    is_attachment: false,
-                },
-                "",
-                "",
-                &options,
-            );
+            ast_dfs(&mut parser, &node, "", "");
         }
     }
 
@@ -164,7 +149,7 @@ pub fn parse_document(
         edit_end_line,
         edit_start_column,
         edit_end_column,
-        erroneous: source.root().erroneous()
+        erroneous: source.root().erroneous(),
     }
 }
 
