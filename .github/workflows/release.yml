@@ -49,6 +49,8 @@ jobs:
 
       - name: Intall vsce
         run: npm install -g @vscode/vsce
+      - name: Display structure of downloaded files
+        run: ls -R
       - name: Deploy to VS Code Marketplace
         run: vsce publish --packagePath typst-math.vsix
         env:
