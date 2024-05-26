@@ -1,5 +1,9 @@
 on:
   workflow_dispatch:
+    inputs:
+      version-number:
+        description: 'Version number'
+        required: true
 
 jobs:
   build:
@@ -45,6 +49,7 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           artifacts: "artifacts/*/*"
+          tag: ${{ github.event.inputs.version-number }}
           allowUpdates: true
           omitBodyDuringUpdate: true
           omitDraftDuringUpdate: true
