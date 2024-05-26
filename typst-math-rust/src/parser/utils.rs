@@ -9,7 +9,7 @@ use crate::{
     },
 };
 use std::{collections::HashMap, ops::Range};
-use typst_syntax::{ast::AstNode, LinkedNode};
+use typst_syntax::{ast::AstNode, LinkedNode, Source};
 use typst_syntax::SyntaxNode;
 
 /// Get symbol from it's name
@@ -41,6 +41,24 @@ fn get_style_from_category(category: Category) -> (Color, std::string::String) {
 /// Cast expr to the given AST type. No checks are done, will panick if the given expression is not of the given type.
 pub fn unchecked_cast_expr<'a, T: AstNode<'a>>(expr: &'a SyntaxNode) -> T {
     T::from_untyped(expr).unwrap()
+}
+
+/// The number of code units this string would use if it was encoded in
+/// UTF16. This runs in linear time.
+fn len_utf16(string: &str) -> usize {
+    string.chars().map(char::len_utf16).sum()
+}
+
+
+/// Return the index range of the UTF-16 code unit at the byte index range. \
+/// Faster than calling `byte_to_utf16` over start and end.
+fn byte_range_to_utf16(source: &Source, range: &Range<usize>) -> Option<Range<usize>> {
+    let start = source.byte_to_utf16(range.start)?;
+
+    let head = source.get(range.start..range.end)?;
+    let end = start + len_utf16(head);
+
+    return Some(start..end);
 }
 
 /// Store the current data of the parsing
@@ -145,9 +163,10 @@ impl<'a> InnerParser<'a> {
         offset: (usize, usize),
     ) {
         // Convert position to UTF-16, because VSCode uses UTF-16 for positions
+        let utf16_range = byte_range_to_utf16(self.source, &range).unwrap();
         let position = Position {
-            start: self.source.byte_to_utf16(range.start).unwrap() - offset.0,
-            end: self.source.byte_to_utf16(range.end).unwrap() + offset.1,
+            start: utf16_range.start - offset.0,
+            end: utf16_range.end + offset.1,
         };
 
         // Check if the symbol is blacklisted
