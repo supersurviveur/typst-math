@@ -23,7 +23,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: artifact
-          path: typst-math.vsix
+          path: typst-math-*.vsix
 
 
   release:
@@ -56,11 +56,11 @@ jobs:
         run: npm install -g @vscode/vsce
     
       - name: Deploy to VS Code Marketplace
-        run: vsce publish --packagePath ./typst-math.vsix
+        run: vsce publish --packagePath $(find . -type f -iname '*.vsix')
         env:
           VSCE_PAT: ${{ secrets.VSCODE_MARKETPLACE_TOKEN }}
 
       - name: Deploy to OpenVSX
-        run: npx ovsx publish
+        run: npx ovsx publish --packagePath $(find . -type f -iname '*.vsix')
         env:
           OVSX_PAT: ${{ secrets.OPENVSX_ACCESS_TOKEN }}
