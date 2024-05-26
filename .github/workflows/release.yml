@@ -45,7 +45,11 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           artifacts: "artifacts/*/*"
-          draft: true
+          allowUpdates: true
+          omitBodyDuringUpdate: true
+          omitDraftDuringUpdate: true
+          omitNameDuringUpdate: true
+          omitPrereleaseDuringUpdate: true
 
 
   publish:
