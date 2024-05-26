@@ -7,19 +7,22 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install
+      - name: Install wasm
         run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+      - name: Intall vsce
+        run: npm install -g @vscode/vsce
+        
       - run: wasm-pack build
         working-directory: ./typst-math-rust
-        
       - name: Install npm dependencies 
         run: npm i
       - name: Package extension
-        run: npm run package -- -o typst-math.vsix
+        run: vsce package
+
       - name: Upload VSIX artifact
         uses: actions/upload-artifact@v4
         with:
-          name: typst-math.vsix
+          name: artifact
           path: typst-math.vsix
 
 
@@ -46,17 +49,14 @@ jobs:
     if: success()
     steps:
       - uses: actions/download-artifact@v4
-        with:
-          path: artifacts
       - name: Display structure of downloaded files
-        run: ls -R artifacts
+        run: ls -R
 
       - name: Intall vsce
         run: npm install -g @vscode/vsce
-      - name: Display structure of downloaded files
-        run: ls -R
+    
       - name: Deploy to VS Code Marketplace
-        run: vsce publish --packagePath ./artifacts/typst-math.vsix
+        run: vsce publish --packagePath ./typst-math.vsix
         env:
           VSCE_PAT: ${{ secrets.VSCODE_MARKETPLACE_TOKEN }}
 
