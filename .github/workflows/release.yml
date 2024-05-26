@@ -19,7 +19,7 @@ jobs:
       - name: Upload VSIX artifact
         uses: actions/upload-artifact@v4
         with:
-          name: typst-math.vsix
+          name: typst-math
           path: typst-math.vsix
 
 
@@ -52,7 +52,7 @@ jobs:
       - name: Display structure of downloaded files
         run: ls -R
       - name: Deploy to VS Code Marketplace
-        run: npx vsce publish --packagePath ./typst-math.vsix
+        run: vsce publish --packagePath ./typst-math.vsix
         env:
           VSCE_PAT: ${{ secrets.VSCODE_MARKETPLACE_TOKEN }}
 
