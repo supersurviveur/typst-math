@@ -6,3 +6,5 @@ dist
 
 **/*.data
 **/*.data.old
+**/*.profraw
+**/*.profdata
