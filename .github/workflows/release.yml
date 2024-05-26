@@ -11,6 +11,14 @@ jobs:
         run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
       - run: wasm-pack build
         working-directory: ./typst-math-rust
+        
+      - name: Package extension
+        run: npm run package -o typst-math.vsix
+      - name: Upload VSIX artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: typst-math.vsix
+          path: typst-math.vsix
           
     
   publish:
