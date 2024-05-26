@@ -19,7 +19,7 @@ jobs:
       - name: Upload VSIX artifact
         uses: actions/upload-artifact@v4
         with:
-          name: artifact
+          name: typst-math.vsix
           path: typst-math.vsix
 
 
