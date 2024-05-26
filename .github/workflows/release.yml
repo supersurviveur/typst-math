@@ -41,6 +41,11 @@ jobs:
           path: artifacts
       - name: Display structure of downloaded files
         run: ls -R artifacts
+      - uses: ncipollo/release-action@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          artifacts: "artifacts/*/*"
+          draft: true
 
 
   publish:
