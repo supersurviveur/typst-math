@@ -119,6 +119,10 @@ export class Decorations {
 
             let parsed = getWASM().parse_document(this.activeEditor.document.getText() as string, this.edition_state.edited_range?.start.line || -1, this.edition_state.edited_range?.end.line || -1, this.renderingMode, this.renderOutsideMath, this.renderSpaces, this.blacklistedSymbols, this.customSymbols);
 
+            // If edit_end is zero, entire doc was reparsed, remove all symbols
+            if (parsed.edit_end_line === 0 && parsed.edit_end_column === 0) {
+                this.edition_state.reload_type = -1;
+            }
             // If edited lines aren't defined, we clear all ranges
             // If they are defined, remove symbols whiwh were rendered again, and trnaslate ones after the edition
             if (this.edition_state.reload_type < 0) {
@@ -150,7 +154,7 @@ export class Decorations {
                     // Remove ones that are in the reparsed range or outside the document
                     let document = this.activeEditor?.document;
                     this.allDecorations[t].ranges = this.allDecorations[t].ranges.filter(range => {
-                        return !strictIntersection(reparsed_range, range.range) && document.lineAt(document.lineCount -1).range.end.isAfterOrEqual(range.range.end);
+                        return !strictIntersection(reparsed_range, range.range) && document.lineAt(document.lineCount - 1).range.end.isAfterOrEqual(range.range.end);
                     });
                 }
             }

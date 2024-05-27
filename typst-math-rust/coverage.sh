@@ -1,15 +1,15 @@
 #!/bin/sh
 
 # Generate profile files
-RUSTFLAGS="-C instrument-coverage" cargo test --tests 
+RUSTFLAGS="-C instrument-coverage -Z coverage-options=branch" cargo +nightly test --tests 
 cargo profdata -- merge -sparse default_*.profraw -o typst-math.profdata
 
 # Get binary names
 FILES=$( \
       for file in \
         $( \
-          RUSTFLAGS="-C instrument-coverage" \
-            cargo test --tests --no-run --message-format=json \
+          RUSTFLAGS="-C instrument-coverage -Z coverage-options=branch" \
+            cargo +nightly test --tests --no-run --message-format=json \
               | jq -r "select(.profile.test == true) | .filenames[]" \
               | grep -v dSYM - \
         ); \
