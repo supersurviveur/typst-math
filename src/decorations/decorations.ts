@@ -117,12 +117,10 @@ export class Decorations {
             // Get symbols list
             this.generateCustomSymbols();
 
-            let parsed = getWASM().parse_document(this.activeEditor.document.getText() as string, this.edition_state.edited_range?.start.line || -1, this.edition_state.edited_range?.end.line || -1, this.renderingMode, this.renderOutsideMath, this.renderSpaces, this.blacklistedSymbols, this.customSymbols);
+            let start = this.edition_state.edited_range?.start.line === undefined ? -1 : this.edition_state.edited_range?.start.line;
+            let end = this.edition_state.edited_range?.end.line === undefined ? -1 : this.edition_state.edited_range?.end.line;
+            let parsed = getWASM().parse_document(this.activeEditor.document.getText() as string, start, end, this.renderingMode, this.renderOutsideMath, this.renderSpaces, this.blacklistedSymbols, this.customSymbols);
 
-            // If edit_end is zero, entire doc was reparsed, remove all symbols
-            if (parsed.edit_end_line === 0 && parsed.edit_end_column === 0) {
-                this.edition_state.reload_type = -1;
-            }
             // If edited lines aren't defined, we clear all ranges
             // If they are defined, remove symbols whiwh were rendered again, and trnaslate ones after the edition
             if (this.edition_state.reload_type < 0) {
