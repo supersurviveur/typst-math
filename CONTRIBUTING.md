@@ -16,6 +16,9 @@ wasm-pack build
 ```
 Then you can run the extension by opening the project in VS Code and pressing `F5` to start a debug session.
 
+### Tests
+You can run tests with `cargo test`, and see [test coverage](https://doc.rust-lang.org/rustc/instrument-coverage.html) by running `coverage.sh`.
+
 ### Rendering mode
 A few rendering modes are available :
 - `nothing` : No rendering

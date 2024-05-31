@@ -2,7 +2,6 @@
 mod tests {
     use typst_math_rust::parse_document;
 
-
     #[test]
     fn basic_symbol() {
         let parsed = parse_document("$alpha$", -1, -1, 3, true, true, vec![], vec![]);
@@ -40,9 +39,27 @@ mod tests {
         let parsed = parse_document("$x_alpha$", -1, -1, 3, true, true, vec![], vec![]);
         assert_eq!(parsed.decorations[0].uuid, "bottom-alpha");
 
-        let parsed = parse_document("$x_alpha_alpha^alpha^alpha$", -1, -1, 3, true, true, vec![], vec![]);
+        let parsed = parse_document(
+            "$x_alpha_alpha^alpha^alpha$",
+            -1,
+            -1,
+            3,
+            true,
+            true,
+            vec![],
+            vec![],
+        );
         assert_eq!(parsed.decorations.len(), 3);
-        let parsed = parse_document("$x_alpha_alpha^alpha^alpha$", -1, -1, 0, true, true, vec![], vec![]);
+        let parsed = parse_document(
+            "$x_alpha_alpha^alpha^alpha$",
+            -1,
+            -1,
+            0,
+            true,
+            true,
+            vec![],
+            vec![],
+        );
         assert_eq!(parsed.decorations.len(), 1);
     }
 
@@ -73,16 +90,7 @@ mod tests {
     }
     #[test]
     fn test_functions() {
-        let parsed = parse_document(
-            "$arrow(x)$",
-            -1,
-            -1,
-            3,
-            true,
-            true,
-            vec![],
-            vec![],
-        );
+        let parsed = parse_document("$arrow(x)$", -1, -1, 3, true, true, vec![], vec![]);
         assert_eq!(parsed.decorations.len(), 2);
 
         // Check that not too many decorations are added
@@ -122,45 +130,18 @@ mod tests {
     }
     #[test]
     fn test_field_access() {
-        let parsed = parse_document(
-            "$beta.alt$",
-            -1,
-            -1,
-            3,
-            true,
-            true,
-            vec![],
-            vec![],
-        );
+        let parsed = parse_document("$beta.alt$", -1, -1, 3, true, true, vec![], vec![]);
         assert_eq!(parsed.decorations.len(), 1);
         assert_eq!(parsed.decorations[0].symbol, "ϐ");
         assert_eq!(parsed.decorations[0].uuid, "beta.alt");
-        let parsed = parse_document(
-            "$triangle.filled.b$",
-            -1,
-            -1,
-            3,
-            true,
-            true,
-            vec![],
-            vec![],
-        );
+        let parsed = parse_document("$triangle.filled.b$", -1, -1, 3, true, true, vec![], vec![]);
         assert_eq!(parsed.decorations.len(), 1);
         assert_eq!(parsed.decorations[0].symbol, "▼");
         assert_eq!(parsed.decorations[0].uuid, "triangle.filled.b");
     }
     #[test]
     fn test_text() {
-        let parsed = parse_document(
-            "$x^a x_a$",
-            -1,
-            -1,
-            3,
-            true,
-            true,
-            vec![],
-            vec![],
-        );
+        let parsed = parse_document("$x^a x_a$", -1, -1, 3, true, true, vec![], vec![]);
         assert_eq!(parsed.decorations.len(), 2);
         assert_eq!(parsed.decorations[0].symbol, "a");
 
@@ -179,42 +160,15 @@ mod tests {
     }
     #[test]
     fn test_linebreak() {
-        let parsed = parse_document(
-            "$x$ \\ \\ \\ x",
-            -1,
-            -1,
-            3,
-            true,
-            true,
-            vec![],
-            vec![],
-        );
+        let parsed = parse_document("$x$ \\ \\ \\ x", -1, -1, 3, true, true, vec![], vec![]);
         assert_eq!(parsed.decorations.len(), 1);
         assert_eq!(parsed.decorations[0].symbol, "⮰");
     }
     #[test]
     fn test_math_block() {
-        let parsed = parse_document(
-            "$x^(5+3-2)=6$",
-            -1,
-            -1,
-            3,
-            true,
-            true,
-            vec![],
-            vec![],
-        );
+        let parsed = parse_document("$x^(5+3-2)=6$", -1, -1, 3, true, true, vec![], vec![]);
         assert_eq!(parsed.decorations.len(), 3);
-        let parsed = parse_document(
-            "$x^(alpha)$",
-            -1,
-            -1,
-            3,
-            true,
-            true,
-            vec![],
-            vec![],
-        );
+        let parsed = parse_document("$x^(alpha)$", -1, -1, 3, true, true, vec![], vec![]);
         assert_eq!(parsed.decorations.len(), 2);
         let parsed = parse_document(
             "$x^(\"alpha\") x^(-\"alpha\") x^(-alpha)$",

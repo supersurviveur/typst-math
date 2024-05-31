@@ -2,7 +2,6 @@ mod interface;
 mod parser;
 mod utils;
 
-// use std::time::Instant;
 use std::{collections::HashMap, ops::Range};
 
 use crate::parser::parser::State;

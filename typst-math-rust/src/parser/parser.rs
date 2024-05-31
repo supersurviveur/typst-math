@@ -97,6 +97,9 @@ fn field_access_recursive(access: FieldAccess) -> Option<String> {
     None
 }
 
+// Next functions are the blocks of the parser, each one match a specific expression and apply style
+
+/// Parse a math ident block, symply add a symbol if it is in the symbols list
 fn math_ident_block(parser: &mut InnerParser) {
     let ident = unchecked_cast_expr::<MathIdent>(parser.expr);
     parser.insert_result_symbol(
@@ -108,6 +111,9 @@ fn math_ident_block(parser: &mut InnerParser) {
         ("", ""),
     );
 }
+
+/// Parse a field access block, create a string containing all fields sparated with a dot (alpha.alt), and check if it is in symbols list
+/// Also check if the symbol starts with `sym.` and remove it if needed
 fn field_access_block(parser: &mut InnerParser) {
     let access = unchecked_cast_expr::<FieldAccess>(parser.expr);
     if let Some(content) = field_access_recursive(access) {
@@ -131,6 +137,8 @@ fn field_access_block(parser: &mut InnerParser) {
         );
     }
 }
+
+/// Simply replace a linebreak with an arrow
 fn linebreak_block(parser: &mut InnerParser) {
     parser.insert_result(
         parser.expr.range(),
@@ -145,6 +153,8 @@ fn linebreak_block(parser: &mut InnerParser) {
     );
 }
 
+/// Parse a math attach block (subscript, superscript) \
+/// Apply specific style and offset for each attachment, and compute specific style with rendering mode and current state
 fn math_attach_block(parser: &mut InnerParser) {
     let attachment = unchecked_cast_expr::<MathAttach>(parser.expr);
     // Keep the current state to restore it after the attachment
@@ -205,6 +215,8 @@ fn math_attach_block(parser: &mut InnerParser) {
     parser.state.is_attachment = state.is_attachment;
 }
 
+/// Parse a math block, check if it is a simple block (paren around a symbol) and propagate style if true \
+/// Otherwise, continue over children and reset style
 fn math_block(parser: &mut InnerParser) {
     let children: Vec<LinkedNode> = parser.expr.children().collect();
     // If we are in an attachment, check if the current math block is just paren around a symbol
@@ -281,6 +293,7 @@ fn math_block(parser: &mut InnerParser) {
     }
 }
 
+/// Replace a shorthand with a specific style
 fn shorthand_block(parser: &mut InnerParser) {
     let short = unchecked_cast_expr::<Shorthand>(parser.expr);
     let (color, decoration, content) = match short.get() {
@@ -303,6 +316,10 @@ fn shorthand_block(parser: &mut InnerParser) {
         parser.offset,
     );
 }
+
+/// Replace a text block with a specific style \
+/// Some symbols are here instead of shorthand \
+/// Also, if we are in an attachment, apply a specific style
 fn text_block(parser: &mut InnerParser) {
     let text = unchecked_cast_expr::<Text>(parser.expr);
     if text.get().len() == 1 {
@@ -334,6 +351,9 @@ fn text_block(parser: &mut InnerParser) {
         );
     }
 }
+
+/// Same as text block, but for a string block (between quotes) \
+/// Apply a specific style if we are in an attachment
 fn str_block(parser: &mut InnerParser) {
     let text = unchecked_cast_expr::<Str>(parser.expr);
     if parser.state.is_attachment {
@@ -347,6 +367,8 @@ fn str_block(parser: &mut InnerParser) {
         );
     }
 }
+
+/// Parse a func call block, if it is a common func, apply style, else continue over args and callee
 fn func_call_block(parser: &mut InnerParser) {
     let func = unchecked_cast_expr::<FuncCall>(parser.expr);
     let callee = parser.expr.find(func.callee().span()).unwrap();
