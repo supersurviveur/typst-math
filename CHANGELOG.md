@@ -4,6 +4,11 @@ All notable changes to the "typst-math" extension will be documented in this fil
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## [v0.1.4]
+- Improve performances
+- Add tests
+- Fix rendering issues
+
 ## [v0.1.3]
 - Improve performances
 - Fix rendering issues
