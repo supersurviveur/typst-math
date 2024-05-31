@@ -45,3 +45,4 @@ Feel free to contribute to the project ! See the [CONTRIBUTING.md](./CONTRIBUTIN
 
 # Acknowledgements
 - Thanks to [Enter-tainer](https://github.com/Enter-tainer) for his advices
+- Thanks to [Le-Foucheur](https://github.com/Le-Foucheur) for testing

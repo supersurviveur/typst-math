@@ -9,7 +9,7 @@ use crate::utils::symbols::Color;
 /// - rust side: in the decoraions hasmap
 /// - js side: in the decorations array, to avoid generating the same decoration multiple times (Expensive)
 #[derive(Debug, Clone)]
-#[wasm_bindgen(getter_with_clone)]
+#[cfg_attr(not(feature = "coverage"), wasm_bindgen(getter_with_clone))]
 pub struct Decoration {
     pub uuid: String,
     pub symbol: String,
@@ -20,7 +20,7 @@ pub struct Decoration {
 
 /// Represents a symbol position in the document
 #[derive(Debug, Clone)]
-#[wasm_bindgen]
+#[cfg_attr(not(feature = "coverage"), wasm_bindgen)]
 pub struct Position {
     pub start: usize,
     pub end: usize,
@@ -35,9 +35,21 @@ pub struct Options {
     pub custom_symbols: HashMap<String, CustomSymbol>,
 }
 
+impl Default for Options {
+    fn default() -> Self {
+        Options {
+            rendering_mode: 3,
+            render_outside_math: true,
+            render_spaces: false,
+            blacklisted_symbols: vec![],
+            custom_symbols: HashMap::new(),
+        }
+    }
+}
+
 /// Represents a user defined symbol that can be used trough WASM
 #[derive(Debug)]
-#[wasm_bindgen(getter_with_clone)]
+#[cfg_attr(not(feature = "coverage"), wasm_bindgen(getter_with_clone))]
 pub struct CustomSymbol {
     pub name: String,
     pub symbol: String,
@@ -45,7 +57,7 @@ pub struct CustomSymbol {
 }
 
 /// Represents the result of the parsing function
-#[wasm_bindgen(getter_with_clone)]
+#[cfg_attr(not(feature = "coverage"), wasm_bindgen(getter_with_clone))]
 pub struct Parsed {
     pub decorations: Vec<Decoration>,
     pub edit_start_line: usize,

@@ -13,7 +13,7 @@ use utils::hook::set_panic_hook;
 use wasm_bindgen::prelude::*;
 
 /// Initialize the WASM library
-#[wasm_bindgen]
+#[cfg_attr(not(feature = "coverage"), wasm_bindgen)]
 pub fn init_lib() {
     set_panic_hook();
 }
@@ -34,7 +34,7 @@ pub fn find_node<'a>(
 }
 
 /// Parse a document and return the decorations to apply
-#[wasm_bindgen]
+#[cfg_attr(not(feature = "coverage"), wasm_bindgen)]
 pub fn parse_document(
     content: &str,
     edited_line_start: i32,
@@ -86,18 +86,13 @@ pub fn parse_document(
         // Find all nodes in this range
         find_node(range.clone(), root.clone(), &mut nodes);
 
-        if nodes.is_empty() {
-            // If no nodes were found, parse the entire document
-            nodes.push(root);
-        } else {
-            // Get the range of part which will be reparsed
-            let first = source.find(nodes.first().unwrap().span()).unwrap().range();
-            let last = source.find(nodes.last().unwrap().span()).unwrap().range();
-            edit_start_line = source.byte_to_line(first.start).unwrap();
-            edit_end_line = source.byte_to_line(last.end).unwrap();
-            edit_start_column = source.byte_to_column(first.start).unwrap();
-            edit_end_column = source.byte_to_column(last.end).unwrap();
-        }
+        // Get the range of part which will be reparsed
+        let first = source.find(nodes.first().unwrap().span()).unwrap().range();
+        let last = source.find(nodes.last().unwrap().span()).unwrap().range();
+        edit_start_line = source.byte_to_line(first.start).unwrap();
+        edit_end_line = source.byte_to_line(last.end).unwrap();
+        edit_start_column = source.byte_to_column(first.start).unwrap();
+        edit_end_column = source.byte_to_column(last.end).unwrap();
     } else {
         // Parse the entire document
         let root = source.find(source.root().span()).unwrap();
@@ -149,11 +144,40 @@ pub fn parse_document(
 }
 
 /// Generate a custom symbol struct easily from JS
-#[wasm_bindgen]
+#[cfg_attr(not(feature = "coverage"), wasm_bindgen)]
 pub fn generate_custom_symbol(name: String, symbol: String, category: String) -> CustomSymbol {
     return CustomSymbol {
         name,
         symbol,
         category,
     };
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::{generate_custom_symbol, init_lib, parse_document};
+
+    #[test]
+    fn test_initialization() {
+        init_lib();
+    }
+
+    #[test]
+    fn test_custom_symbols() {
+        let parsed = parse_document(
+            "$alpha symbol$",
+            -1,
+            -1,
+            3,
+            true,
+            true,
+            vec![],
+            vec![generate_custom_symbol(
+                "symbol".to_string(),
+                "symbol".to_string(),
+                "operator".to_string(),
+            )],
+        );
+        assert_eq!(parsed.decorations.len(), 2);
+    }
 }

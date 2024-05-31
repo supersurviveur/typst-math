@@ -9,8 +9,8 @@ use crate::{
     },
 };
 use std::{collections::HashMap, ops::Range};
-use typst_syntax::{ast::AstNode, LinkedNode, Source};
 use typst_syntax::SyntaxNode;
+use typst_syntax::{ast::AstNode, LinkedNode, Source};
 
 /// Get symbol from it's name
 pub fn get_symbol(content: String, options: &Options) -> Option<(Category, String)> {
@@ -48,7 +48,6 @@ pub fn unchecked_cast_expr<'a, T: AstNode<'a>>(expr: &'a SyntaxNode) -> T {
 fn len_utf16(string: &str) -> usize {
     string.chars().map(char::len_utf16).sum()
 }
-
 
 /// Return the index range of the UTF-16 code unit at the byte index range. \
 /// Faster than calling `byte_to_utf16` over start and end.
@@ -205,5 +204,115 @@ impl<'a> InnerParser<'a> {
             "".to_string(),
             offset,
         )
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use typst_syntax::SyntaxNode;
+
+    use crate::{interface::Options, parser::parser::State};
+
+    #[test]
+    fn test_inner_parser() {
+        let source = typst_syntax::Source::detached("α");
+        let mut result = std::collections::HashMap::new();
+        let mut state = State::default();
+        let options = Options::default();
+        let node = SyntaxNode::leaf(typst_syntax::SyntaxKind::Ident, "alpha");
+        let expr = typst_syntax::LinkedNode::new(&node);
+        let mut parser = super::InnerParser::new(&source, &expr, &mut result, &mut state, &options);
+        parser.insert_result_symbol(
+            0..2,
+            "alpha".to_string(),
+            "alpha".to_string(),
+            "",
+            (0, 0),
+            ("", ""),
+        );
+
+        let mut parser = super::InnerParser::from(&mut parser, &expr, "alpha", "", (0, 0));
+        parser.insert_result_symbol(
+            0..2,
+            "alpha".to_string(),
+            "alpha".to_string(),
+            "",
+            (0, 0),
+            ("", ""),
+        );
+        assert_eq!(parser.result.len(), 1);
+        assert_eq!(parser.result.get("alpha").unwrap().symbol, "α");
+    }
+
+    #[test]
+    fn test_inner_parser_spaces() {
+        let source = typst_syntax::Source::detached("zwnj");
+        let mut result = std::collections::HashMap::new();
+        let mut state = State::default();
+        let mut options = Options::default();
+        let node = SyntaxNode::leaf(typst_syntax::SyntaxKind::MathIdent, "zwnj");
+        let expr = typst_syntax::LinkedNode::new(&node);
+        let mut parser = super::InnerParser::new(&source, &expr, &mut result, &mut state, &options);
+        parser.insert_result_symbol(
+            0..4,
+            "zwnj".to_string(),
+            "zwnj".to_string(),
+            "",
+            (0, 0),
+            ("", ""),
+        );
+        assert_eq!(parser.result.len(), 0);
+
+        options.render_spaces = true;
+        let mut parser = super::InnerParser::new(&source, &expr, &mut result, &mut state, &options);
+        parser.insert_result_symbol(
+            0..4,
+            "zwnj".to_string(),
+            "zwnj".to_string(),
+            "",
+            (0, 0),
+            ("", ""),
+        );
+        assert_eq!(parser.result.len(), 1);
+    }
+
+    #[test]
+    fn test_inner_parser_not_found() {
+        let source = typst_syntax::Source::detached("");
+        let mut result = std::collections::HashMap::new();
+        let mut state = State::default();
+        let options = Options::default();
+        let node = SyntaxNode::leaf(typst_syntax::SyntaxKind::Ident, "alpha");
+        let expr = typst_syntax::LinkedNode::new(&node);
+        let mut parser = super::InnerParser::new(&source, &expr, &mut result, &mut state, &options);
+        parser.insert_result_symbol(
+            0..5,
+            "doesn't exist".to_string(),
+            "doesn't exist".to_string(),
+            "",
+            (0, 0),
+            ("", ""),
+        );
+    }
+
+    #[test]
+    fn test_inner_parser_blacklist() {
+        let source = typst_syntax::Source::detached("alpha");
+        let mut result = std::collections::HashMap::new();
+        let mut state = State::default();
+        let mut options = Options::default();
+        options.blacklisted_symbols.push("alpha".to_string());
+        let node = SyntaxNode::leaf(typst_syntax::SyntaxKind::Ident, "alpha");
+        let expr = typst_syntax::LinkedNode::new(&node);
+        let mut parser = super::InnerParser::new(&source, &expr, &mut result, &mut state, &options);
+        parser.insert_result_symbol(
+            0..5,
+            "alpha".to_string(),
+            "alpha".to_string(),
+            "",
+            (0, 0),
+            ("", ""),
+        );
+        assert_eq!(parser.result.len(), 0);
     }
 }

@@ -14,6 +14,15 @@ pub struct State {
     pub is_attachment: bool,
 }
 
+impl Default for State {
+    fn default() -> Self {
+        State {
+            is_base: false,
+            is_attachment: false,
+        }
+    }
+}
+
 /// Use a recursive DFS to traverse the entire AST and apply style \
 /// Most complex part of the code, match the current expression and then,
 /// compute the appropriate style and/or if we need to continue over children
@@ -164,26 +173,32 @@ fn math_attach_block(parser: &mut InnerParser) {
     if parser.options.rendering_mode > 1 {
         parser.offset = (1, 0);
     }
-    let top_decor = if parser.options.rendering_mode > 1 {
-        "font-size: 0.8em; transform: translateY(-30%); display: inline-block;"
+    let (top_decor, top_uuid) = if parser.options.rendering_mode > 1 {
+        (
+            "font-size: 0.8em; transform: translateY(-30%); display: inline-block;",
+            "top-",
+        )
     } else {
-        ""
+        ("", "")
     };
-    let bottom_decor = if parser.options.rendering_mode > 1 {
-        "font-size: 0.8em; transform: translateY(20%); display: inline-block;"
+    let (bottom_decor, bottom_uuid) = if parser.options.rendering_mode > 1 {
+        (
+            "font-size: 0.8em; transform: translateY(20%); display: inline-block;",
+            "bottom-",
+        )
     } else {
-        ""
+        ("", "")
     };
     // Set state for top and bottom attachment
     parser.state.is_base = false;
     parser.state.is_attachment = parser.options.rendering_mode > 1;
     if let Some(top) = attachment.top() {
         let top = parser.expr.find(top.span()).unwrap();
-        ast_dfs(parser, &top, "top-", top_decor, parser.offset)
+        ast_dfs(parser, &top, top_uuid, top_decor, parser.offset)
     }
     if let Some(bottom) = attachment.bottom() {
         let bottom = parser.expr.find(bottom.span()).unwrap();
-        ast_dfs(parser, &bottom, "bottom-", bottom_decor, parser.offset)
+        ast_dfs(parser, &bottom, bottom_uuid, bottom_decor, parser.offset)
     }
     // Restore the state
     parser.state.is_base = state.is_base;
@@ -198,7 +213,7 @@ fn math_block(parser: &mut InnerParser) {
         && children[1].kind() == SyntaxKind::Math
         && children[2].kind() == SyntaxKind::RightParen
     {
-        // This serie of check aims to verify that the block inside paren is 'simple', wich means that we can propagate style (So top and bottom attachment)
+        // This serie of checks aims to verify that the block inside paren is 'simple', wich means that we can propagate style (So top and bottom attachment)
         let mut propagate_style = false;
         let sub_children: Vec<LinkedNode> = children[1].children().collect();
 
@@ -259,6 +274,8 @@ fn math_block(parser: &mut InnerParser) {
             return;
         }
     }
+    // Style isn't propagated, reset state
+    parser.state.is_attachment = false;
     for child in parser.expr.children() {
         ast_dfs(parser, &child, "", "", (0, 0)); // Propagate the function
     }

@@ -2,22 +2,24 @@
 //! Stealed from https://github.com/typst/typst/blob/main/crates/typst/src/symbols/symbol.rs
 //! and edited to be used in the frontend.
 
+
 use phf::phf_map;
 use std::fmt::Debug;
 use typst_math_macros::symbols;
-use wasm_bindgen::prelude::wasm_bindgen;
+use wasm_bindgen::prelude::*;
 
 /// Represents a symbol with a given category.
 #[derive(Debug, Clone)]
-#[wasm_bindgen(getter_with_clone)]
+#[cfg_attr(not(feature = "coverage"), wasm_bindgen(getter_with_clone))]
 pub struct Symbol {
     pub symbol: char,
     pub category: Category,
 }
 
 /// Represents a symbol category, used for styling.
+
 #[derive(Debug, Clone, Copy, PartialEq)]
-#[wasm_bindgen]
+#[cfg_attr(not(feature = "coverage"), wasm_bindgen)]
 pub enum Category {
     Keyword,
     Comparison,
@@ -45,8 +47,8 @@ pub fn get_category_by_name(name: &String) -> Category {
 }
 
 /// Represents a symbol color, passed to the frontend for styling.
-#[derive(Debug, Clone, Copy)]
-#[wasm_bindgen]
+#[derive(Debug, Clone, Copy, PartialEq)]
+#[cfg_attr(not(feature = "coverage"), wasm_bindgen)]
 pub enum Color {
     Keyword,
     Comparison,
@@ -1127,3 +1129,21 @@ pub const BLACKBOLD_LETTERS: phf::Map<char, char> = phf_map! {
     '8' => '𝟠',
     '9' => '𝟡',
 };
+
+
+#[cfg(test)]
+mod tests {
+    use crate::utils::symbols::{get_category_by_name, Category};
+
+    #[test]
+    fn test_get_category_by_name() {
+        assert_eq!(get_category_by_name(&"leTter".to_string()), Category::Letter);
+        assert_eq!(get_category_by_name(&"coMparison".to_string()), Category::Comparison);
+        assert_eq!(get_category_by_name(&"keyword".to_string()), Category::Keyword);
+        assert_eq!(get_category_by_name(&"Set".to_string()), Category::Set);
+        assert_eq!(get_category_by_name(&"bigletter".to_string()), Category::BigLetter);
+        assert_eq!(get_category_by_name(&"Number".to_string()), Category::Number);
+        assert_eq!(get_category_by_name(&"space".to_string()), Category::Space);
+        assert_eq!(get_category_by_name(&"doesn't exists".to_string()), Category::Default);
+    }
+}
