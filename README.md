@@ -23,7 +23,7 @@ By default, the extension will use the monokai theme colors.
 
 # Settings
 
-- **Colors**: Select your theme colors.
+- **Colors**: Select your theme colors. They can be in `#RRGGBB` or `rgb(r, g, b)` format.
 - **RenderSymbolsOutsideMath**: If set to true, the extension will render symbols everywhere in the document, not only in math equations.
 - **RenderSpaces**: If set to true, the extension will render space symbols like space, wj, space.quad...
 - **HideUnnecessaryDelimiters**: If set to true, the extension will hide unnecessary delimiters in math equations, like paretheses in `x^(2 x)`

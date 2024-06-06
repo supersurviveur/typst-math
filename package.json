@@ -33,7 +33,7 @@
             "group": "",
             "operator": ""
           },
-          "markdownDescription": "The colors used to render math symbols in typst.\nDefault colors are based on the Monokai theme",
+          "markdownDescription": "The colors used to render math symbols in typst.\nDefault colors are based on the Monokai theme. They can be in `#RRGGBB` or `rgb(r, g, b)` format.",
           "properties": {
             "keyword": {
               "type": "string",
