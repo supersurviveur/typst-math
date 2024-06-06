@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import { createDecorationType, strictIntersection } from './helpers';
 import { Logger } from '../logger';
-import { blacklistedSymbols, getColors, getRenderingMode, customSymbols, renderSpaces, renderSymbolsOutsideMath, revealOffset } from '../utils';
+import { blacklistedSymbols, getColors, getRenderingMode, customSymbols, renderSpaces, renderSymbolsOutsideMath, revealOffset, hideUnnecessaryDelimiters } from '../utils';
 import getWASM from '../wasmHelper';
 import { updateStatusBarItem } from '../statusbar';
 import { CustomSymbol } from 'typst-math-rust';
@@ -32,6 +32,7 @@ export class Decorations {
     renderingMode = getRenderingMode();
     renderOutsideMath = renderSymbolsOutsideMath();
     renderSpaces = renderSpaces();
+    hideUnnecessaryDelimiters = hideUnnecessaryDelimiters();
     blacklistedSymbols = blacklistedSymbols();
     reveal_offset = revealOffset();
     customSymbols: CustomSymbol[] = [];
@@ -103,6 +104,7 @@ export class Decorations {
             this.renderingMode = getRenderingMode();
             this.renderOutsideMath = renderSymbolsOutsideMath();
             this.renderSpaces = renderSpaces();
+            this.hideUnnecessaryDelimiters = hideUnnecessaryDelimiters();
             this.blacklistedSymbols = blacklistedSymbols();
             this.reveal_offset = revealOffset();
             this.clearDecorations();
@@ -119,7 +121,7 @@ export class Decorations {
 
             let start = this.edition_state.edited_range?.start.line === undefined ? -1 : this.edition_state.edited_range?.start.line;
             let end = this.edition_state.edited_range?.end.line === undefined ? -1 : this.edition_state.edited_range?.end.line;
-            let parsed = getWASM().parse_document(this.activeEditor.document.getText() as string, start, end, this.renderingMode, this.renderOutsideMath, this.renderSpaces, this.blacklistedSymbols, this.customSymbols);
+            let parsed = getWASM().parse_document(this.activeEditor.document.getText() as string, start, end, this.renderingMode, this.renderOutsideMath, this.renderSpaces, this.hideUnnecessaryDelimiters, this.blacklistedSymbols, this.customSymbols);
 
             // If edited lines aren't defined, we clear all ranges
             // If they are defined, remove symbols whiwh were rendered again, and trnaslate ones after the edition

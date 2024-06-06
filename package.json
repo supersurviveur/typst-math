@@ -72,6 +72,11 @@
           "default": false,
           "markdownDescription": "If true, space symbols like space, space.quad, wjoin... will be rendered."
         },
+        "typst-math.hideUnnecessaryDelimiters": {
+          "type": "boolean",
+          "default": false,
+          "markdownDescription": "If true, unnecessary delimiters like parentheses in `$x^(2 x y)$` will be hidden."
+        },
         "typst-math.revealOffset": {
           "type": "number",
           "default": 0,

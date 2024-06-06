@@ -77,6 +77,10 @@ export function renderSymbolsOutsideMath() {
 export function renderSpaces() {
     return config.get<boolean>('renderSpaces') || false;
 }
+// Retreive the settings for delimiter rendering
+export function hideUnnecessaryDelimiters() {
+    return config.get<boolean>('hideUnnecessaryDelimiters') || false;
+}
 // Retreive the settings for space rendering
 export function revealOffset() {
     return config.get<number>('revealOffset') || 0;

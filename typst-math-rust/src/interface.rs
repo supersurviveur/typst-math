@@ -31,6 +31,7 @@ pub struct Options {
     pub rendering_mode: u8,
     pub render_outside_math: bool,
     pub render_spaces: bool,
+    pub hide_unnecessary_delimiters: bool,
     pub blacklisted_symbols: Vec<String>,
     pub custom_symbols: HashMap<String, CustomSymbol>,
 }
@@ -41,6 +42,7 @@ impl Default for Options {
             rendering_mode: 3,
             render_outside_math: true,
             render_spaces: false,
+            hide_unnecessary_delimiters: false,
             blacklisted_symbols: vec![],
             custom_symbols: HashMap::new(),
         }

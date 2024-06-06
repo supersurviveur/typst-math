@@ -26,6 +26,7 @@ By default, the extension will use the monokai theme colors.
 - **Colors**: Select your theme colors.
 - **RenderSymbolsOutsideMath**: If set to true, the extension will render symbols everywhere in the document, not only in math equations.
 - **RenderSpaces**: If set to true, the extension will render space symbols like space, wj, space.quad...
+- **HideUnnecessaryDelimiters**: If set to true, the extension will hide unnecessary delimiters in math equations, like paretheses in `x^(2 x)`
 - **RenderingMode**: Choose whether to render only simple symbols or also complex equations.
 - **RevealOffset**: The number of lines to reveal before and after the current line.
 - **CustomSymbols**: You can add or override symbols with your own. The format is

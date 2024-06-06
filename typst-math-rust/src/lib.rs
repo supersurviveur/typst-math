@@ -41,12 +41,13 @@ pub fn parse_document(
     rendering_mode: u8,
     render_outside_math: bool,
     render_spaces: bool,
+    hide_unnecessary_delimiters: bool,
     blacklisted_symbols: Vec<String>,
     custom_symbols: Vec<CustomSymbol>,
 ) -> Parsed {
     // Generate a fake source
     let mut source = typst_syntax::Source::detached(content.to_string());
-    // println!("{:#?}", source.root());
+    println!("{:#?}", source.root());
 
     // These variable contains the range of the document that was parsed incrementally and will be returned to the extension
     let mut edit_start_line = 0;
@@ -118,6 +119,7 @@ pub fn parse_document(
         rendering_mode,
         render_outside_math,
         render_spaces,
+        hide_unnecessary_delimiters,
         blacklisted_symbols,
         custom_symbols,
     };
@@ -170,6 +172,7 @@ mod tests {
             3,
             true,
             true,
+            false,
             vec![],
             vec![generate_custom_symbol(
                 "symbol".to_string(),

@@ -284,6 +284,10 @@ fn math_block(parser: &mut InnerParser) {
                 );
             }
             return;
+        } else if parser.options.hide_unnecessary_delimiters {
+            // Simply hide the paren
+            parser.insert_void(children[0].range(), (0, 0));
+            parser.insert_void(children[2].range(), (0, 0));
         }
     }
     // Style isn't propagated, reset state
