@@ -14,6 +14,7 @@ export class Decorations {
         }
     } = {}; // Keep decorations and ranges in this variable
     selection_timeout: NodeJS.Timeout | undefined = undefined;
+    editing_timeout: NodeJS.Timeout | undefined = undefined;
     last_selection_line = { start: -1, end: -1 }; // Keep the position of the last edited line
     editing = false; // Used to know if the document was edited
     edition_state: {
@@ -199,17 +200,20 @@ export class Decorations {
                 this.last_selection_line.start = event.selections[0].start.line;
                 this.last_selection_line.end = event.selections[0].end.line;
 
-                // If the selection changes, update the decorations after a short delay, to avoid updating the decorations too often
-                if (this.selection_timeout) {
-                    clearTimeout(this.selection_timeout);
-                }
-
                 if (this.editing) { // Text was typed, reload completely decorations
                     this.editing = false;
-                    this.selection_timeout = setTimeout(async () => {
+                    // If the selection changes, update the decorations after a short delay, to avoid updating the decorations too often
+                    if (this.editing_timeout) {
+                        clearTimeout(this.editing_timeout);
+                    }
+                    this.editing_timeout = setTimeout(async () => {
                         this.reloadDecorations();
                     }, 200);
                 } else { // Only cursor was moved, just render decorations by revealing current line
+                    // If the selection changes, update the decorations after a short delay, to avoid updating the decorations too often
+                    if (this.selection_timeout) {
+                        clearTimeout(this.selection_timeout);
+                    }
                     this.selection_timeout = setTimeout(async () => {
                         this.renderDecorations();
                     }, 50); // 50ms to keep things fast, but not to quick to avoid rendering too often
