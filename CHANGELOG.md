@@ -4,6 +4,11 @@ All notable changes to the "typst-math" extension will be documented in this fil
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## [v0.1.5]
+- Fix fonts link
+- Add an option to remove unnecessary parentheses
+- Better doc for custom theme
+
 ## [v0.1.4]
 - Improve performances
 - Add tests

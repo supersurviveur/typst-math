@@ -2,7 +2,7 @@ import * as vscode from "vscode";
 import installfont from "../installfontLib/installfont";
 
 function installFontManually() {
-    vscode.env.openExternal(vscode.Uri.parse("https://github.com/supersurviveur/typst-math/blob/main/fonts/"));
+    vscode.env.openExternal(vscode.Uri.parse("https://github.com/supersurviveur/typst-math/blob/main/assets/fonts/README.md"));
 }
 
 export function askForFonts(context: vscode.ExtensionContext) {
