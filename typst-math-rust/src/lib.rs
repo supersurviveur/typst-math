@@ -9,6 +9,7 @@ use interface::{CustomSymbol, Decoration, Options, Parsed};
 use parser::{parser::ast_dfs, utils::InnerParser};
 use typst_syntax::LinkedNode;
 use utils::hook::set_panic_hook;
+#[cfg(not(feature = "coverage"))]
 use wasm_bindgen::prelude::*;
 
 /// Initialize the WASM library
