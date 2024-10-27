@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import { createDecorationType, strictIntersection } from './helpers';
 import { Logger } from '../logger';
-import { blacklistedSymbols, getColors, getRenderingMode, customSymbols, renderSpaces, renderSymbolsOutsideMath, revealOffset, hideUnnecessaryDelimiters } from '../utils';
+import { blacklistedSymbols, getColors, getRenderingMode, customSymbols, renderSpaces, renderSymbolsOutsideMath, revealOffset, hideUnnecessaryDelimiters, reloadConfiguration } from '../utils';
 import getWASM from '../wasmHelper';
 import { updateStatusBarItem } from '../statusbar';
 import { CustomSymbol } from 'typst-math-rust';
@@ -102,6 +102,7 @@ export class Decorations {
     }
     onConfigChange(event: vscode.ConfigurationChangeEvent) {
         if (event.affectsConfiguration("typst-math")) {
+            reloadConfiguration();
             this.renderingMode = getRenderingMode();
             this.renderOutsideMath = renderSymbolsOutsideMath();
             this.renderSpaces = renderSpaces();

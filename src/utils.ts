@@ -2,7 +2,11 @@ import * as vscode from 'vscode';
 import { Color } from "typst-math-rust";
 import getWASM from './wasmHelper';
 
-const config = vscode.workspace.getConfiguration('typst-math');
+let config = vscode.workspace.getConfiguration('typst-math');
+
+export function reloadConfiguration() {
+    config = vscode.workspace.getConfiguration('typst-math');
+}
 
 interface Colors {
     comparison: string,
