@@ -445,6 +445,16 @@ pub const SYMBOLS: phf::Map<&str, Symbol> = symbols! {
         sq.big: '⨅',
         sq.double: '⩎',
     ]; Keyword,
+    inter: [
+        '∩',
+        and: '⩄',
+        big: '⋂',
+        dot: '⩀',
+        double: '⋒',
+        sq: '⊓',
+        sq.big: '⨅',
+        sq.double: '⩎',
+    ]; Keyword,
 
     // Calculus.
     infinity: '∞'; Default,
