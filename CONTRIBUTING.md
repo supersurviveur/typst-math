@@ -16,6 +16,8 @@ wasm-pack build --target nodejs
 ```
 Then you can run the extension by opening the project in VS Code and pressing `F5` to start a debug session.
 
+It can be compiled with `npm run package` and a vsix file can be generated with `vsce package`.
+
 ### Tests
 You can run tests with `cargo test`, and see [test coverage](https://doc.rust-lang.org/rustc/instrument-coverage.html) by running `coverage.sh`.
 
