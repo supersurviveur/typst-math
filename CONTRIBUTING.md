@@ -12,7 +12,7 @@ cd typst-math
 To build the WebAssembly module, you need to install [wasm-pack](https://rustwasm.github.io/wasm-pack/installer/)
 ```bash
 cd typst-math-rust
-wasm-pack build
+wasm-pack build --target nodejs
 ```
 Then you can run the extension by opening the project in VS Code and pressing `F5` to start a debug session.
 
