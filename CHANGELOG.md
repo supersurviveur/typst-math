@@ -4,6 +4,10 @@ All notable changes to the "typst-math" extension will be documented in this fil
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## [v0.1.8]
+- Apply reveal offset immediately
+- Change sect to inter symbols
+
 ## [v0.1.7]
 - Fix version number and publish on openvsx
 
