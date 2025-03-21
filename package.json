@@ -85,7 +85,7 @@
         "typst-math.customSymbols": {
           "type": "array",
           "markdownDescription": "List of custom symbols that will be rendered.",
-          "items":  {
+          "items": {
             "type": "object",
             "properties": {
               "name": {

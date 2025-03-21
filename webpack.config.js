@@ -68,6 +68,15 @@ const extensionConfig = {
           to: ''
         }
       ]
+    }),
+    new CopyWebpackPlugin({
+      patterns: [
+        {
+          context: 'typst-math-rust/pkg',
+          from: '*.wasm',
+          to: ''
+        }
+      ]
     })
   ]
 };
