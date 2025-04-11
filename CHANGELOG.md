@@ -4,12 +4,15 @@ All notable changes to the "typst-math" extension will be documented in this fil
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## [v0.1.10]
+- Add support for symbols inside `#{}` thanks to [chillcicada](https://github.com/chillcicada)
+
 ## [v0.1.9]
 - Fix wasm error
 
 ## [v0.1.8]
 - Apply reveal offset immediately
-- Change sect to inter symbols thanks to euwbah
+- Change sect to inter symbols thanks to [euwbah](https://github.com/euwbah)
 
 ## [v0.1.7]
 - Fix version number and publish on openvsx
