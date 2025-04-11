@@ -117,13 +117,41 @@ fn math_ident_block(parser: &mut InnerParser) {
 fn field_access_block(parser: &mut InnerParser) {
     let access = unchecked_cast_expr::<FieldAccess>(parser.expr);
     if let Some(content) = field_access_recursive(access) {
-        // Add one to offset to remove the # with sym
-        if content.contains("sym") {
-            if parser.options.render_outside_math {
-                parser.offset.0 += 1;
-            } else {
-                return;
-            }
+        let has_sym = content.contains("sym");
+        if has_sym && !parser.options.render_outside_math {
+            return;
+        }
+
+        // Add offsets to remove the leading spaces and # or #{
+        let start_offset = parser.expr.range().start;
+        let prefix = &parser.source.text()[..start_offset];
+
+        let head_space_count = prefix.chars().rev().take_while(|&c| c == ' ').count();
+        let non_space_prefix = &prefix[..prefix.len().saturating_sub(head_space_count)];
+        let head_symbol_count = match () {
+            _ if non_space_prefix.ends_with("#{") => 2,
+            _ if non_space_prefix.ends_with('#') => 1,
+            _ => 0,
+        };
+
+        parser.offset.0 += head_space_count;
+        parser.offset.0 += head_symbol_count;
+
+        // Add offsets to remove the trailing spaces and }
+        let end_offset = parser.expr.range().end;
+        let suffix = &parser.source.text()[end_offset..];
+
+        let tail_space_count = suffix.chars().take_while(|&c| c == ' ').count();
+        let non_space_suffix = &suffix[tail_space_count..];
+        let tail_symbol_count = match () {
+            _ if non_space_suffix.starts_with('}') => 1,
+            _ => 0,
+        };
+
+        // Only update the offset if end with space and }
+        if tail_symbol_count > 0 {
+            parser.offset.1 += tail_space_count;
+            parser.offset.1 += tail_symbol_count;
         }
 
         let content = content.replace("sym.", "");
