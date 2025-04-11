@@ -126,32 +126,33 @@ fn field_access_block(parser: &mut InnerParser) {
         let start_offset = parser.expr.range().start;
         let prefix = &parser.source.text()[..start_offset];
 
-        let head_space_count = prefix.chars().rev().take_while(|&c| c == ' ').count();
-        let non_space_prefix = &prefix[..prefix.len().saturating_sub(head_space_count)];
-        let head_symbol_count = match () {
-            _ if non_space_prefix.ends_with("#{") => 2,
-            _ if non_space_prefix.ends_with('#') => 1,
-            _ => 0,
-        };
+        if prefix.ends_with('#') {
+            parser.offset.0 += 1;
+        } else {
+            let head_space_count = prefix.chars().rev().take_while(|&c| c == ' ').count();
+            let non_space_prefix = &prefix[..prefix.len().saturating_sub(head_space_count)];
 
-        parser.offset.0 += head_space_count;
-        parser.offset.0 += head_symbol_count;
+            let head_symbol = non_space_prefix.ends_with("#{");
 
-        // Add offsets to remove the trailing spaces and }
-        let end_offset = parser.expr.range().end;
-        let suffix = &parser.source.text()[end_offset..];
+            // Only update the offset if start with space and #{
+            if head_symbol {
+                parser.offset.0 += head_space_count;
+                parser.offset.0 += 2; // for #{
+            }
 
-        let tail_space_count = suffix.chars().take_while(|&c| c == ' ').count();
-        let non_space_suffix = &suffix[tail_space_count..];
-        let tail_symbol_count = match () {
-            _ if non_space_suffix.starts_with('}') => 1,
-            _ => 0,
-        };
+            // Add offsets to remove the trailing spaces and }
+            let end_offset = parser.expr.range().end;
+            let suffix = &parser.source.text()[end_offset..];
 
-        // Only update the offset if end with space and }
-        if tail_symbol_count > 0 {
-            parser.offset.1 += tail_space_count;
-            parser.offset.1 += tail_symbol_count;
+            let tail_space_count = suffix.chars().take_while(|&c| c == ' ').count();
+            let non_space_suffix = &suffix[tail_space_count..];
+            let tail_symbol = non_space_suffix.starts_with('}');
+
+            // Only update the offset if end with space and }
+            if tail_symbol {
+                parser.offset.1 += tail_space_count;
+                parser.offset.1 += 1; // for }
+            }
         }
 
         let content = content.replace("sym.", "");
