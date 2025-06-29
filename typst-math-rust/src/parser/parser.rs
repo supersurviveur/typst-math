@@ -398,6 +398,16 @@ fn str_block(parser: &mut InnerParser) {
             format!("{}", parser.added_text_decoration),
             parser.offset,
         );
+    } else if !text.get().trim().is_empty() {
+        // If we are not in an attachment, just insert the text as is, this will trim the quotes
+        parser.insert_result(
+            parser.expr.range(),
+            format!("{}-str-{}", parser.uuid, text.get().to_string()),
+            text.get().to_string(),
+            Color::String,
+            format!("{}", parser.added_text_decoration),
+            parser.offset,
+        );
     }
 }
 

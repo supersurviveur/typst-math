@@ -15,6 +15,7 @@ interface Colors {
     group: string,
     operator: string,
     number: string,
+    string: string
 }
 
 // Default color themes
@@ -25,7 +26,8 @@ const darkTheme = {
     comparison: "#AE81FF",
     letter: "#A6E22E",
     group: "#66D9EF",
-    operator: "#FD971F"
+    operator: "#FD971F",
+    string: "#E6DB74"
 };
 // Light theme based on the Monokai theme
 const lightTheme = {
@@ -34,7 +36,8 @@ const lightTheme = {
     comparison: "#EE0000",
     letter: "#795E26",
     group: "#008000",
-    operator: "#0070C1"
+    operator: "#0070C1",
+    string: "#F9622E"
 };
 
 
@@ -51,6 +54,7 @@ function enumToColorName(colorEnum: Color): keyof Colors {
         case getWASM().Color.Letter: return "letter";
         case getWASM().Color.Set: return "group";
         case getWASM().Color.Number: return "number";
+        case getWASM().Color.String: return "letter";
     }
 }
 // Get colors from settings
