@@ -1,3 +1,5 @@
+.github/
+assets/fonts/
 .vscode/**
 .vscode-test/**
 out/**
