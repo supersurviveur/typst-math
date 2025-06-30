@@ -55,6 +55,7 @@ pub enum Color {
     Letter,
     Set,
     Number,
+    String,
 }
 
 /// The list of general symbols.

@@ -31,7 +31,8 @@
             "comparison": "",
             "letter": "",
             "group": "",
-            "operator": ""
+            "operator": "",
+            "string": ""
           },
           "markdownDescription": "The colors used to render math symbols in typst.\nDefault colors are based on the Monokai theme. They can be in `#RRGGBB` or `rgb(r, g, b)` format.",
           "properties": {
@@ -58,6 +59,10 @@
             "operator": {
               "type": "string",
               "description": "The color used for operators in typst."
+            },
+            "string": {
+              "type": "string",
+              "description": "The color used for strings in typst."
             }
           },
           "additionalProperties": false
@@ -76,6 +81,11 @@
           "type": "boolean",
           "default": false,
           "markdownDescription": "If true, unnecessary delimiters like parentheses in `$x^(2 x y)$` will be hidden."
+        },
+        "typst-math.hideLeadingAndTrailingQuotes": {
+          "type": "boolean",
+          "default": false,
+          "markdownDescription": "If true, leading and trailing quotes for *string* will be hidden."
         },
         "typst-math.revealOffset": {
           "type": "number",

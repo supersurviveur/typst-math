@@ -43,6 +43,7 @@ pub fn parse_document(
     render_outside_math: bool,
     render_spaces: bool,
     hide_unnecessary_delimiters: bool,
+    hide_leading_and_trailing_quotes: bool,
     blacklisted_symbols: Vec<String>,
     custom_symbols: Vec<CustomSymbol>,
 ) -> Parsed {
@@ -121,6 +122,7 @@ pub fn parse_document(
         render_outside_math,
         render_spaces,
         hide_unnecessary_delimiters,
+        hide_leading_and_trailing_quotes,
         blacklisted_symbols,
         custom_symbols,
     };
@@ -173,6 +175,7 @@ mod tests {
             3,
             true,
             true,
+            false,
             false,
             vec![],
             vec![generate_custom_symbol(

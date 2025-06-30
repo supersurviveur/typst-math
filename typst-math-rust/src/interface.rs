@@ -32,6 +32,7 @@ pub struct Options {
     pub render_outside_math: bool,
     pub render_spaces: bool,
     pub hide_unnecessary_delimiters: bool,
+    pub hide_leading_and_trailing_quotes: bool,
     pub blacklisted_symbols: Vec<String>,
     pub custom_symbols: HashMap<String, CustomSymbol>,
 }
@@ -43,6 +44,7 @@ impl Default for Options {
             render_outside_math: true,
             render_spaces: false,
             hide_unnecessary_delimiters: false,
+            hide_leading_and_trailing_quotes: false,
             blacklisted_symbols: vec![],
             custom_symbols: HashMap::new(),
         }
