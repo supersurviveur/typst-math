@@ -54,7 +54,7 @@ function enumToColorName(colorEnum: Color): keyof Colors {
         case getWASM().Color.Letter: return "letter";
         case getWASM().Color.Set: return "group";
         case getWASM().Color.Number: return "number";
-        case getWASM().Color.String: return "letter";
+        case getWASM().Color.String: return "string";
     }
 }
 // Get colors from settings
@@ -77,23 +77,27 @@ export function getColors(colorType: Color) {
     }
 }
 
-// Retreive the settings for decorations outside math mode
+// Retrieve the settings for decorations outside math mode
 export function renderSymbolsOutsideMath() {
     return config.get<boolean>('renderSymbolsOutsideMath') || false;
 }
-// Retreive the settings for space rendering
+// Retrieve the settings for space rendering
 export function renderSpaces() {
     return config.get<boolean>('renderSpaces') || false;
 }
-// Retreive the settings for delimiter rendering
+// Retrieve the settings for delimiter rendering
 export function hideUnnecessaryDelimiters() {
     return config.get<boolean>('hideUnnecessaryDelimiters') || false;
 }
-// Retreive the settings for space rendering
+// Retrieve the settings for hiding leading and trailing quotes
+export function hideLeadingAndTrailingQuotes() {
+    return config.get<boolean>('hideLeadingAndTrailingQuotes') || false;
+}
+// Retrieve the settings for space rendering
 export function revealOffset() {
     return config.get<number>('revealOffset') || 0;
 }
-// Retreive the settings for custom symbols
+// Retrieve the settings for custom symbols
 export function customSymbols(): {
     name: string,
     symbol: string
@@ -116,7 +120,7 @@ export function customSymbols(): {
     }
     return user;
 }
-// Retreive blacklisted symbols
+// Retrieve blacklisted symbols
 export function blacklistedSymbols() {
     return config.get<string[]>('blacklist') || [];
 }

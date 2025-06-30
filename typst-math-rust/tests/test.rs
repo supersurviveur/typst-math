@@ -4,7 +4,18 @@ mod tests {
 
     #[test]
     fn basic_symbol() {
-        let parsed = parse_document("$alpha$", -1, -1, 3, true, true, false, vec![], vec![]);
+        let parsed = parse_document(
+            "$alpha$",
+            -1,
+            -1,
+            3,
+            true,
+            true,
+            false,
+            false,
+            vec![],
+            vec![],
+        );
         assert_eq!(parsed.decorations.len(), 1);
         assert_eq!(parsed.decorations[0].symbol, "α");
         assert_eq!(parsed.decorations[0].uuid, "alpha");
@@ -19,6 +30,7 @@ mod tests {
             3,
             true,
             true,
+            false,
             false,
             vec![],
             vec![],
@@ -38,16 +50,39 @@ mod tests {
             true,
             true,
             false,
+            false,
             vec![],
             vec![],
         );
         assert_eq!(parsed.decorations.len(), 2);
         assert_eq!(parsed.decorations[0].symbol, "α");
         assert_eq!(parsed.decorations[1].symbol, "α");
-        let parsed = parse_document("$x^alpha$", -1, -1, 3, true, true, false, vec![], vec![]);
+        let parsed = parse_document(
+            "$x^alpha$",
+            -1,
+            -1,
+            3,
+            true,
+            true,
+            false,
+            false,
+            vec![],
+            vec![],
+        );
         assert_eq!(parsed.decorations[0].positions[0].start, 2);
         assert_eq!(parsed.decorations[0].uuid, "top-alpha");
-        let parsed = parse_document("$x_alpha$", -1, -1, 3, true, true, false, vec![], vec![]);
+        let parsed = parse_document(
+            "$x_alpha$",
+            -1,
+            -1,
+            3,
+            true,
+            true,
+            false,
+            false,
+            vec![],
+            vec![],
+        );
         assert_eq!(parsed.decorations[0].uuid, "bottom-alpha");
 
         let parsed = parse_document(
@@ -57,6 +92,7 @@ mod tests {
             3,
             true,
             true,
+            false,
             false,
             vec![],
             vec![],
@@ -69,6 +105,7 @@ mod tests {
             0,
             true,
             true,
+            false,
             false,
             vec![],
             vec![],
@@ -86,6 +123,7 @@ mod tests {
             true,
             true,
             false,
+            false,
             vec![],
             vec![],
         );
@@ -98,6 +136,7 @@ mod tests {
             true,
             true,
             false,
+            false,
             vec![],
             vec![],
         );
@@ -105,7 +144,18 @@ mod tests {
     }
     #[test]
     fn test_functions() {
-        let parsed = parse_document("$arrow(x)$", -1, -1, 3, true, true, false, vec![], vec![]);
+        let parsed = parse_document(
+            "$arrow(x)$",
+            -1,
+            -1,
+            3,
+            true,
+            true,
+            false,
+            false,
+            vec![],
+            vec![],
+        );
         assert_eq!(parsed.decorations.len(), 2);
 
         // Check that not too many decorations are added
@@ -116,6 +166,7 @@ mod tests {
             3,
             true,
             true,
+            false,
             false,
             vec![],
             vec![],
@@ -129,6 +180,7 @@ mod tests {
             true,
             true,
             false,
+            false,
             vec![],
             vec![],
         );
@@ -141,6 +193,7 @@ mod tests {
             true,
             true,
             false,
+            false,
             vec![],
             vec![],
         );
@@ -148,7 +201,18 @@ mod tests {
     }
     #[test]
     fn test_field_access() {
-        let parsed = parse_document("$beta.alt$", -1, -1, 3, true, true, false, vec![], vec![]);
+        let parsed = parse_document(
+            "$beta.alt$",
+            -1,
+            -1,
+            3,
+            true,
+            true,
+            false,
+            false,
+            vec![],
+            vec![],
+        );
         assert_eq!(parsed.decorations.len(), 1);
         assert_eq!(parsed.decorations[0].symbol, "ϐ");
         assert_eq!(parsed.decorations[0].uuid, "beta.alt");
@@ -160,6 +224,7 @@ mod tests {
             true,
             true,
             false,
+            false,
             vec![],
             vec![],
         );
@@ -169,7 +234,18 @@ mod tests {
     }
     #[test]
     fn test_text() {
-        let parsed = parse_document("$x^a x_a$", -1, -1, 3, true, true, false, vec![], vec![]);
+        let parsed = parse_document(
+            "$x^a x_a$",
+            -1,
+            -1,
+            3,
+            true,
+            true,
+            false,
+            false,
+            vec![],
+            vec![],
+        );
         assert_eq!(parsed.decorations.len(), 2);
         assert_eq!(parsed.decorations[0].symbol, "a");
 
@@ -180,6 +256,7 @@ mod tests {
             3,
             true,
             true,
+            false,
             false,
             vec![],
             vec![],
@@ -197,6 +274,7 @@ mod tests {
             true,
             true,
             false,
+            false,
             vec![],
             vec![],
         );
@@ -213,11 +291,23 @@ mod tests {
             true,
             true,
             false,
+            false,
             vec![],
             vec![],
         );
         assert_eq!(parsed.decorations.len(), 3);
-        let parsed = parse_document("$x^(alpha)$", -1, -1, 3, true, true, false, vec![], vec![]);
+        let parsed = parse_document(
+            "$x^(alpha)$",
+            -1,
+            -1,
+            3,
+            true,
+            true,
+            false,
+            false,
+            vec![],
+            vec![],
+        );
         assert_eq!(parsed.decorations.len(), 2);
         let parsed = parse_document(
             "$x^(\"alpha\") x^(-\"alpha\") x^(-alpha)$",
@@ -226,6 +316,7 @@ mod tests {
             3,
             true,
             true,
+            false,
             false,
             vec![],
             vec![],
@@ -241,6 +332,7 @@ mod tests {
             3,
             true,
             true,
+            false,
             false,
             vec![],
             vec![],

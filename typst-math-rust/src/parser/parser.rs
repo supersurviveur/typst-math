@@ -398,7 +398,7 @@ fn str_block(parser: &mut InnerParser) {
             format!("{}", parser.added_text_decoration),
             parser.offset,
         );
-    } else if !text.get().trim().is_empty() {
+    } else if parser.options.hide_leading_and_trailing_quotes && !text.get().trim().is_empty() {
         // If we are not in an attachment, just insert the text as is, this will trim the quotes
         parser.insert_result(
             parser.expr.range(),
